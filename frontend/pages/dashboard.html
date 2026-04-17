@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - QuantoTá?</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">🛒</div>
+      <div class="brand-text">
+        <h2>QuantoTá?</h2>
+        <small>Painel do usuário</small>
+      </div>
+    </div>
+    <nav class="nav-links">
+      <a href="../index.html">Início</a>
+      <a href="produtos.html">Produtos</a>
+      <a href="lista-compras.html">Lista de Compras</a>
+      <a href="dashboard.html" class="active">Dashboard</a>
+      <button id="toggleTema" class="theme-toggle" type="button"></button>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <h2 class="section-title">Dashboard</h2>
+      <p>Login realizado com sucesso. A partir daqui você pode evoluir para mostrar histórico, últimas buscas e listas salvas.</p>
+      <button class="btn" onclick="logout()">Sair</button>
+    </div>
+  </div>
+  <script src="../js/theme.js"></script>
+  <script src="../js/auth.js"></script>
+</body>
+</html>

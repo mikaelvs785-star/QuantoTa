@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - QuantoTá?</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">🛒</div>
+      <div class="brand-text">
+        <h2>QuantoTá?</h2>
+        <small>Área administrativa</small>
+      </div>
+    </div>
+    <nav class="nav-links">
+      <a href="../index.html">Início</a>
+      <a href="produtos.html">Produtos</a>
+      <a href="lista-compras.html">Lista de Compras</a>
+      <a href="admin.html" class="active">Admin</a>
+      <button id="toggleTema" class="theme-toggle" type="button"></button>
+    </nav>
+  </header>
+
+  <div class="container grid grid-2">
+    <div class="card">
+      <h2 class="section-title">Cadastrar produto</h2>
+      <form onsubmit="cadastrarProduto(event)">
+        <input id="produtoNome" placeholder="Nome do produto" required>
+        <input id="produtoCategoria" placeholder="Categoria">
+        <input id="produtoUnidade" placeholder="Unidade de medida">
+        <input id="produtoMarca" placeholder="Marca">
+        <textarea id="produtoDescricao" placeholder="Descrição"></textarea>
+        <button class="btn" type="submit">Salvar produto</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">Cadastrar mercado</h2>
+      <form onsubmit="cadastrarMercado(event)">
+        <input id="mercadoNome" placeholder="Nome do mercado" required>
+        <input id="mercadoEndereco" placeholder="Endereço">
+        <input id="mercadoBairro" placeholder="Bairro">
+        <input id="mercadoCidade" placeholder="Cidade">
+        <input id="mercadoEstado" placeholder="Estado">
+        <input id="mercadoTelefone" placeholder="Telefone">
+        <button class="btn" type="submit">Salvar mercado</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">Cadastrar preço</h2>
+      <form onsubmit="cadastrarPreco(event)">
+        <input id="precoProdutoId" type="number" placeholder="ID do produto" required>
+        <input id="precoMercadoId" type="number" placeholder="ID do mercado" required>
+        <input id="precoValor" type="number" step="0.01" placeholder="Valor" required>
+        <input id="precoData" type="date" required>
+        <textarea id="precoObs" placeholder="Observação"></textarea>
+        <button class="btn" type="submit">Salvar preço</button>
+      </form>
+    </div>
+  </div>
+  <script src="../js/theme.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/admin.js"></script>
+</body>
+</html>
