@@ -17,9 +17,13 @@
     </div>
     <nav class="nav-links">
       <a href="../index.html">Início</a>
-      <a href="login.html" class="active">Login</a>
-      <a href="cadastro.html">Cadastro</a>
+      <a href="login.html" class="active" data-guest-only>Login</a>
+      <a href="cadastro.html" data-guest-only>Cadastro</a>
       <a href="produtos.html">Produtos</a>
+      <a href="lista-compras.html">Lista de Compras</a>
+      <a href="dashboard.html" data-auth-only style="display:none">Dashboard</a>
+      <a href="admin.html" data-nav-admin style="display:none">Admin</a>
+      <span class="nav-user" data-user-name>Visitante</span>
       <button id="toggleTema" class="theme-toggle" type="button"></button>
     </nav>
   </header>
@@ -27,15 +31,21 @@
   <div class="container">
     <div class="card">
       <h2 class="section-title">Login</h2>
-      <p class="small">Entre para salvar listas e acompanhar as suas comparações.</p>
+      <p class="small">Entre para salvar listas, acompanhar suas comparações e acessar seu painel.</p>
+      <div id="authStatus" hidden></div>
       <form onsubmit="fazerLogin(event)">
-        <input id="email" type="email" placeholder="Email" required>
-        <input id="senha" type="password" placeholder="Senha" required>
+        <label for="email">Email</label>
+        <input id="email" type="email" placeholder="seuemail@exemplo.com" required>
+
+        <label for="senha">Senha</label>
+        <input id="senha" type="password" placeholder="Digite sua senha" required>
+
         <button class="btn" type="submit">Entrar</button>
       </form>
     </div>
   </div>
   <script src="../js/theme.js"></script>
+  <script src="../js/app.js"></script>
   <script src="../js/api.js"></script>
   <script src="../js/auth.js"></script>
 </body>

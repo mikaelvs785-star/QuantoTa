@@ -20,28 +20,43 @@
       <a href="produtos.html">Produtos</a>
       <a href="comparacao.html">Comparação</a>
       <a href="lista-compras.html" class="active">Lista de Compras</a>
+      <a href="dashboard.html" data-auth-only style="display:none">Dashboard</a>
+      <a href="admin.html" data-nav-admin style="display:none">Admin</a>
+      <span class="nav-user" data-user-name>Visitante</span>
       <button id="toggleTema" class="theme-toggle" type="button"></button>
     </nav>
   </header>
 
   <div class="container">
     <div class="card">
-      <h2 class="section-title">Minha lista de compras</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Produto</th>
-            <th>Quantidade</th>
-            <th>Menor preço</th>
-            <th>Subtotal</th>
-          </tr>
-        </thead>
-        <tbody id="corpoLista"></tbody>
-      </table>
+      <div class="toolbar">
+        <div>
+          <h2 class="section-title">Minha lista de compras</h2>
+          <p class="section-subtitle">Ajuste quantidades e acompanhe o menor total estimado.</p>
+        </div>
+        <button class="btn btn-danger" onclick="limparLista()">Limpar lista</button>
+      </div>
+      <div id="listaStatus" hidden></div>
+      <div id="resumoLista"></div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Quantidade</th>
+              <th>Menor preço</th>
+              <th>Melhor mercado</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody id="corpoLista"></tbody>
+        </table>
+      </div>
       <h3>Total estimado: <span class="highlight" id="totalEstimado">R$ 0,00</span></h3>
     </div>
   </div>
   <script src="../js/theme.js"></script>
+  <script src="../js/app.js"></script>
   <script src="../js/api.js"></script>
   <script src="../js/lista-compras.js"></script>
 </body>

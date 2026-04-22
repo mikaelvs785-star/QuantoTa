@@ -18,28 +18,52 @@
 
     <nav class="nav-links">
       <a href="index.html" class="active">Início</a>
-      <a href="pages/login.html">Login</a>
-      <a href="pages/cadastro.html">Cadastro</a>
+      <a href="pages/login.html" data-guest-only>Login</a>
+      <a href="pages/cadastro.html" data-guest-only>Cadastro</a>
       <a href="pages/produtos.html">Produtos</a>
       <a href="pages/lista-compras.html">Lista de Compras</a>
-      <a href="pages/admin.html">Admin</a>
+      <a href="pages/dashboard.html" data-auth-only style="display:none">Dashboard</a>
+      <a href="pages/admin.html" data-nav-admin style="display:none">Admin</a>
+      <span class="nav-user" data-user-name>Visitante</span>
       <button id="toggleTema" class="theme-toggle" type="button"></button>
     </nav>
   </header>
 
   <main class="hero">
-    <section class="hero-panel">
-      <span class="badge">Comparador de preços</span>
-      <h2>Encontre onde está mais barato antes de sair de casa</h2>
-      <p>Pesquise produtos como banana, arroz, leite, café e veja em quais mercados eles estão com o melhor preço.</p>
-      <div class="toolbar">
-        <a class="btn" href="pages/produtos.html">Começar busca</a>
-        <a class="btn btn-secondary" href="pages/cadastro.html">Criar conta</a>
-      </div>
-    </section>
+    <div class="hero-grid">
+      <section class="hero-panel">
+        <span class="badge">Comparador de preços</span>
+        <h2>Encontre onde está mais barato antes de sair de casa</h2>
+        <p>Pesquise produtos como banana, arroz, leite, café e veja em quais mercados eles estão com o melhor preço. Monte sua lista e compare o custo total com mais clareza.</p>
+        <div class="toolbar">
+          <a class="btn" href="pages/produtos.html">Começar busca</a>
+          <a class="btn btn-secondary" href="pages/cadastro.html" data-guest-only>Criar conta</a>
+          <a class="btn btn-ghost" href="pages/dashboard.html" data-auth-only style="display:none">Ir para meu painel</a>
+        </div>
+      </section>
+
+      <aside class="card">
+        <h3 class="section-title">O que você consegue fazer</h3>
+        <div class="grid">
+          <div class="summary-box">
+            <strong>Pesquisar produtos</strong>
+            <p class="small">Busque por nome, filtre por categoria e abra a comparação de mercados.</p>
+          </div>
+          <div class="summary-box">
+            <strong>Montar lista inteligente</strong>
+            <p class="small">Adicione itens e acompanhe o total estimado pelo menor preço disponível.</p>
+          </div>
+          <div class="summary-box">
+            <strong>Gerenciar cadastros</strong>
+            <p class="small">Se for admin, cadastre produtos, mercados e novos preços com mais facilidade.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
   </main>
 
   <script src="js/theme.js"></script>
+  <script src="js/app.js"></script>
   <script src="js/api.js"></script>
 </body>
 </html>

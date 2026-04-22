@@ -1,5 +1,6 @@
 async function cadastrarUsuario(event) {
   event.preventDefault();
+  setStatusMessage('authStatus', 'Criando sua conta...', 'info');
 
   const payload = {
     nome: document.getElementById('nome').value,
@@ -13,15 +14,19 @@ async function cadastrarUsuario(event) {
       method: 'POST',
       body: JSON.stringify(payload)
     });
-    alert('Cadastro realizado com sucesso!');
-    window.location.href = 'login.html';
+    setStatusMessage('authStatus', 'Cadastro realizado com sucesso. Você já pode entrar.', 'success');
+    showToast('Conta criada com sucesso!', 'success');
+    event.target.reset();
+    setTimeout(() => { window.location.href = 'login.html'; }, 700);
   } catch (error) {
-    alert('Erro ao cadastrar: ' + error.message);
+    setStatusMessage('authStatus', `Erro ao cadastrar: ${error.message}`, 'error');
+    showToast('Não foi possível concluir o cadastro.', 'error');
   }
 }
 
 async function fazerLogin(event) {
   event.preventDefault();
+  setStatusMessage('authStatus', 'Entrando na sua conta...', 'info');
 
   const payload = {
     email: document.getElementById('email').value,
@@ -33,15 +38,25 @@ async function fazerLogin(event) {
       method: 'POST',
       body: JSON.stringify(payload)
     });
-    localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
-    alert(usuario.mensagem);
-    window.location.href = 'dashboard.html';
+
+    const usuarioPersistido = {
+      ...usuario,
+      nome: usuario.nome || payload.email.split('@')[0],
+      perfil: usuario.perfil || usuario.role || 'USER'
+    };
+
+    localStorage.setItem('usuarioLogado', JSON.stringify(usuarioPersistido));
+    setStatusMessage('authStatus', usuario.mensagem || 'Login realizado com sucesso.', 'success');
+    showToast('Login realizado com sucesso!', 'success');
+    setTimeout(() => { window.location.href = 'dashboard.html'; }, 500);
   } catch (error) {
-    alert('Falha no login: ' + error.message);
+    setStatusMessage('authStatus', `Falha no login: ${error.message}`, 'error');
+    showToast('Email ou senha inválidos.', 'error');
   }
 }
 
 function logout() {
   localStorage.removeItem('usuarioLogado');
-  window.location.href = '../index.html';
+  showToast('Você saiu da sua conta.', 'info');
+  setTimeout(() => { window.location.href = '../index.html'; }, 300);
 }

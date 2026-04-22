@@ -19,50 +19,116 @@
       <a href="../index.html">Início</a>
       <a href="produtos.html">Produtos</a>
       <a href="lista-compras.html">Lista de Compras</a>
-      <a href="admin.html" class="active">Admin</a>
+      <a href="dashboard.html" data-auth-only style="display:none">Dashboard</a>
+      <a href="admin.html" class="active" data-nav-admin>Admin</a>
+      <span class="nav-user" data-user-name>Visitante</span>
       <button id="toggleTema" class="theme-toggle" type="button"></button>
     </nav>
   </header>
 
-  <div class="container grid grid-2">
-    <div class="card">
-      <h2 class="section-title">Cadastrar produto</h2>
-      <form onsubmit="cadastrarProduto(event)">
-        <input id="produtoNome" placeholder="Nome do produto" required>
-        <input id="produtoCategoria" placeholder="Categoria">
-        <input id="produtoUnidade" placeholder="Unidade de medida">
-        <input id="produtoMarca" placeholder="Marca">
-        <textarea id="produtoDescricao" placeholder="Descrição"></textarea>
-        <button class="btn" type="submit">Salvar produto</button>
-      </form>
+  <div class="container">
+    <div id="adminGate" class="alert-box" hidden>
+      <h3>Acesso restrito</h3>
+      <p class="small">Somente usuários com perfil ADMIN devem acessar esta área.</p>
     </div>
 
-    <div class="card">
-      <h2 class="section-title">Cadastrar mercado</h2>
-      <form onsubmit="cadastrarMercado(event)">
-        <input id="mercadoNome" placeholder="Nome do mercado" required>
-        <input id="mercadoEndereco" placeholder="Endereço">
-        <input id="mercadoBairro" placeholder="Bairro">
-        <input id="mercadoCidade" placeholder="Cidade">
-        <input id="mercadoEstado" placeholder="Estado">
-        <input id="mercadoTelefone" placeholder="Telefone">
-        <button class="btn" type="submit">Salvar mercado</button>
-      </form>
+    <div id="adminStatus" hidden></div>
+
+    <div class="grid grid-3" data-admin-content>
+      <div class="card">
+        <h3 class="section-title">Produtos recentes</h3>
+        <ul id="listaProdutosAdmin"></ul>
+      </div>
+      <div class="card">
+        <h3 class="section-title">Mercados recentes</h3>
+        <ul id="listaMercadosAdmin"></ul>
+      </div>
+      <div class="card">
+        <h3 class="section-title">Dica de uso</h3>
+        <p class="small">Cadastre produto e mercado primeiro. Depois selecione ambos na coleta de preço, sem precisar digitar IDs manualmente.</p>
+      </div>
     </div>
 
-    <div class="card">
+    <div class="grid grid-2" data-admin-content>
+      <div class="card">
+        <h2 class="section-title">Cadastrar produto</h2>
+        <form onsubmit="cadastrarProduto(event)">
+          <label for="produtoNome">Nome do produto</label>
+          <input id="produtoNome" placeholder="Ex.: Arroz tipo 1 5kg" required>
+
+          <label for="produtoCategoria">Categoria</label>
+          <input id="produtoCategoria" placeholder="Ex.: Mercearia">
+
+          <label for="produtoUnidade">Unidade de medida</label>
+          <input id="produtoUnidade" placeholder="Ex.: pacote, litro, kg">
+
+          <label for="produtoMarca">Marca</label>
+          <input id="produtoMarca" placeholder="Ex.: Camil">
+
+          <label for="produtoDescricao">Descrição</label>
+          <textarea id="produtoDescricao" placeholder="Detalhes do produto"></textarea>
+          <button class="btn" type="submit">Salvar produto</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Cadastrar mercado</h2>
+        <form onsubmit="cadastrarMercado(event)">
+          <label for="mercadoNome">Nome do mercado</label>
+          <input id="mercadoNome" placeholder="Ex.: Mercado Central" required>
+
+          <label for="mercadoEndereco">Endereço</label>
+          <input id="mercadoEndereco" placeholder="Rua, número e complemento">
+
+          <label for="mercadoBairro">Bairro</label>
+          <input id="mercadoBairro" placeholder="Ex.: Asa Norte">
+
+          <label for="mercadoCidade">Cidade</label>
+          <input id="mercadoCidade" placeholder="Ex.: Brasília">
+
+          <label for="mercadoEstado">Estado</label>
+          <input id="mercadoEstado" placeholder="Ex.: DF">
+
+          <label for="mercadoTelefone">Telefone</label>
+          <input id="mercadoTelefone" placeholder="(61) 99999-9999">
+          <button class="btn" type="submit">Salvar mercado</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card" data-admin-content>
       <h2 class="section-title">Cadastrar preço</h2>
       <form onsubmit="cadastrarPreco(event)">
-        <input id="precoProdutoId" type="number" placeholder="ID do produto" required>
-        <input id="precoMercadoId" type="number" placeholder="ID do mercado" required>
-        <input id="precoValor" type="number" step="0.01" placeholder="Valor" required>
-        <input id="precoData" type="date" required>
-        <textarea id="precoObs" placeholder="Observação"></textarea>
+        <div class="grid grid-2">
+          <div>
+            <label for="precoProdutoId">Produto</label>
+            <select id="precoProdutoId" required></select>
+          </div>
+          <div>
+            <label for="precoMercadoId">Mercado</label>
+            <select id="precoMercadoId" required></select>
+          </div>
+        </div>
+
+        <div class="grid grid-2">
+          <div>
+            <label for="precoValor">Valor</label>
+            <input id="precoValor" type="number" step="0.01" placeholder="0,00" required>
+          </div>
+          <div>
+            <label for="precoData">Data da coleta</label>
+            <input id="precoData" type="date" required>
+          </div>
+        </div>
+
+        <label for="precoObs">Observação</label>
+        <textarea id="precoObs" placeholder="Ex.: promoção de fim de semana"></textarea>
         <button class="btn" type="submit">Salvar preço</button>
       </form>
     </div>
   </div>
   <script src="../js/theme.js"></script>
+  <script src="../js/app.js"></script>
   <script src="../js/api.js"></script>
   <script src="../js/admin.js"></script>
 </body>

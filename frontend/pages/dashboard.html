@@ -19,19 +19,60 @@
       <a href="../index.html">Início</a>
       <a href="produtos.html">Produtos</a>
       <a href="lista-compras.html">Lista de Compras</a>
-      <a href="dashboard.html" class="active">Dashboard</a>
+      <a href="dashboard.html" class="active" data-auth-only>Dashboard</a>
+      <a href="admin.html" data-nav-admin style="display:none">Admin</a>
+      <span class="nav-user" data-user-name>Visitante</span>
       <button id="toggleTema" class="theme-toggle" type="button"></button>
     </nav>
   </header>
 
   <div class="container">
+    <div class="grid grid-3">
+      <div class="card">
+        <p class="small">Usuário</p>
+        <div class="kpi" id="dashboardNome">Visitante</div>
+        <span class="pill" id="dashboardPerfil">VISITANTE</span>
+      </div>
+      <div class="card">
+        <p class="small">Itens na lista</p>
+        <div class="kpi" id="dashboardListas">0</div>
+        <p class="small">Total de produtos salvos no navegador.</p>
+      </div>
+      <div class="card">
+        <p class="small">Buscas recentes</p>
+        <div class="kpi" id="dashboardBuscas">0</div>
+        <p class="small" id="dashboardStatus">Sem login salvo</p>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h2 class="section-title">Últimas buscas</h2>
+        <ul id="dashboardUltimasBuscas"></ul>
+      </div>
+      <div class="card">
+        <h2 class="section-title">Itens da sua lista</h2>
+        <ul id="dashboardItensLista"></ul>
+      </div>
+    </div>
+
     <div class="card">
-      <h2 class="section-title">Dashboard</h2>
-      <p>Login realizado com sucesso. A partir daqui você pode evoluir para mostrar histórico, últimas buscas e listas salvas.</p>
-      <button class="btn" onclick="logout()">Sair</button>
+      <div class="toolbar">
+        <div>
+          <h2 class="section-title">Ações rápidas</h2>
+          <p class="small">Use seu painel para navegar mais rápido entre as funções principais.</p>
+        </div>
+        <div class="inline-actions">
+          <a class="btn" href="produtos.html">Buscar produtos</a>
+          <a class="btn btn-secondary" href="lista-compras.html">Abrir lista</a>
+          <button class="btn btn-ghost" onclick="logout()">Sair</button>
+        </div>
+      </div>
     </div>
   </div>
   <script src="../js/theme.js"></script>
+  <script src="../js/app.js"></script>
   <script src="../js/auth.js"></script>
+  <script src="../js/dashboard.js"></script>
 </body>
 </html>
