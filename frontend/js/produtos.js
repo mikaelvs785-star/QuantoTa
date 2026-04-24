@@ -1,3 +1,40 @@
+let todosProdutos = [];
+const categoryIcons = {
+  frutas: '🍎',
+  legumes: '🥕',
+  bebidas: '🥛',
+  padaria: '🥖',
+  carnes: '🥩',
+  mercearia: '🛒',
+  default: '📦'
+};
+
+function getCategoryIcon(category) {
+  const key = String(category || '').trim().toLowerCase();
+  return categoryIcons[key] || categoryIcons.default;
+}
+
+function popularCategorias(produtos) {
+  const select = document.getElementById('filtroCategoria');
+  if (!select) return;
+  const categorias = [...new Set(produtos.map(p => p.categoria).filter(Boolean))].sort();
+  select.innerHTML = '<option value="">Todas as categorias</option>' + categorias.map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('');
+}
+
+function renderRecentSearches() {
+  const container = document.getElementById('ultimasBuscas');
+  if (!container) return;
+  const buscas = getRecentSearches();
+  container.innerHTML = buscas.length
+    ? buscas.map(busca => `<button class="chip" type="button" onclick='aplicarBuscaRecente(${JSON.stringify(String(busca))})'>${escapeHtml(busca)}</button>`).join('')
+    : '<span class="small">Suas últimas buscas aparecerão aqui.</span>';
+}
+
+function aplicarBuscaRecente(termo) {
+  document.getElementById('busca').value = termo;
+  buscarProdutos();
+}
+
 async function buscarProdutos() {
   const termo = document.getElementById('busca').value.trim();
   const categoria = document.getElementById('filtroCategoria').value;
@@ -63,7 +100,7 @@ function usarBusca(valor) {
 }
 
 function verComparacao(id, nome) {
-  localStorage.setItem('produtoSelecionado', JSON.stringify({ id, nome }));
+  localStorage.setItem(APP_STORAGE_KEYS.produtoSelecionado, JSON.stringify({ id, nome }));
   window.location.href = 'comparacao.html';
 }
 
