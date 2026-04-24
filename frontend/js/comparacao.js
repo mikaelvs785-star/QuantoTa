@@ -1,5 +1,5 @@
 async function carregarComparacao() {
-  const produto = JSON.parse(localStorage.getItem('produtoSelecionado'));
+  const produto = JSON.parse(localStorage.getItem(APP_STORAGE_KEYS.produtoSelecionado));
   const titulo = document.getElementById('tituloProduto');
   const tabela = document.getElementById('corpoComparacao');
   const resumo = document.getElementById('resumoComparacao');
@@ -11,6 +11,7 @@ async function carregarComparacao() {
   }
 
   titulo.textContent = `Comparação de preços: ${produto.nome}`;
+  setStatusMessage('comparacaoStatus', 'Carregando preços...', 'info');
 
   try {
     const precos = await apiRequest(`/precos/produto/${produto.id}`);
@@ -47,6 +48,8 @@ async function carregarComparacao() {
       `;
       tabela.appendChild(linha);
     });
+
+    setStatusMessage('comparacaoStatus', `${precos.length} mercado(s) comparado(s).`, 'success');
   } catch (error) {
     showMessage('comparacaoFeedback', error.message, 'error');
   }

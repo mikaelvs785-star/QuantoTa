@@ -49,6 +49,8 @@ async function cadastrarProduto(event) {
 
 async function cadastrarMercado(event) {
   event.preventDefault();
+  setStatusMessage('adminStatus', 'Salvando mercado...', 'info');
+
   const payload = {
     nome: document.getElementById('mercadoNome').value,
     endereco: document.getElementById('mercadoEndereco').value,

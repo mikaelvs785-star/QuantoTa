@@ -1,6 +1,5 @@
 package br.com.quantota.service;
 
-import br.com.quantota.exception.ResourceNotFoundException;
 import br.com.quantota.model.Mercado;
 import br.com.quantota.repository.MercadoRepository;
 import org.springframework.stereotype.Service;

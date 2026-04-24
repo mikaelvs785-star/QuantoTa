@@ -1,59 +1,45 @@
 package br.com.quantota.service;
 
-import br.com.quantota.dto.CadastroUsuarioDTO;
-import br.com.quantota.enums.PerfilUsuario;
-import br.com.quantota.exception.BusinessRuleException;
-import br.com.quantota.exception.ResourceNotFoundException;
-import br.com.quantota.model.Usuario;
-import br.com.quantota.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class UsuarioService {
 
-    private final UsuarioRepository usuarioRepository;
+    // 🔥 Simulação de banco em memória
+    private final Map<String, String> usuarios = new HashMap<>();
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
-    }
+    // 📝 Cadastrar usuário
+    public void cadastrar(String email, String senha) {
 
-    public Usuario cadastrar(CadastroUsuarioDTO dto) {
-        if (usuarioRepository.existsByEmail(dto.getEmail())) {
-            throw new BusinessRuleException("Já existe um usuário com esse email.");
+        if (usuarios.containsKey(email)) {
+            throw new RuntimeException("Usuário já existe!");
         }
 
-        PerfilUsuario perfil = dto.getPerfil() == null ? PerfilUsuario.USER : dto.getPerfil();
-        boolean ativo = perfil != PerfilUsuario.VENDEDOR;
+        usuarios.put(email, senha);
 
-        Usuario usuario = Usuario.builder()
-                .nome(dto.getNome())
-                .email(dto.getEmail())
-                .senha(dto.getSenha())
-                .telefone(dto.getTelefone())
-                .perfil(perfil)
-                .ativo(ativo)
-                .build();
-
-        return usuarioRepository.save(usuario);
+        System.out.println("Usuário cadastrado: " + email);
     }
 
-    public List<Usuario> listarTodos() {
-        return usuarioRepository.findAll();
-    }
+    // 🔐 Validar login
+    public boolean autenticar(String email, String senha) {
 
-    public Usuario buscarPorId(Long id) {
-        return usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
-    }
+        if (!usuarios.containsKey(email)) {
+            throw new RuntimeException("Usuário não encontrado!");
+        }
 
-    public Usuario buscarPorEmail(String email) {
-        return usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
-    }
+        String senhaSalva = usuarios.get(email);
 
-    public List<Usuario> listarVendedores() {
-        return usuarioRepository.findByPerfil(PerfilUsuario.VENDEDOR);
+        if (!senhaSalva.equals(senha)) {
+            throw new RuntimeException("Senha inválida!");
+        }
+
+        return true;
+    }
+    public String buscarPorId(Long id) {
+        // simulação
+        return "Usuário com ID: " + id;
     }
 }

@@ -1,3 +1,37 @@
+function getListaLocal() {
+  return JSON.parse(localStorage.getItem(APP_STORAGE_KEYS.lista)) || [];
+}
+
+function saveListaLocal(lista) {
+  localStorage.setItem(APP_STORAGE_KEYS.lista, JSON.stringify(lista));
+}
+
+function alterarQuantidade(produtoId, delta) {
+  const lista = getListaLocal();
+  const item = lista.find(entry => entry.produtoId === produtoId);
+  if (!item) return;
+  item.quantidade += delta;
+  if (item.quantidade <= 0) {
+    saveListaLocal(lista.filter(entry => entry.produtoId !== produtoId));
+  } else {
+    saveListaLocal(lista);
+  }
+  carregarLista();
+}
+
+function removerItem(produtoId) {
+  const lista = getListaLocal().filter(item => item.produtoId !== produtoId);
+  saveListaLocal(lista);
+  showToast('Item removido da lista.', 'info');
+  carregarLista();
+}
+
+function limparLista() {
+  saveListaLocal([]);
+  showToast('Lista limpa com sucesso.', 'info');
+  carregarLista();
+}
+
 async function carregarLista() {
   ensureListaTemporaria();
   const lista = JSON.parse(localStorage.getItem('listaTemporaria')) || [];

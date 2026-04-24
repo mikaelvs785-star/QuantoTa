@@ -2,8 +2,6 @@ package br.com.quantota.service;
 
 import br.com.quantota.dto.CadastroPrecoDTO;
 import br.com.quantota.enums.PerfilUsuario;
-import br.com.quantota.exception.BusinessRuleException;
-import br.com.quantota.exception.ResourceNotFoundException;
 import br.com.quantota.model.Mercado;
 import br.com.quantota.model.Preco;
 import br.com.quantota.model.Produto;
