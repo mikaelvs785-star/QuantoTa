@@ -1,6 +1,9 @@
 package br.com.quantota.service;
 
+import br.com.quantota.dto.CadastroUsuarioDTO;
 import br.com.quantota.enums.PerfilUsuario;
+import br.com.quantota.exception.BusinessRuleException;
+import br.com.quantota.exception.ResourceNotFoundException;
 import br.com.quantota.model.Usuario;
 import br.com.quantota.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
@@ -16,13 +19,23 @@ public class UsuarioService {
         this.usuarioRepository = usuarioRepository;
     }
 
-    public Usuario cadastrar(Usuario usuario) {
-        if (usuarioRepository.existsByEmail(usuario.getEmail())) {
-            throw new RuntimeException("Já existe um usuário com esse email.");
+    public Usuario cadastrar(CadastroUsuarioDTO dto) {
+        if (usuarioRepository.existsByEmail(dto.getEmail())) {
+            throw new BusinessRuleException("Já existe um usuário com esse email.");
         }
-        if (usuario.getPerfil() == null) {
-            usuario.setPerfil(PerfilUsuario.USER);
-        }
+
+        PerfilUsuario perfil = dto.getPerfil() == null ? PerfilUsuario.USER : dto.getPerfil();
+        boolean ativo = perfil != PerfilUsuario.VENDEDOR;
+
+        Usuario usuario = Usuario.builder()
+                .nome(dto.getNome())
+                .email(dto.getEmail())
+                .senha(dto.getSenha())
+                .telefone(dto.getTelefone())
+                .perfil(perfil)
+                .ativo(ativo)
+                .build();
+
         return usuarioRepository.save(usuario);
     }
 
@@ -32,6 +45,15 @@ public class UsuarioService {
 
     public Usuario buscarPorId(Long id) {
         return usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+    }
+
+    public Usuario buscarPorEmail(String email) {
+        return usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+    }
+
+    public List<Usuario> listarVendedores() {
+        return usuarioRepository.findByPerfil(PerfilUsuario.VENDEDOR);
     }
 }

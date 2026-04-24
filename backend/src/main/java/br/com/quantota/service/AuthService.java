@@ -10,9 +10,12 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final UsuarioRepository usuarioRepository;
+    private final SolicitacaoVendedorService solicitacaoVendedorService;
 
-    public AuthService(UsuarioRepository usuarioRepository) {
+    public AuthService(UsuarioRepository usuarioRepository,
+                       SolicitacaoVendedorService solicitacaoVendedorService) {
         this.usuarioRepository = usuarioRepository;
+        this.solicitacaoVendedorService = solicitacaoVendedorService;
     }
 
     public LoginResponseDTO login(LoginRequestDTO request) {
@@ -28,7 +31,9 @@ public class AuthService {
                 .nome(usuario.getNome())
                 .email(usuario.getEmail())
                 .perfil(usuario.getPerfil())
-                .mensagem("Login realizado com sucesso.")
+                .ativo(usuario.getAtivo())
+                .statusSolicitacao(solicitacaoVendedorService.buscarStatusPorUsuario(usuario.getId()))
+                .mensagem(Boolean.TRUE.equals(usuario.getAtivo()) ? "Login realizado com sucesso." : "Conta existente, mas ainda não liberada.")
                 .build();
     }
 }

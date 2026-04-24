@@ -19,4 +19,12 @@ public interface PrecoRepository extends JpaRepository<Preco, Long> {
               and p.mercado.ativo = true
             """)
     Optional<BigDecimal> buscarMenorPrecoPorProduto(Long produtoId);
+
+    @Query("""
+            select p
+            from Preco p
+            where p.mercado.id = :mercadoId
+            order by p.dataColeta desc
+            """)
+    List<Preco> findByMercadoIdOrderByDataColetaDesc(Long mercadoId);
 }

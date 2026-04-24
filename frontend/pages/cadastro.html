@@ -1,43 +1,4 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cadastro - QuantoTá?</title>
-  <link rel="stylesheet" href="../css/style.css">
-</head>
-<body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-mark">🛒</div>
-      <div class="brand-text">
-        <h2>QuantoTá?</h2>
-        <small>Crie sua conta</small>
-      </div>
-    </div>
-    <nav class="nav-links">
-      <a href="../index.html">Início</a>
-      <a href="login.html">Login</a>
-      <a href="cadastro.html" class="active">Cadastro</a>
-      <a href="produtos.html">Produtos</a>
-      <button id="toggleTema" class="theme-toggle" type="button"></button>
-    </nav>
-  </header>
-
-  <div class="container">
-    <div class="card">
-      <h2 class="section-title">Criar conta</h2>
-      <p class="small">Faça seu cadastro para montar listas e acompanhar preços.</p>
-      <form onsubmit="cadastrarUsuario(event)">
-        <input id="nome" placeholder="Nome" required>
-        <input id="email" type="email" placeholder="Email" required>
-        <input id="senha" type="password" placeholder="Senha" required>
-        <button class="btn" type="submit">Cadastrar</button>
-      </form>
-    </div>
-  </div>
-  <script src="../js/theme.js"></script>
-  <script src="../js/api.js"></script>
-  <script src="../js/auth.js"></script>
-</body>
-</html>
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Cadastro - QuantoTá?</title><link rel="stylesheet" href="../css/style.css"></head><body>
+<header class="topbar"><div class="brand"><div class="brand-mark">🛒</div><div class="brand-text"><h2>QuantoTá?</h2><small>Crie sua conta</small></div></div><nav class="nav-links"><div id="menuDinamico" data-root="../"></div><button id="toggleTema" class="theme-toggle" type="button"></button></nav></header>
+<div class="container"><div class="card"><h2 class="section-title">Cadastro</h2><p class="small">Escolha se deseja entrar como cliente comum ou solicitar acesso como vendedor.</p><div id="cadastroFeedback" class="notice hidden"></div><form onsubmit="cadastrarUsuario(event)"><div class="form-grid"><div><label for="nome">Nome</label><input id="nome" required></div><div><label for="email">Email</label><input id="email" type="email" required></div><div><label for="senha">Senha</label><input id="senha" type="password" required></div><div><label for="telefone">Telefone</label><input id="telefone"></div><div><label for="tipoCadastro">Tipo de cadastro</label><select id="tipoCadastro" onchange="alternarCamposVendedor()"><option value="USER">Cliente / usuário</option><option value="VENDEDOR">Solicitar acesso como vendedor</option></select></div></div><div id="camposVendedor" class="hidden"><div class="card"><h3 class="section-title">Dados para aprovação do vendedor</h3><div class="form-grid"><div><label for="nomeMercado">Nome do mercado</label><input id="nomeMercado"></div><div><label for="cnpjMercado">CNPJ</label><input id="cnpjMercado"></div><div><label for="cargoVendedor">Cargo</label><input id="cargoVendedor"></div><div><label for="telefoneMercado">Telefone do mercado</label><input id="telefoneMercado"></div><div><label for="enderecoMercado">Endereço</label><input id="enderecoMercado"></div><div><label for="bairroMercado">Bairro</label><input id="bairroMercado"></div><div><label for="cidadeMercado">Cidade</label><input id="cidadeMercado"></div><div><label for="estadoMercado">Estado</label><input id="estadoMercado"></div></div><div><label for="observacaoVendedor">Observação</label><textarea id="observacaoVendedor" placeholder="Conte um pouco sobre o mercado e a função que você exerce."></textarea></div></div></div><div class="toolbar"><button class="btn" type="submit">Enviar cadastro</button><a class="btn btn-outline" href="login.html">Já tenho conta</a></div></form></div></div>
+<script src="../js/api.js"></script><script src="../js/theme.js"></script><script src="../js/layout.js"></script><script src="../js/auth.js"></script></body></html>

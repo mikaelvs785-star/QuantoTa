@@ -1,27 +1,51 @@
 async function cadastrarUsuario(event) {
   event.preventDefault();
+  clearMessage('cadastroFeedback');
 
   const payload = {
     nome: document.getElementById('nome').value,
     email: document.getElementById('email').value,
     senha: document.getElementById('senha').value,
-    perfil: 'USER'
+    telefone: document.getElementById('telefone').value,
+    perfil: document.getElementById('tipoCadastro').value === 'VENDEDOR' ? 'VENDEDOR' : 'USER'
   };
 
   try {
-    await apiRequest('/usuarios', {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    });
-    alert('Cadastro realizado com sucesso!');
-    window.location.href = 'login.html';
+    if (payload.perfil === 'VENDEDOR') {
+      const vendedorPayload = {
+        ...payload,
+        nomeMercado: document.getElementById('nomeMercado').value,
+        cnpjMercado: document.getElementById('cnpjMercado').value,
+        enderecoMercado: document.getElementById('enderecoMercado').value,
+        bairro: document.getElementById('bairroMercado').value,
+        cidade: document.getElementById('cidadeMercado').value,
+        estado: document.getElementById('estadoMercado').value,
+        telefoneMercado: document.getElementById('telefoneMercado').value,
+        cargoVendedor: document.getElementById('cargoVendedor').value,
+        observacao: document.getElementById('observacaoVendedor').value,
+      };
+      await apiRequest('/auth/cadastro-vendedor', {
+        method: 'POST',
+        body: JSON.stringify(vendedorPayload)
+      });
+      showMessage('cadastroFeedback', 'Solicitação enviada. Aguarde a aprovação do admin para cadastrar preços.', 'success');
+    } else {
+      await apiRequest('/usuarios', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      showMessage('cadastroFeedback', 'Cadastro realizado com sucesso. Você já pode fazer login.', 'success');
+    }
+    event.target.reset();
+    alternarCamposVendedor();
   } catch (error) {
-    alert('Erro ao cadastrar: ' + error.message);
+    showMessage('cadastroFeedback', error.message, 'error');
   }
 }
 
 async function fazerLogin(event) {
   event.preventDefault();
+  clearMessage('loginFeedback');
 
   const payload = {
     email: document.getElementById('email').value,
@@ -33,15 +57,19 @@ async function fazerLogin(event) {
       method: 'POST',
       body: JSON.stringify(payload)
     });
-    localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
-    alert(usuario.mensagem);
-    window.location.href = 'dashboard.html';
+    salvarUsuarioLogado(usuario);
+    showMessage('loginFeedback', usuario.mensagem, usuario.ativo ? 'success' : 'warning');
+    setTimeout(() => window.location.href = 'dashboard.html', 500);
   } catch (error) {
-    alert('Falha no login: ' + error.message);
+    showMessage('loginFeedback', error.message, 'error');
   }
 }
 
-function logout() {
-  localStorage.removeItem('usuarioLogado');
-  window.location.href = '../index.html';
+function alternarCamposVendedor() {
+  const tipo = document.getElementById('tipoCadastro')?.value;
+  const box = document.getElementById('camposVendedor');
+  if (!box) return;
+  box.classList.toggle('hidden', tipo !== 'VENDEDOR');
 }
+
+document.addEventListener('DOMContentLoaded', alternarCamposVendedor);

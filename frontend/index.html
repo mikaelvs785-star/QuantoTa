@@ -15,31 +15,39 @@
         <small>Compare e economize no mercado</small>
       </div>
     </div>
-
     <nav class="nav-links">
-      <a href="index.html" class="active">Início</a>
-      <a href="pages/login.html">Login</a>
-      <a href="pages/cadastro.html">Cadastro</a>
-      <a href="pages/produtos.html">Produtos</a>
-      <a href="pages/lista-compras.html">Lista de Compras</a>
-      <a href="pages/admin.html">Admin</a>
+      <div id="menuDinamico" data-root=""></div>
       <button id="toggleTema" class="theme-toggle" type="button"></button>
     </nav>
   </header>
 
   <main class="hero">
-    <section class="hero-panel">
-      <span class="badge">Comparador de preços</span>
-      <h2>Encontre onde está mais barato antes de sair de casa</h2>
-      <p>Pesquise produtos como banana, arroz, leite, café e veja em quais mercados eles estão com o melhor preço.</p>
-      <div class="toolbar">
-        <a class="btn" href="pages/produtos.html">Começar busca</a>
-        <a class="btn btn-secondary" href="pages/cadastro.html">Criar conta</a>
-      </div>
-    </section>
+    <div class="hero-grid">
+      <section class="hero-panel">
+        <span class="badge">Comparador de preços</span>
+        <h2>Encontre o melhor preço antes de sair de casa</h2>
+        <p>Pesquise produtos como banana, arroz, leite, café e veja em quais mercados eles estão mais baratos. Monte sua lista e acompanhe a economia possível.</p>
+        <div class="toolbar">
+          <a class="btn" href="pages/produtos.html">Começar busca</a>
+          <a class="btn btn-secondary" href="pages/cadastro.html">Criar conta</a>
+        </div>
+      </section>
+      <aside class="card">
+        <h3 class="section-title">Como funciona</h3>
+        <ul>
+          <li>pesquise um produto</li>
+          <li>compare os preços em mercados ativos</li>
+          <li>adicione à sua lista de compras</li>
+          <li>acompanhe a melhor oferta</li>
+        </ul>
+        <div class="notice success">Vendedores precisam de aprovação do admin antes de cadastrar preços.</div>
+        <p id="statusUsuario" class="small"></p>
+      </aside>
+    </div>
   </main>
 
-  <script src="js/theme.js"></script>
   <script src="js/api.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/layout.js"></script>
 </body>
 </html>
