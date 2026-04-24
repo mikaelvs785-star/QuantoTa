@@ -8,6 +8,7 @@ import br.com.quantota.model.Produto;
 import br.com.quantota.model.Usuario;
 import br.com.quantota.repository.PrecoRepository;
 import org.springframework.stereotype.Service;
+import br.com.quantota.exception.ResourceNotFoundException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

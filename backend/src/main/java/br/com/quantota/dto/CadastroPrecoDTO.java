@@ -1,32 +1,63 @@
 package br.com.quantota.dto;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 public class CadastroPrecoDTO {
 
-    private String produto;
-    private Double preco;
-    private String estabelecimento;
+    private Long produtoId;
+    private Long mercadoId;
+    private Long usuarioCadastroId;
+    private BigDecimal valor;
+    private LocalDateTime dataColeta;
+    private String observacao;
 
-    public String getProduto() {
-        return produto;
+    public Long getProdutoId() {
+        return produtoId;
     }
 
-    public void setProduto(String produto) {
-        this.produto = produto;
+    public void setProdutoId(Long produtoId) {
+        this.produtoId = produtoId;
     }
 
-    public Double getPreco() {
-        return preco;
+    public Long getMercadoId() {
+        return mercadoId;
     }
 
-    public void setPreco(Double preco) {
-        this.preco = preco;
+    public void setMercadoId(Long mercadoId) {
+        this.mercadoId = mercadoId;
     }
 
-    public String getEstabelecimento() {
-        return estabelecimento;
+    public Long getUsuarioCadastroId() {
+        return usuarioCadastroId;
     }
 
-    public void setEstabelecimento(String estabelecimento) {
-        this.estabelecimento = estabelecimento;
+    public void setUsuarioCadastroId(Long usuarioCadastroId) {
+        this.usuarioCadastroId = usuarioCadastroId;
+    }
+
+    public BigDecimal getValor() {
+        return valor;
+    }
+
+    public void setValor(BigDecimal valor) {
+        this.valor = valor;
+    }
+
+    public LocalDate getDataColeta() {
+        return dataColeta;
+    }
+
+    public void setDataColeta(LocalDateTime dataColeta) {
+        this.dataColeta = dataColeta;
+    }
+
+    public String getObservacao() {
+        return observacao;
+    }
+
+    public void setObservacao(String observacao) {
+        this.observacao = observacao;
     }
 }
