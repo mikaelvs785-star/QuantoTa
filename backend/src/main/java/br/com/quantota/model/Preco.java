@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "precos")
@@ -28,6 +29,10 @@ public class Preco {
     @JoinColumn(name = "mercado_id")
     private Mercado mercado;
 
+    @ManyToOne
+    @JoinColumn(name = "usuario_cadastro_id")
+    private Usuario usuarioCadastro;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal valor;
 
@@ -36,4 +41,7 @@ public class Preco {
     private LocalDate dataColeta;
 
     private String observacao;
+
+    private LocalDateTime dataCadastro;
+    private LocalDateTime dataAtualizacao;
 }

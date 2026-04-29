@@ -3,6 +3,7 @@ package br.com.quantota.service;
 import br.com.quantota.model.Mercado;
 import br.com.quantota.repository.MercadoRepository;
 import org.springframework.stereotype.Service;
+import br.com.quantota.exception.ResourceNotFoundException;
 
 import java.util.List;
 
@@ -21,7 +22,7 @@ public class MercadoService {
 
     public Mercado buscarPorId(Long id) {
         return mercadoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Mercado não encontrado."));
+                .orElseThrow(() -> new ResourceNotFoundException("Mercado não encontrado."));
     }
 
     public Mercado salvar(Mercado mercado) {

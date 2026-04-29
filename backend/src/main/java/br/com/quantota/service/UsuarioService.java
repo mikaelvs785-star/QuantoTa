@@ -1,37 +1,68 @@
 package br.com.quantota.service;
 
-import br.com.quantota.enums.PerfilUsuario;
+import br.com.quantota.dto.CadastroUsuarioDTO;
+import br.com.quantota.exception.ResourceNotFoundException;
 import br.com.quantota.model.Usuario;
-import br.com.quantota.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
 
 @Service
 public class UsuarioService {
 
-    private final UsuarioRepository usuarioRepository;
+    // 🔥 Simulação de banco em memória
+    private final Map<Long, Usuario> usuarios = new HashMap<>();
+    private Long sequence = 1L;
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
+    // 📝 CADASTRAR USUÁRIO
+    public Usuario cadastrar(CadastroUsuarioDTO dto) {
+
+        Usuario usuario = new Usuario(
+                sequence++,
+                dto.getNome(),
+                dto.getEmail()
+        );
+
+        usuarios.put(usuario.getId(), usuario);
+
+        return usuario;
     }
 
-    public Usuario cadastrar(Usuario usuario) {
-        if (usuarioRepository.existsByEmail(usuario.getEmail())) {
-            throw new RuntimeException("Já existe um usuário com esse email.");
-        }
-        if (usuario.getPerfil() == null) {
-            usuario.setPerfil(PerfilUsuario.USER);
-        }
-        return usuarioRepository.save(usuario);
-    }
-
-    public List<Usuario> listarTodos() {
-        return usuarioRepository.findAll();
-    }
-
+    // 🔍 BUSCAR POR ID
     public Usuario buscarPorId(Long id) {
-        return usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+
+        Usuario usuario = usuarios.get(id);
+
+        if (usuario == null) {
+            throw new ResourceNotFoundException("Usuário não encontrado com ID: " + id);
+        }
+
+        return usuario;
+    }
+
+    // 📋 LISTAR TODOS
+    public List<Usuario> listarTodos() {
+        return new ArrayList<>(usuarios.values());
+    }
+
+    // ❌ DELETAR USUÁRIO
+    public void deletar(Long id) {
+
+        if (!usuarios.containsKey(id)) {
+            throw new ResourceNotFoundException("Usuário não encontrado com ID: " + id);
+        }
+
+        usuarios.remove(id);
+    }
+
+    // ✏️ ATUALIZAR USUÁRIO
+    public Usuario atualizar(Long id, CadastroUsuarioDTO dto) {
+
+        Usuario usuario = buscarPorId(id);
+
+        usuario.setNome(dto.getNome());
+        usuario.setEmail(dto.getEmail());
+
+        return usuario;
     }
 }

@@ -3,6 +3,7 @@ package br.com.quantota.service;
 import br.com.quantota.model.Produto;
 import br.com.quantota.repository.ProdutoRepository;
 import org.springframework.stereotype.Service;
+import br.com.quantota.exception.ResourceNotFoundException;
 
 import java.util.List;
 
@@ -21,7 +22,7 @@ public class ProdutoService {
 
     public Produto buscarPorId(Long id) {
         return produtoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado."));
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado."));
     }
 
     public List<Produto> buscarPorNome(String nome) {
