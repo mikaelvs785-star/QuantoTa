@@ -1,8 +1,14 @@
 const API_BASE_URL = localStorage.getItem('apiBaseUrl') || 'http://localhost:8080';
 
 async function apiRequest(endpoint, options = {}) {
+  const usuario = getUsuarioLogado();
+  const perfil = usuario?.perfil || usuario?.role || '';
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Usuario-Perfil': perfil,
+      ...(options.headers || {})
+    },
     ...options,
   });
 

@@ -1,17 +1,23 @@
 let todosProdutos = [];
 const categoryIcons = {
-  frutas: '🍎',
-  legumes: '🥕',
-  bebidas: '🥛',
-  padaria: '🥖',
-  carnes: '🥩',
-  mercearia: '🛒',
-  default: '📦'
+  frutas: 'frutas',
+  legumes: 'legumes',
+  bebidas: 'bebidas',
+  padaria: 'padaria',
+  carnes: 'carnes',
+  mercearia: 'mercearia',
+  default: 'produto'
 };
 
 function getCategoryIcon(category) {
   const key = String(category || '').trim().toLowerCase();
   return categoryIcons[key] || categoryIcons.default;
+}
+
+function usuarioPodeApagarProdutos() {
+  const usuario = getUsuarioLogado();
+  const perfil = usuario?.perfil || usuario?.role;
+  return perfil === 'ADMIN';
 }
 
 function popularCategorias(produtos) {
@@ -27,7 +33,7 @@ function renderRecentSearches() {
   const buscas = getRecentSearches();
   container.innerHTML = buscas.length
     ? buscas.map(busca => `<button class="chip" type="button" onclick='aplicarBuscaRecente(${JSON.stringify(String(busca))})'>${escapeHtml(busca)}</button>`).join('')
-    : '<span class="small">Suas últimas buscas aparecerão aqui.</span>';
+    : '<span class="small">Suas ultimas buscas aparecerao aqui.</span>';
 }
 
 function aplicarBuscaRecente(termo) {
@@ -37,12 +43,14 @@ function aplicarBuscaRecente(termo) {
 
 async function buscarProdutos() {
   const termo = document.getElementById('busca').value.trim();
-  const categoria = document.getElementById('filtroCategoria').value;
+  const categoria = document.getElementById('filtroCategoria')?.value || '';
   const endpoint = termo ? `/produtos/buscar?nome=${encodeURIComponent(termo)}` : '/produtos';
 
   clearMessage('produtosFeedback');
   try {
     let produtos = await apiRequest(endpoint);
+    todosProdutos = produtos;
+    popularCategorias(todosProdutos);
     if (categoria) produtos = produtos.filter(produto => (produto.categoria || '').toLowerCase() === categoria.toLowerCase());
     renderizarProdutos(produtos);
 
@@ -69,20 +77,48 @@ function renderizarProdutos(produtos) {
   produtos.forEach(produto => {
     const card = document.createElement('div');
     card.className = 'card result-card';
+    const nomeProduto = escapeHtml(produto.nome);
+    const nomeProdutoJson = JSON.stringify(produto.nome || '');
+    const botaoApagar = usuarioPodeApagarProdutos()
+      ? `<button class="btn btn-danger" type="button" onclick='apagarProduto(${produto.id}, ${nomeProdutoJson})'>Apagar</button>`
+      : '';
+
     card.innerHTML = `
       <div class="card-header">
         <div>
-          <span class="rank-badge">${produto.categoria || 'Sem categoria'}</span>
-          <h3>${produto.nome}</h3>
+          <span class="rank-badge">${escapeHtml(produto.categoria || 'Sem categoria')}</span>
+          <h3>${nomeProduto}</h3>
         </div>
-        <button class="btn btn-outline" onclick="verComparacao(${produto.id}, '${produto.nome.replace(/'/g, "\'")}')">Ver preços</button>
+        <div class="button-group">
+          <button class="btn btn-outline" type="button" onclick='verComparacao(${produto.id}, ${nomeProdutoJson})'>Ver precos</button>
+          ${botaoApagar}
+        </div>
       </div>
-      <p><strong>Marca:</strong> ${produto.marca || '-'}</p>
-      <p><strong>Unidade:</strong> ${produto.unidadeMedida || '-'}</p>
-      <p class="small">${produto.descricao || 'Sem descrição cadastrada.'}</p>
+      <p><strong>Marca:</strong> ${escapeHtml(produto.marca || '-')}</p>
+      <p><strong>Unidade:</strong> ${escapeHtml(produto.unidadeMedida || '-')}</p>
+      <p class="small">${escapeHtml(produto.descricao || 'Sem descricao cadastrada.')}</p>
     `;
     container.appendChild(card);
   });
+}
+
+async function apagarProduto(id, nome) {
+  if (!usuarioPodeApagarProdutos()) {
+    showMessage('produtosFeedback', 'Apenas administradores podem apagar produtos.', 'error');
+    return;
+  }
+
+  const confirmado = confirm(`Deseja apagar o produto "${nome}"?`);
+  if (!confirmado) return;
+
+  clearMessage('produtosFeedback');
+  try {
+    await apiRequest(`/produtos/${id}`, { method: 'DELETE' });
+    showMessage('produtosFeedback', 'Produto apagado com sucesso.', 'success');
+    buscarProdutos();
+  } catch (error) {
+    showMessage('produtosFeedback', error.message, 'error');
+  }
 }
 
 function renderizarHistorico() {
@@ -90,7 +126,7 @@ function renderizarHistorico() {
   if (!alvo) return;
   const historico = JSON.parse(localStorage.getItem('ultimasBuscas') || '[]');
   alvo.innerHTML = historico.length
-    ? historico.map(item => `<button class="btn btn-outline" type="button" onclick="usarBusca('${item.replace(/'/g, "\'")}')">${item}</button>`).join(' ')
+    ? historico.map(item => `<button class="btn btn-outline" type="button" onclick='usarBusca(${JSON.stringify(item)})'>${escapeHtml(item)}</button>`).join(' ')
     : '<span class="small">Nenhuma busca recente ainda.</span>';
 }
 
@@ -100,7 +136,7 @@ function usarBusca(valor) {
 }
 
 function verComparacao(id, nome) {
-  localStorage.setItem(APP_STORAGE_KEYS.produtoSelecionado, JSON.stringify({ id, nome }));
+  localStorage.setItem('produtoSelecionado', JSON.stringify({ id, nome }));
   window.location.href = 'comparacao.html';
 }
 
@@ -110,4 +146,5 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('busca')?.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') buscarProdutos();
   });
+  document.getElementById('filtroCategoria')?.addEventListener('change', buscarProdutos);
 });

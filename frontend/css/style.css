@@ -142,6 +142,7 @@ tr:hover td { background: color-mix(in srgb, var(--primary) 4%, transparent); }
 .notice.error { border-color: color-mix(in srgb, var(--danger) 35%, var(--border)); }
 .notice.warning { border-color: color-mix(in srgb, var(--warning) 35%, var(--border)); }
 .card-header { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; }
+.button-group { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
 .result-card h3 { margin-top:0; }
 .rank-badge, .status-pill {
   display:inline-flex; align-items:center; padding:6px 10px; border-radius: 999px; font-weight:700; font-size: 12px;
