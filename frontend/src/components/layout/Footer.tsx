@@ -1,0 +1,1 @@
+export function Footer() { return <footer className="border-t px-6 py-4 text-center text-xs text-slate-500 dark:text-slate-400">© {new Date().getFullYear()} QuantoTá. Compare, economize e compre melhor.</footer>; }
