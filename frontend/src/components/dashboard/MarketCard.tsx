@@ -1,0 +1,5 @@
+import { MapPin, Package } from "lucide-react";
+import { DashboardCard } from "./DashboardCard";
+import { formatCurrency } from "@/lib/utils";
+import type { FavoriteMarket } from "@/types/dashboard";
+export function MarketCard({ market }: { market: FavoriteMarket }) { return <DashboardCard><div className="flex items-center gap-3"><span className="grid size-11 place-items-center rounded-xl bg-blue-50 font-black text-blue-600 dark:bg-blue-500/15">{market.name.slice(0, 1)}</span><div className="min-w-0"><h3 className="truncate font-bold">{market.name}</h3><p className="mt-1 flex items-center gap-1 text-xs text-slate-500"><Package className="size-3" /> {market.productCount} produtos {market.distance !== undefined && <><MapPin className="ml-1 size-3" /> {market.distance} km</>}</p></div></div><div className="mt-5 border-t pt-4"><p className="text-xs text-slate-500">Melhor preço encontrado</p><p className="mt-1 text-lg font-black text-emerald-600">{formatCurrency(market.bestPrice)}</p></div></DashboardCard>; }

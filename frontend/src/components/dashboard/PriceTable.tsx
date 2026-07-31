@@ -1,0 +1,8 @@
+import { Eye } from "lucide-react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { formatCurrency } from "@/lib/utils";
+import type { PriceRecord } from "@/types/dashboard";
+
+export function PriceTable({ prices }: { prices: PriceRecord[] }) { if (!prices.length) return <EmptyState title="Nenhum preço cadastrado" description="Cadastre produtos para começar a acompanhar preços." />; return <div className="overflow-x-auto"><table className="w-full min-w-160 text-left text-sm"><thead className="border-y text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-2 py-3 font-semibold">Produto</th><th className="px-2 py-3 font-semibold">Mercado</th><th className="px-2 py-3 font-semibold">Preço</th><th className="px-2 py-3 font-semibold">Data</th><th className="px-2 py-3 text-right font-semibold">Ações</th></tr></thead><tbody>{prices.map((price, index) => <motion.tr key={price.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * .04 }} className="border-b last:border-0"><td className="px-2 py-4 font-semibold">{price.product}</td><td className="px-2 py-4 text-slate-500">{price.market}</td><td className="px-2 py-4 font-bold">{formatCurrency(price.price)}</td><td className="px-2 py-4 text-slate-500">{new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(new Date(price.date))}</td><td className="px-2 py-4 text-right"><Button variant="ghost" size="icon" aria-label={`Ver preço de ${price.product}`}><Eye className="size-4" /></Button></td></motion.tr>)}</tbody></table></div>; }
