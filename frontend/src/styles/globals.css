@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* No Tailwind v4, o modo escuro precisa ser associado à classe gerenciada pelo next-themes. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-brand-50: #edfff4;
   --color-brand-100: #d4f9e2;
@@ -9,6 +12,8 @@
 }
 
 @layer base {
+  :root { color-scheme: light; }
+  .dark { color-scheme: dark; }
   * { @apply border-slate-200 dark:border-slate-800; }
   body { @apply min-w-80 bg-slate-50 font-sans text-slate-950 antialiased dark:bg-slate-950 dark:text-slate-50; }
   button, input { font: inherit; }

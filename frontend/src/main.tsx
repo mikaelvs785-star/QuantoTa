@@ -1,12 +1,14 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import { QueryProvider } from "./contexts/QueryProvider";
-import { ThemeProvider } from "./contexts/ThemeProvider";
+import { AuthProvider } from "./contexts/AuthContext";
+import { QueryProvider } from "./providers/QueryProvider";
+import { ThemeProvider } from "./providers/ThemeProvider";
+import "./services/interceptors";
 import "./styles/globals.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ThemeProvider><QueryProvider><App /></QueryProvider></ThemeProvider>
+    <ThemeProvider><QueryProvider><AuthProvider><App /></AuthProvider></QueryProvider></ThemeProvider>
   </React.StrictMode>
 );

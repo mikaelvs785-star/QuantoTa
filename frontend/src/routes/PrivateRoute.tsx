@@ -1,16 +1,11 @@
 import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
+import { Loading } from "@/components/ui/Loading";
+import { useAuth } from "@/hooks/useAuth";
 
-type Props = {
-  children: ReactNode;
-};
-
-export function PrivateRoute({ children }: Props) {
-  const isAuthenticated = true;
-
-  if (!isAuthenticated) {
-    return <Navigate to="/" replace />;
-  }
-
+export function PrivateRoute({ children }: { children: ReactNode }) {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return <Loading label="Verificando sessão..." />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
   return children;
 }
