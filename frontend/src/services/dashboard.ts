@@ -97,6 +97,39 @@ export async function getDashboard() {
   }
 }
 
-export async function getProdutos() { const { data } = await api.get<MonitoredProduct[]>("/produtos"); return data; }
-export async function getMercados() { const { data } = await api.get<FavoriteMarket[]>("/mercados"); return data; }
-export async function getPrecos() { const { data } = await api.get<PriceRecord[]>("/precos"); return data; }
+export async function getProdutos() {
+  const { data } = await api.get<BackendProduct[] | PayloadEnvelope<BackendProduct>>("/produtos");
+  return unwrapList<BackendProduct>(data).map((product) => ({
+    id: String(product.id),
+    name: product.nome,
+    imageUrl: undefined,
+    category: product.categoria ?? "Sem categoria",
+    priceCount: 0,
+    updatedAt: new Date().toISOString(),
+    status: product.ativo === false ? "INACTIVE" : "ACTIVE",
+    description: product.descricao,
+    barcode: undefined,
+  }));
+}
+
+export async function getMercados() {
+  const { data } = await api.get<BackendMarket[] | PayloadEnvelope<BackendMarket>>("/mercados");
+  return unwrapList<BackendMarket>(data).map((market) => ({
+    id: String(market.id),
+    name: market.nome,
+    productCount: 0,
+    bestPrice: 0,
+    distance: undefined,
+  }));
+}
+
+export async function getPrecos() {
+  const { data } = await api.get<BackendPrice[] | PayloadEnvelope<BackendPrice>>("/precos");
+  return unwrapList<BackendPrice>(data).map((price) => ({
+    id: String(price.id),
+    product: price.produto?.nome ?? "Produto",
+    market: price.mercado?.nome ?? "Mercado",
+    price: Number(price.valor ?? 0),
+    date: price.dataColeta ?? price.dataCadastro ?? new Date().toISOString(),
+  }));
+}

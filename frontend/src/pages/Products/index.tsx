@@ -16,6 +16,12 @@ import { useProdutos } from "@/hooks/useProdutos";
 import type { Product, ProductSort, ProductStatus } from "@/types/product";
 
 const PAGE_SIZE = 10;
+
+function getSafeTime(value?: string) {
+  const parsed = new Date(value ?? "");
+  return Number.isNaN(parsed.getTime()) ? Date.now() : parsed.getTime();
+}
+
 export default function Products() {
   const productsQuery = useProdutos();
   const removeProduct = useExcluirProduto();
@@ -28,7 +34,7 @@ export default function Products() {
   const filtered = useMemo(() => {
     const products = productsQuery.data?.content ?? [];
     const result = products.filter((product) => (!search || product.name.toLocaleLowerCase("pt-BR").includes(search.toLocaleLowerCase("pt-BR"))) && (!category || product.category === category) && (status === "ALL" || product.status === status));
-    return result.sort((first, second) => sort === "az" ? first.name.localeCompare(second.name) : sort === "za" ? second.name.localeCompare(first.name) : sort === "oldest" ? new Date(first.updatedAt).getTime() - new Date(second.updatedAt).getTime() : new Date(second.updatedAt).getTime() - new Date(first.updatedAt).getTime());
+    return result.sort((first, second) => sort === "az" ? first.name.localeCompare(second.name) : sort === "za" ? second.name.localeCompare(first.name) : sort === "oldest" ? getSafeTime(first.updatedAt) - getSafeTime(second.updatedAt) : getSafeTime(second.updatedAt) - getSafeTime(first.updatedAt));
   }, [productsQuery.data, search, category, status, sort]);
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const displayed = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
