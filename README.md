@@ -1,46 +1,261 @@
-# QuantoTá?
+# 🛒 QuantoTá?
 
-Sistema web para comparação de preços de produtos consumíveis, com front-end em HTML/CSS/JavaScript e back-end em Spring Boot + MySQL.
+> Compare preços, economize nas compras e encontre o melhor mercado.
 
-## Estrutura
-- `frontend/`: telas, CSS e JavaScript
-- `backend/`: API REST em Java Spring Boot
-- `database/`: schema e inserts iniciais
-- `docs/`: anotações rápidas do projeto
+O **QuantoTá?** é uma aplicação web desenvolvida para facilitar a comparação de preços entre mercados, permitindo que os usuários encontrem os melhores valores para seus produtos e organizem listas de compras de forma prática.
 
-## Funcionalidades
-- cadastro e login de usuários
-- fluxo de solicitação de vendedor com aprovação do admin
-- CRUD de produtos, mercados e preços
-- comparação de preços por produto
-- lista de compras com total estimado
-- tema claro/escuro
-- painel admin para solicitações e cadastros
+Este projeto foi desenvolvido utilizando **Spring Boot** no back-end e **HTML, CSS e JavaScript** no front-end, seguindo a arquitetura Cliente-Servidor.
 
-## Perfis
-- `ADMIN`: gerencia cadastros e aprova vendedores
-- `VENDEDOR`: cadastra preços depois de aprovado
-- `USER`: pesquisa produtos e monta lista de compras
+---
 
-## Como rodar
+# 📖 Sobre o projeto
 
-### Banco de dados
-1. Crie o banco `quantota` no MySQL, ou deixe o Spring criar automaticamente.
-2. Ajuste `backend/src/main/resources/application.properties` se seu usuário ou senha forem diferentes.
+O objetivo do QuantoTá? é ajudar consumidores a economizar durante suas compras, oferecendo um sistema simples para pesquisar produtos, comparar preços e visualizar os mercados que oferecem o menor valor.
 
-### Back-end
-1. Abra a pasta `backend/` no IntelliJ.
-2. Aguarde o Gradle baixar as dependências.
-3. Rode a classe `QuantotaApplication`.
+Além disso, o sistema possui um painel administrativo para gerenciamento de usuários, produtos, mercados e preços cadastrados.
+
+---
+
+# ✨ Funcionalidades
+
+✅ Cadastro de usuários
+
+✅ Login
+
+✅ Pesquisa de produtos
+
+✅ Comparação de preços
+
+✅ Consulta de mercados
+
+✅ Lista de compras
+
+✅ Cálculo do valor estimado da compra
+
+✅ Cadastro de preços
+
+✅ Cadastro de produtos
+
+✅ Gerenciamento de mercados
+
+✅ Aprovação de vendedores
+
+✅ Painel administrativo
+
+✅ Tema claro e escuro
+
+---
+
+# 👥 Perfis de usuários
+
+### 👤 Usuário
+
+* Criar conta
+* Fazer login
+* Pesquisar produtos
+* Comparar preços
+* Criar lista de compras
+* Consultar mercados
+
+### 🛒 Vendedor
+
+* Solicitar acesso
+* Cadastrar produtos
+* Atualizar preços
+* Gerenciar seus anúncios
+
+### 👨‍💼 Administrador
+
+* Gerenciar usuários
+* Aprovar vendedores
+* Gerenciar produtos
+* Gerenciar mercados
+* Gerenciar preços
+
+---
+
+# 🏗 Arquitetura
+
+```text
+Usuário
+    │
+    ▼
+Frontend (HTML + CSS + JavaScript)
+    │
+Requisições HTTP
+    │
+    ▼
+API REST (Spring Boot)
+    │
+Spring Data JPA
+    │
+    ▼
+Banco de Dados MySQL
+```
+
+---
+
+# 🛠 Tecnologias utilizadas
 
 ### Front-end
-1. Abra a pasta `frontend/`.
-2. Execute com Live Server, ou abra `index.html` no navegador.
-3. Confira se a API está em `http://localhost:8080`.
 
-## Usuário inicial sugerido
-- email: `admin@quantota.com`
-- senha: `123456`
+* HTML5
+* CSS3
+* JavaScript
 
-## Observação
-A autenticação ainda está simples para facilitar estudo. O próximo passo natural é adicionar BCrypt + JWT.
+### Back-end
+
+* Java
+* Spring Boot
+* Spring Data JPA
+* Gradle
+
+### Banco de Dados
+
+* MySQL
+
+### Ferramentas
+
+* IntelliJ IDEA
+* VS Code
+* Git
+* GitHub
+
+---
+
+# 📁 Estrutura do projeto
+
+```text
+QuantoTa/
+
+├── backend/
+│   ├── src/
+│   ├── gradle/
+│   └── build.gradle
+│
+├── frontend/
+│   ├── css/
+│   ├── js/
+│   ├── imagens/
+│   └── index.html
+│
+├── database/
+│
+├── docs/
+│
+└── README.md
+```
+
+---
+
+# 🚀 Como executar
+
+## 1. Clone o projeto
+
+```bash
+git clone https://github.com/SEU-USUARIO/QuantoTa.git
+```
+
+---
+
+## 2. Banco de Dados
+
+Crie um banco chamado:
+
+```sql
+quantota
+```
+
+Configure o arquivo:
+
+```
+backend/src/main/resources/application.properties
+```
+
+com seu usuário e senha do MySQL.
+
+---
+
+## 3. Executando o Back-end
+
+Abra a pasta **backend** no IntelliJ IDEA.
+
+Execute a classe:
+
+```
+QuantotaApplication.java
+```
+
+A API ficará disponível em:
+
+```
+http://localhost:8080
+```
+
+---
+
+## 4. Executando o Front-end
+
+Abra a pasta **frontend**.
+
+Depois:
+
+* Execute utilizando o Live Server
+
+ou
+
+* Abra o arquivo `index.html`.
+
+---
+
+# 🔑 Usuário administrador
+
+```
+Email:
+admin@quantota.com
+
+Senha:
+123456
+```
+
+---
+
+# 📌 Próximas melhorias
+
+* Login com JWT
+* Senhas criptografadas (BCrypt)
+* Upload de imagens
+* Histórico de preços
+* Favoritar mercados
+* Pesquisa por localização
+* Dashboard com gráficos
+
+---
+
+# 🎯 Objetivo acadêmico
+
+Este projeto foi desenvolvido como atividade acadêmica para colocar em prática conhecimentos em:
+
+* Programação Web
+* Java
+* Spring Boot
+* APIs REST
+* Banco de Dados
+* HTML
+* CSS
+* JavaScript
+
+
+---
+
+# 👨‍💻 Autor
+
+**Felipe Lima
+**Francisco Mikael
+**Pietro de Almeida
+
+Técnico de Desenvolvimento de Sistemas — SENAC
+
+GitHub:
+https://github.com/Kilmister337
+-
