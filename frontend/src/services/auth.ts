@@ -1,12 +1,24 @@
 import { api } from "./api";
-import type { LoginRequest, LoginResponse } from "@/types/auth";
+import type { LoginRequest, LoginResponse, RegisterRequest } from "@/types/auth";
 import type { User } from "@/types/user";
 
 export const AUTH_TOKEN_KEY = "quantota-token";
 export const AUTH_USER_KEY = "quantota-user";
 
 export async function login(credentials: LoginRequest) {
-  const { data } = await api.post<LoginResponse>("/auth/login", credentials);
+  const { data } = await api.post<LoginResponse>("/auth/login", {
+    email: credentials.email,
+    senha: credentials.password,
+  });
+  return data;
+}
+
+export async function registerUser(payload: RegisterRequest) {
+  const { data } = await api.post<{ id: number; nome: string; email: string; senha: string }>("/usuarios", {
+    nome: payload.nome,
+    email: payload.email,
+    senha: payload.password,
+  });
   return data;
 }
 

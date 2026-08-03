@@ -10,6 +10,8 @@ services:
       MYSQL_PASSWORD: root
     volumes:
       - quantota-db:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql:ro
+      - ./database/inserts_iniciais.sql:/docker-entrypoint-initdb.d/2-inserts.sql:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
       interval: 10s
