@@ -1,0 +1,8 @@
+import { Edit3, Trash2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import type { Product } from "@/types/product";
+
+export function ProductCard({ product, onDelete }: { product: Product; onDelete: (product: Product) => void }) { return <motion.article initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} whileHover={{ y: -2 }} className="rounded-2xl border bg-white p-4 shadow-sm dark:bg-slate-900 md:hidden"><div className="flex gap-3"><span className="grid size-12 place-items-center overflow-hidden rounded-xl bg-slate-100 text-xl dark:bg-slate-800">{product.imageUrl ? <img src={product.imageUrl} alt="" className="size-full object-cover" /> : "🛒"}</span><div className="min-w-0 flex-1"><Link to={`/produtos/${product.id}`} className="block truncate font-bold hover:text-brand-600">{product.name}</Link><p className="mt-1 text-xs text-slate-500">{product.category} · {product.priceCount} preços</p></div><Badge className={product.status === "ACTIVE" ? "" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"}>{product.status === "ACTIVE" ? "Ativo" : "Inativo"}</Badge></div><div className="mt-4 flex justify-end gap-1 border-t pt-3"><Button asChild variant="ghost" size="icon" aria-label={`Editar ${product.name}`}><Link to={`/produtos/${product.id}/editar`}><Edit3 className="size-4" /></Link></Button><Button variant="ghost" size="icon" aria-label={`Excluir ${product.name}`} onClick={() => onDelete(product)}><Trash2 className="size-4 text-red-600" /></Button></div></motion.article>; }

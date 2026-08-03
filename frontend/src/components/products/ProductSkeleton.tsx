@@ -1,0 +1,1 @@
+export function ProductSkeleton() { return <div className="space-y-3"><div className="h-16 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-900" />{Array.from({ length: 7 }, (_, index) => <div key={index} className="h-18 animate-pulse rounded-xl border bg-slate-50 dark:bg-slate-900" />)}</div>; }
