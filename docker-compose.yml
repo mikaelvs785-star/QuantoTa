@@ -1,0 +1,51 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: quantota-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: quantota
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: quantota
+      MYSQL_PASSWORD: root
+    volumes:
+      - quantota-db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: quantota-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/quantota
+      SPRING_DATASOURCE_USERNAME: quantota
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: quantota-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: http://localhost:8080
+    ports:
+      - "5173:5173"
+
+volumes:
+  quantota-db:

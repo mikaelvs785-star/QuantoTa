@@ -1,6 +1,7 @@
 package br.com.quantota.service;
 
 import br.com.quantota.dto.CadastroUsuarioDTO;
+import br.com.quantota.enums.PerfilUsuario;
 import br.com.quantota.exception.ResourceNotFoundException;
 import br.com.quantota.model.Usuario;
 import org.springframework.stereotype.Service;
@@ -43,6 +44,13 @@ public class UsuarioService {
     // 📋 LISTAR TODOS
     public List<Usuario> listarTodos() {
         return new ArrayList<>(usuarios.values());
+    }
+
+    // 📋 LISTAR VENDEDORES
+    public List<Usuario> listarVendedores() {
+        return usuarios.values().stream()
+                .filter(usuario -> usuario.getPerfil() == PerfilUsuario.VENDEDOR)
+                .toList();
     }
 
     // ❌ DELETAR USUÁRIO

@@ -2,7 +2,6 @@ package br.com.quantota.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public class CadastroPrecoDTO {
 
@@ -10,7 +9,7 @@ public class CadastroPrecoDTO {
     private Long mercadoId;
     private Long usuarioCadastroId;
     private BigDecimal valor;
-    private LocalDateTime dataColeta;
+    private LocalDate dataColeta;
     private String observacao;
 
     public Long getProdutoId() {
@@ -49,7 +48,7 @@ public class CadastroPrecoDTO {
         return dataColeta;
     }
 
-    public void setDataColeta(LocalDateTime dataColeta) {
+    public void setDataColeta(LocalDate dataColeta) {
         this.dataColeta = dataColeta;
     }
 

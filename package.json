@@ -1,4 +1,17 @@
 {
+  "name": "quantota",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "npm --prefix frontend run build",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:backend": "cd backend && gradlew.bat compileJava",
+    "dev:frontend": "npm --prefix frontend run dev -- --host 0.0.0.0",
+    "dev:backend": "cd backend && gradlew.bat bootRun",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down --remove-orphans",
+    "docker:ps": "docker compose ps"
+  },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "tailwindcss": "^4.3.3"
