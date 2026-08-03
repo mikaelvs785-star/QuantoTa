@@ -13,10 +13,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       const response = await loginRequest(credentials);
-      localStorage.setItem(AUTH_TOKEN_KEY, response.token);
-      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(response.usuario));
-      setToken(response.token);
-      setUser(response.usuario);
+
+      const normalizedUser: User = response.usuario ?? {
+        id: String(response.id ?? ""),
+        name: response.nome ?? response.email ?? credentials.email,
+        email: response.email ?? credentials.email,
+      };
+
+      const normalizedToken = response.token?.trim() || `quantota-session-${normalizedUser.id || normalizedUser.email}`;
+
+      localStorage.setItem(AUTH_TOKEN_KEY, normalizedToken);
+      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(normalizedUser));
+      setToken(normalizedToken);
+      setUser(normalizedUser);
     } finally {
       setLoading(false);
     }

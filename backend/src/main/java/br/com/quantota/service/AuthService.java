@@ -4,7 +4,9 @@ import br.com.quantota.dto.LoginRequestDTO;
 import br.com.quantota.dto.LoginResponseDTO;
 import br.com.quantota.model.Usuario;
 import br.com.quantota.repository.UsuarioRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthService {
@@ -18,7 +20,7 @@ public class AuthService {
     public LoginResponseDTO login(LoginRequestDTO request) {
         Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
                 .filter(user -> user.getSenha().equals(request.getSenha()))
-                .orElseThrow(() -> new RuntimeException("Email ou senha invalidos"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha invalidos"));
 
         return new LoginResponseDTO(
                 usuario.getId(),
