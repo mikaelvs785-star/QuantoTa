@@ -5,9 +5,9 @@
   "scripts": {
     "build": "npm --prefix frontend run build",
     "build:frontend": "npm --prefix frontend run build",
-    "build:backend": "cd backend && gradlew.bat compileJava",
-    "dev:frontend": "npm --prefix frontend run dev -- --host 0.0.0.0",
-    "dev:backend": "cd backend && gradlew.bat bootRun",
+    "build:backend": "cd backend && gradlew compileJava",
+    "frontend": "npm --prefix frontend run dev -- --host 0.0.0.0",
+    "backend": "cd backend && gradlew bootRun",
     "docker:up": "docker compose up -d --build",
     "docker:down": "docker compose down --remove-orphans",
     "docker:ps": "docker compose ps"
