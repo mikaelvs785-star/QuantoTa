@@ -23,7 +23,7 @@ export function MarketDetails({ market }: { market: Market }) {
             <p className="mt-3 text-slate-600">{market.description || "Sem descrição cadastrada."}</p>
           </div>
           <Button asChild>
-            <Link to={`/mercados/${market.id}/editar`}>
+            <Link to={`/admin/mercados/${market.id}/editar`}>
               <ArrowRight className="size-4" /> Editar
             </Link>
           </Button>
@@ -71,3 +71,4 @@ export function MarketDetails({ market }: { market: Market }) {
     </Card>
   );
 }
+

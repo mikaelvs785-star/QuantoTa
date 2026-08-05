@@ -8,18 +8,20 @@ public class LoginResponseDTO {
     private String perfil;
     private Boolean ativo;
     private String mensagem;
+    private String token;
 
     public LoginResponseDTO(String mensagem) {
         this.mensagem = mensagem;
     }
 
-    public LoginResponseDTO(Long id, String nome, String email, String perfil, Boolean ativo, String mensagem) {
+    public LoginResponseDTO(Long id, String nome, String email, String perfil, Boolean ativo, String mensagem, String token) {
         this.id = id;
         this.nome = nome;
         this.email = email;
         this.perfil = perfil;
         this.ativo = ativo;
         this.mensagem = mensagem;
+        this.token = token;
     }
 
     public Long getId() {
@@ -69,4 +71,8 @@ public class LoginResponseDTO {
     public void setMensagem(String mensagem) {
         this.mensagem = mensagem;
     }
+
+    public String getToken() { return token; }
+
+    public void setToken(String token) { this.token = token; }
 }

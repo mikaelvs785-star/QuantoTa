@@ -18,9 +18,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: String(response.id ?? ""),
         name: response.nome ?? response.email ?? credentials.email,
         email: response.email ?? credentials.email,
+        role: response.perfil ?? "USER",
+        active: response.ativo ?? true,
       };
 
-      const normalizedToken = response.token?.trim() || `quantota-session-${normalizedUser.id || normalizedUser.email}`;
+      if (!response.token?.trim()) throw new Error("A resposta de login não possui uma sessão válida.");
+      const normalizedToken = response.token.trim();
 
       localStorage.setItem(AUTH_TOKEN_KEY, normalizedToken);
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(normalizedUser));

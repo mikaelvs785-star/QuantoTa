@@ -24,7 +24,7 @@ const registerSchema = z.object({
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, loading, isAuthenticated } = useAuth();
+  const { login, loading, isAuthenticated, user } = useAuth();
   const [mode, setMode] = useState<"login" | "register">("login");
 
   const loginForm = useForm<LoginRequest>({
@@ -36,13 +36,14 @@ export default function Login() {
     defaultValues: { nome: "", email: "", password: "" },
   });
 
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+  if (isAuthenticated) return <Navigate to={user?.role === "ADMIN" ? "/admin/dashboard" : "/cliente/dashboard"} replace />;
 
   async function onLoginSubmit(credentials: LoginRequest) {
     try {
       await login(credentials);
       toast.success("Login realizado com sucesso.");
-      navigate("/dashboard", { replace: true });
+      const authenticatedUser = JSON.parse(localStorage.getItem("quantota-user") ?? "{}");
+      navigate(authenticatedUser.role === "ADMIN" ? "/admin/dashboard" : "/cliente/dashboard", { replace: true });
     } catch (error: unknown) {
       const status = typeof error === "object" && error !== null && "response" in error ? (error.response as { status?: number }).status : undefined;
       toast.error(status === 401 ? "Credenciais inválidas." : "Ocorreu um erro inesperado. Tente novamente.");

@@ -1,6 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { ApiError } from "@/components/ui/ApiError";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
@@ -16,7 +15,7 @@ export function UserEditorPage() {
     try {
       await createUser.mutateAsync(input);
       toast.success("Usuário criado.");
-      navigate("/usuarios");
+      navigate("/admin/usuarios");
     } catch {
       toast.error("Erro ao criar usuário.");
     }
@@ -29,7 +28,7 @@ export function UserEditorPage() {
         description="Cadastre um novo usuário para acessar o sistema."
         action={
           <Button variant="outline" asChild>
-            <Link to="/usuarios">Cancelar</Link>
+            <Link to="/admin/usuarios">Cancelar</Link>
           </Button>
         }
       />
@@ -41,3 +40,4 @@ export function UserEditorPage() {
     </div>
   );
 }
+

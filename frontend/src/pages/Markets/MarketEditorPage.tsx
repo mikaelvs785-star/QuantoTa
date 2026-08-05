@@ -21,7 +21,7 @@ export function MarketEditorPage({ mode }: { mode: "create" | "edit" }) {
 
   useEffect(() => {
     if (mode === "edit" && !id) {
-      navigate("/mercados");
+      navigate("/admin/mercados");
     }
   }, [id, mode, navigate]);
 
@@ -30,11 +30,11 @@ export function MarketEditorPage({ mode }: { mode: "create" | "edit" }) {
       if (mode === "edit") {
         await updateMarket.mutateAsync({ id, input });
         toast.success("Mercado atualizado.");
-        navigate(`/mercados/${id}`);
+        navigate(`/admin/mercados/${id}`);
       } else {
         const market = await createMarket.mutateAsync(input);
         toast.success("Mercado criado.");
-        navigate(`/mercados/${market.id}`);
+        navigate(`/admin/mercados/${market.id}`);
       }
     } catch {
       toast.error("Erro ao salvar mercado.");
@@ -52,7 +52,7 @@ export function MarketEditorPage({ mode }: { mode: "create" | "edit" }) {
         title={mode === "edit" ? "Editar mercado" : "Novo mercado"}
         description={mode === "edit" ? "Atualize as informações do mercado." : "Cadastre um mercado para acompanhar preços."}
         action={
-          <Button variant="outline" onClick={() => navigate("/mercados")}>Cancelar</Button>
+          <Button variant="outline" onClick={() => navigate("/admin/mercados")}>Cancelar</Button>
         }
       />
       <Card>
@@ -67,3 +67,4 @@ export function MarketEditorPage({ mode }: { mode: "create" | "edit" }) {
     </div>
   );
 }
+

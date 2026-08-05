@@ -37,7 +37,7 @@ export function MarketCard({ market, onDelete }: MarketCardProps) {
 
           <div className="mt-4 flex flex-wrap gap-2">
             <Button asChild size="sm" variant="secondary">
-              <Link to={`/mercados/${market.id}/editar`}>Editar</Link>
+              <Link to={`/admin/mercados/${market.id}/editar`}>Editar</Link>
             </Button>
             <Button size="sm" variant="danger" onClick={() => onDelete(market)}>
               Excluir
@@ -48,3 +48,4 @@ export function MarketCard({ market, onDelete }: MarketCardProps) {
     </motion.article>
   );
 }
+

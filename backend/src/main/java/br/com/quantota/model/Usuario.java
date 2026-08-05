@@ -2,6 +2,7 @@ package br.com.quantota.model;
 
 import br.com.quantota.enums.PerfilUsuario;
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -25,6 +26,7 @@ public class Usuario {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @JsonIgnore
     @Column(nullable = false)
     private String senha;
 

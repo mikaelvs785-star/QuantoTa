@@ -15,7 +15,7 @@ export function MarketDetailsPage() {
   return (
     <div className="mx-auto max-w-5xl">
       <div className="mb-5">
-        <Link to="/mercados" className="inline-flex items-center gap-2 text-sm font-semibold text-brand-600">
+        <Link to="/admin/mercados" className="inline-flex items-center gap-2 text-sm font-semibold text-brand-600">
           <ArrowLeft className="size-4" /> Voltar para mercados
         </Link>
       </div>
@@ -23,3 +23,4 @@ export function MarketDetailsPage() {
     </div>
   );
 }
+

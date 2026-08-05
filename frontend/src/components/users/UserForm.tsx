@@ -14,9 +14,6 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-const fieldClass =
-  "mt-2 h-11 w-full rounded-xl border bg-white px-3 text-sm outline-none focus:border-brand-500 focus:ring-3 focus:ring-brand-100 dark:bg-slate-900 dark:focus:ring-brand-500/20";
-
 type Props = {
   submitting?: boolean;
   onSubmit: (input: UserInput) => void;

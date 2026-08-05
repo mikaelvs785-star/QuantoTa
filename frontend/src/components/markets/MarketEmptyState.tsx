@@ -11,8 +11,9 @@ export function MarketEmptyState() {
       <h2 className="mt-5 text-lg font-bold text-slate-900">Nenhum mercado encontrado</h2>
       <p className="mt-2 max-w-md text-sm text-slate-500">Cadastre ou busque um mercado para começar a comparar informações e preços.</p>
       <Button asChild className="mt-5">
-        <Link to="/mercados/novo">Adicionar mercado</Link>
+        <Link to="/admin/mercados/novo">Adicionar mercado</Link>
       </Button>
     </div>
   );
 }
+

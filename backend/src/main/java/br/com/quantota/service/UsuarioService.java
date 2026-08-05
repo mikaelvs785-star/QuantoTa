@@ -7,6 +7,7 @@ import br.com.quantota.model.Usuario;
 import br.com.quantota.repository.UsuarioRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
@@ -16,9 +17,11 @@ import java.util.List;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public Usuario cadastrar(CadastroUsuarioDTO dto) {
@@ -29,7 +32,7 @@ public class UsuarioService {
         Usuario usuario = Usuario.builder()
                 .nome(dto.getNome())
                 .email(dto.getEmail())
-                .senha(dto.getSenha())
+                .senha(passwordEncoder.encode(dto.getSenha()))
                 .perfil(PerfilUsuario.USER)
                 .ativo(true)
                 .dataCriacao(LocalDateTime.now())
@@ -53,14 +56,22 @@ public class UsuarioService {
 
     public void deletar(Long id) {
         Usuario usuario = buscarPorId(id);
+        impedirAlteracaoDeAdministrador(usuario);
         usuarioRepository.delete(usuario);
     }
 
     public Usuario atualizar(Long id, CadastroUsuarioDTO dto) {
         Usuario usuario = buscarPorId(id);
+        impedirAlteracaoDeAdministrador(usuario);
         usuario.setNome(dto.getNome());
         usuario.setEmail(dto.getEmail());
-        usuario.setSenha(dto.getSenha());
+        usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
         return usuarioRepository.save(usuario);
+    }
+
+    private void impedirAlteracaoDeAdministrador(Usuario usuario) {
+        if (usuario.getPerfil() == PerfilUsuario.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "A conta administradora Ã© imutÃ¡vel");
+        }
     }
 }

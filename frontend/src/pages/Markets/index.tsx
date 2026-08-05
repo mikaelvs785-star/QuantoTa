@@ -73,7 +73,7 @@ export default function Markets() {
         description="Gerencie os mercados que você acompanha."
         action={
           <Button asChild>
-            <Link to="/mercados/novo">
+            <Link to="/admin/mercados/novo">
               <PackagePlus className="size-4" /> Novo mercado
             </Link>
           </Button>
@@ -87,7 +87,7 @@ export default function Markets() {
           <>
             <MarketTable
               markets={displayed}
-              onEdit={(market) => navigate(`/mercados/${market.id}/editar`)}
+              onEdit={(market) => navigate(`/admin/mercados/${market.id}/editar`)}
               onDelete={setSelected}
             />
             <div className="space-y-3 md:hidden">
@@ -117,3 +117,4 @@ export default function Markets() {
     </div>
   );
 }
+
