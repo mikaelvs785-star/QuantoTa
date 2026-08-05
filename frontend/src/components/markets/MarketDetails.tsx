@@ -15,7 +15,7 @@ export function MarketDetails({ market }: { market: Market }) {
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl font-black text-slate-900">{market.name}</h1>
+              <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">{market.name}</h1>
               <Badge className={market.status === "ACTIVE" ? "" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"}>
                 {market.status === "ACTIVE" ? "Ativo" : "Inativo"}
               </Badge>
@@ -34,37 +34,37 @@ export function MarketDetails({ market }: { market: Market }) {
             <dt className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
               <Tag className="size-3.5" /> CNPJ
             </dt>
-            <dd className="mt-2 font-bold text-slate-900">{market.cnpj || "—"}</dd>
+            <dd className="mt-2 font-bold text-slate-900 dark:text-slate-100">{market.cnpj || "—"}</dd>
           </div>
           <div>
             <dt className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
               <Phone className="size-3.5" /> Telefone
             </dt>
-            <dd className="mt-2 font-bold text-slate-900">{market.phone}</dd>
+            <dd className="mt-2 font-bold text-slate-900 dark:text-slate-100">{market.phone}</dd>
           </div>
           <div>
             <dt className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
               <MapPin className="size-3.5" /> Localização
             </dt>
-            <dd className="mt-2 font-bold text-slate-900">{market.city}, {market.state}</dd>
+            <dd className="mt-2 font-bold text-slate-900 dark:text-slate-100">{market.city}, {market.state}</dd>
           </div>
           <div>
             <dt className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
               <Wallet className="size-3.5" /> Produtos cadastrados
             </dt>
-            <dd className="mt-2 font-bold text-slate-900">{market.productCount}</dd>
+            <dd className="mt-2 font-bold text-slate-900 dark:text-slate-100">{market.productCount}</dd>
           </div>
           <div>
             <dt className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
               <CalendarClock className="size-3.5" /> Atualizado
             </dt>
-            <dd className="mt-2 font-bold text-slate-900">{new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(new Date(market.updatedAt))}</dd>
+            <dd className="mt-2 font-bold text-slate-900 dark:text-slate-100">{new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(new Date(market.updatedAt))}</dd>
           </div>
           <div>
             <dt className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
               <ArrowRight className="size-3.5" /> Site
             </dt>
-            <dd className="mt-2 font-bold text-slate-900">{market.website || "—"}</dd>
+            <dd className="mt-2 font-bold text-slate-900 dark:text-slate-100">{market.website || "—"}</dd>
           </div>
         </dl>
       </CardContent>

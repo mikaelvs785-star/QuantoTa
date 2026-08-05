@@ -7,7 +7,8 @@ export function PrivateRoute({ children, allowedRoles }: { children: ReactNode; 
   const { isAuthenticated, loading, user } = useAuth();
   if (loading) return <Loading label="Verificando sessão..." />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (allowedRoles && (!user?.role || !allowedRoles.includes(user.role))) {
+  if (!user?.role) return <Navigate to="/login" replace />;
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to={user?.role === "ADMIN" ? "/admin/dashboard" : "/cliente/dashboard"} replace />;
   }
   return children;

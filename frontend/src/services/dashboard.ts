@@ -20,7 +20,10 @@ export async function getDashboard() {
     const { data } = await api.get<DashboardData>("/dashboard");
     return data;
   } catch (error) {
-    if (!isAxiosError(error) || error.response?.status !== 404) throw error;
+    // O backend atual não possui o endpoint agregado /dashboard. Em alguns
+    // cenários o Spring Security responde 403 antes de devolver o 404; nos
+    // dois casos montamos o painel a partir dos endpoints disponíveis.
+    if (!isAxiosError(error) || ![403, 404].includes(error.response?.status ?? 0)) throw error;
 
     const [productsResponse, marketsResponse, pricesResponse] = await Promise.all([
       api.get<PayloadEnvelope<BackendProduct> | BackendProduct[]>("/produtos"),

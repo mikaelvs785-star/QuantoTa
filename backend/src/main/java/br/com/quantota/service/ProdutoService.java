@@ -48,6 +48,8 @@ public class ProdutoService {
     }
 
     public void deletar(Long id) {
-        produtoRepository.deleteById(id);
+        Produto produto = buscarPorId(id);
+        produto.setAtivo(false);
+        produtoRepository.save(produto);
     }
 }

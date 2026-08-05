@@ -8,7 +8,7 @@ export function MarketEmptyState() {
       <span className="grid h-16 w-16 place-items-center rounded-2xl bg-blue-50 text-3xl text-blue-600">
         <PackagePlus />
       </span>
-      <h2 className="mt-5 text-lg font-bold text-slate-900">Nenhum mercado encontrado</h2>
+      <h2 className="mt-5 text-lg font-bold text-slate-900 dark:text-slate-100">Nenhum mercado encontrado</h2>
       <p className="mt-2 max-w-md text-sm text-slate-500">Cadastre ou busque um mercado para começar a comparar informações e preços.</p>
       <Button asChild className="mt-5">
         <Link to="/admin/mercados/novo">Adicionar mercado</Link>

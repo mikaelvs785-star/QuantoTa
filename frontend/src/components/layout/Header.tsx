@@ -7,7 +7,7 @@ import { SearchBar } from "@/components/ui/SearchBar";
 import { useAuth } from "@/hooks/useAuth";
 
 type Props = { onMenuClick: () => void };
-const pageNames: Record<string, string> = { "/dashboard": "Visão geral", "/produtos": "Produtos", "/mercados": "Mercados", "/precos": "Preços", "/comparador": "Comparador", "/lista": "Lista de compras", "/configuracoes": "Configurações" };
+const pageNames: Record<string, string> = { "/admin/dashboard": "Administração", "/admin/produtos": "Produtos", "/admin/mercados": "Mercados", "/admin/usuarios": "Usuários", "/admin/precos": "Preços", "/cliente/dashboard": "Minha área", "/cliente/mercados": "Mercados", "/cliente/comparador": "Comparador", "/cliente/lista": "Lista de compras", "/cliente/configuracoes": "Configurações" };
 
 export function Header({ onMenuClick }: Props) {
   const { theme, setTheme } = useTheme();

@@ -36,7 +36,10 @@ export function getStoredUser(): User | null {
   const user = localStorage.getItem(AUTH_USER_KEY);
   if (!user) return null;
   try {
-    return JSON.parse(user) as User;
+    const storedUser = JSON.parse(user) as User;
+    // Sessões criadas antes da separação de áreas não tinham perfil.
+    // Elas pertencem à área do cliente até que o usuário faça login novamente.
+    return { ...storedUser, role: storedUser.role ?? "USER" };
   } catch {
     localStorage.removeItem(AUTH_USER_KEY);
     return null;

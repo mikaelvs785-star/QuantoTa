@@ -43,7 +43,7 @@ export default function Users() {
       ) : (
         <Card className="overflow-hidden">
           <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
-            <thead className="bg-slate-50 text-slate-500">
+            <thead className="bg-slate-50 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
               <tr>
                 <th className="px-4 py-3">Nome</th>
                 <th className="px-4 py-3">E-mail</th>
@@ -53,7 +53,7 @@ export default function Users() {
             <tbody>
               {users.map((user) => (
                 <tr key={user.id} className="border-t last:border-b">
-                  <td className="px-4 py-4 font-medium text-slate-900">{user.name}</td>
+                  <td className="px-4 py-4 font-medium text-slate-900 dark:text-slate-100">{user.name}</td>
                   <td className="px-4 py-4 text-slate-500">{user.email}</td>
                   <td className="px-4 py-4">
                     <Badge>{user.active === false ? "Inativo" : "Ativo"}</Badge>

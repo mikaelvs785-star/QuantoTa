@@ -5,6 +5,7 @@ import Dashboard from "../pages/Dashboard";
 import Login from "../pages/Login";
 import Products from "../pages/Products";
 import MercadosPage from "../pages/Mercados";
+import PrecosPage from "../pages/Precos";
 import ComparadorPage from "../pages/Comparator";
 import ListaPage from "../pages/Lista";
 import ConfiguracoesPage from "../pages/Configuracoes";
@@ -40,7 +41,7 @@ export function AppRoutes() {
           <Route path="/admin/mercados/:id/editar" element={<MarketEditorPage mode="edit" />} />
           <Route path="/admin/usuarios" element={<Users />} />
           <Route path="/admin/usuarios/novo" element={<UserEditorPage />} />
-          <Route path="/admin/precos" element={<Dashboard />} />
+          <Route path="/admin/precos" element={<PrecosPage />} />
         </Route>
 
         <Route element={<PrivateRoute allowedRoles={["USER", "VENDEDOR"]}><MainLayout /></PrivateRoute>}>

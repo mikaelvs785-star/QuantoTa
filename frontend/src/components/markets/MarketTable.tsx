@@ -24,7 +24,7 @@ export function MarketTable({ markets, onEdit, onDelete }: MarketTableProps) {
         <tbody className="divide-y divide-slate-200">
           {markets.map((market) => (
             <tr key={market.id} className="group hover:bg-slate-50">
-              <td className="px-6 py-4 font-semibold text-slate-900">{market.name}</td>
+              <td className="px-6 py-4 font-semibold text-slate-900 dark:text-slate-100">{market.name}</td>
               <td className="px-6 py-4 text-slate-600">{market.city}</td>
               <td className="px-6 py-4 text-slate-600">{market.cnpj}</td>
               <td className="px-6 py-4">

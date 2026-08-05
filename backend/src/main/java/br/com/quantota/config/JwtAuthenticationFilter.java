@@ -11,11 +11,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
     private final JwtService jwtService;
     public JwtAuthenticationFilter(JwtService jwtService) { this.jwtService = jwtService; }
 
@@ -29,7 +32,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
-        } catch (Exception ignored) {
+        } catch (Exception exception) {
+            log.warn("Token JWT inválido: {}", exception.getMessage());
             SecurityContextHolder.clearContext();
         }
         chain.doFilter(request, response);
