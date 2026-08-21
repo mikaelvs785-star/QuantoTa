@@ -1,36 +1,14 @@
 services:
-  db:
-    image: mysql:8.0
-    container_name: quantota-db
-    restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: quantota
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: quantota
-      MYSQL_PASSWORD: root
-    volumes:
-      - quantota-db:/var/lib/mysql
-      - ./database/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql:ro
-      - ./database/inserts_iniciais.sql:/docker-entrypoint-initdb.d/2-inserts.sql:ro
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
-      interval: 10s
-      timeout: 5s
-      retries: 20
-
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: quantota-backend
     restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/quantota
-      SPRING_DATASOURCE_USERNAME: quantota
-      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATASOURCE_URL: jdbc:postgresql://aws-0-us-east-2.pooler.supabase.com:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres.nawtwtfshoxlzgeyjgis
+      SPRING_DATASOURCE_PASSWORD: ${SUPABASE_DB_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SERVER_PORT: 8080
     ports:
@@ -48,6 +26,3 @@ services:
       VITE_API_URL: http://localhost:8080
     ports:
       - "5173:5173"
-
-volumes:
-  quantota-db:
