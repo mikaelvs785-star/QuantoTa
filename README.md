@@ -102,7 +102,7 @@ Banco de Dados MySQL
 * HTML5
 * CSS3
 * JavaScript
-
+* React
 ### Back-end
 
 * Java
@@ -113,7 +113,7 @@ Banco de Dados MySQL
 ### Banco de Dados
 
 * MySQL
-
+* Docker (para conteinerização)
 ### Ferramentas
 
 * IntelliJ IDEA
@@ -255,7 +255,4 @@ Este projeto foi desenvolvido como atividade acadêmica para colocar em prática
 **Pietro de Almeida
 
 Técnico de Desenvolvimento de Sistemas — SENAC
-
-GitHub:
-https://github.com/Kilmister337
 -
