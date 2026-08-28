@@ -1,7 +1,17 @@
 export interface DashboardMetric {
-  key: "products" | "markets" | "prices" | "lists" | "savings" | "monitored";
+  key:
+    | "products"
+    | "markets"
+    | "prices"
+    | "users"
+    | "lists"
+    | "savings"
+    | "monitored";
+
   label: string;
+
   value: number;
+
   variation: number;
 }
 

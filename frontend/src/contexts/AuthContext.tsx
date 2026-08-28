@@ -3,6 +3,7 @@ import { AUTH_TOKEN_KEY, AUTH_USER_KEY, getStoredUser, login as loginRequest, lo
 import type { AuthContextType, LoginRequest } from "@/types/auth";
 import type { User } from "@/types/user";
 import { AuthContext } from "./authContextValue";
+import { normalizeUserRole } from "@/config/navigation";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(AUTH_TOKEN_KEY));
@@ -14,12 +15,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await loginRequest(credentials);
 
-      const normalizedUser: User = response.usuario ?? {
-        id: String(response.id ?? ""),
-        name: response.nome ?? response.email ?? credentials.email,
-        email: response.email ?? credentials.email,
-        role: response.perfil ?? "USER",
-        active: response.ativo ?? true,
+      const loginUser = response.usuario;
+      const normalizedUser: User = {
+        id: String(loginUser?.id ?? response.id ?? ""),
+        name: loginUser?.name ?? response.nome ?? response.email ?? credentials.email,
+        email: loginUser?.email ?? response.email ?? credentials.email,
+        role: normalizeUserRole(loginUser?.role ?? response.perfil),
+        active: loginUser?.active ?? response.ativo ?? true,
       };
 
       if (!response.token?.trim()) throw new Error("A resposta de login não possui uma sessão válida.");

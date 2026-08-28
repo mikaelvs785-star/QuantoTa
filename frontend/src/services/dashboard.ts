@@ -6,6 +6,13 @@ type PayloadEnvelope<T> = { value?: T[]; Count?: number };
 type BackendProduct = { id: number; nome: string; categoria?: string; marca?: string; descricao?: string; ativo?: boolean };
 type BackendMarket = { id: number; nome: string; cidade?: string; estado?: string; bairro?: string; endereco?: string; telefone?: string; ativo?: boolean };
 type BackendPrice = { id: number; produto?: BackendProduct; mercado?: BackendMarket; valor?: number; dataColeta?: string; dataCadastro?: string };
+type BackendUser = {
+  id: number;
+  nome: string;
+  email: string;
+  perfil?: string;
+  ativo?: boolean;
+};
 
 function unwrapList<T>(payload: unknown): T[] {
   if (Array.isArray(payload)) return payload as T[];
@@ -25,15 +32,22 @@ export async function getDashboard() {
     // dois casos montamos o painel a partir dos endpoints disponíveis.
     if (!isAxiosError(error) || ![403, 404].includes(error.response?.status ?? 0)) throw error;
 
-    const [productsResponse, marketsResponse, pricesResponse] = await Promise.all([
-      api.get<PayloadEnvelope<BackendProduct> | BackendProduct[]>("/produtos"),
-      api.get<PayloadEnvelope<BackendMarket> | BackendMarket[]>("/mercados"),
-      api.get<PayloadEnvelope<BackendPrice> | BackendPrice[]>("/precos"),
-    ]);
+    const [
+  productsResponse,
+  marketsResponse,
+  pricesResponse,
+  usersResponse,
+] = await Promise.all([
+  api.get<PayloadEnvelope<BackendProduct> | BackendProduct[]>("/produtos"),
+  api.get<PayloadEnvelope<BackendMarket> | BackendMarket[]>("/mercados"),
+  api.get<PayloadEnvelope<BackendPrice> | BackendPrice[]>("/precos"),
+  api.get<PayloadEnvelope<BackendUser> | BackendUser[]>("/usuarios"),
+]);
 
     const products = unwrapList<BackendProduct>(productsResponse.data);
     const markets = unwrapList<BackendMarket>(marketsResponse.data);
     const prices = unwrapList<BackendPrice>(pricesResponse.data);
+    const users = unwrapList<BackendUser>(usersResponse.data);
 
     const latestPrices: PriceRecord[] = prices.map((price) => ({
       id: String(price.id),
@@ -71,13 +85,31 @@ export async function getDashboard() {
 
     return {
       metrics: [
-        { key: "products", label: "Produtos", value: products.length, variation: 4 },
-        { key: "markets", label: "Mercados", value: markets.length, variation: 2 },
-        { key: "prices", label: "Preços", value: prices.length, variation: 6 },
-        { key: "lists", label: "Listas", value: 2, variation: 1 },
-        { key: "savings", label: "Economia", value: 126.4, variation: 8 },
-        { key: "monitored", label: "Monitorados", value: monitoredProducts.length, variation: 3 },
-      ],
+  {
+    key: "products",
+    label: "Produtos",
+    value: products.length,
+    variation: 0,
+  },
+  {
+    key: "markets",
+    label: "Mercados",
+    value: markets.length,
+    variation: 0,
+  },
+  {
+    key: "prices",
+    label: "Preços cadastrados",
+    value: prices.length,
+    variation: 0,
+  },
+  {
+    key: "users",
+    label: "Usuários",
+    value: users.length,
+    variation: 0,
+  },
+],
       monthlySavings: [
         { month: "Jan", value: 85 },
         { month: "Fev", value: 110 },

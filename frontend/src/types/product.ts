@@ -1,10 +1,12 @@
 export type ProductStatus = "ACTIVE" | "INACTIVE";
+
 export type ProductSort = "newest" | "oldest" | "az" | "za";
 
 export interface Product {
   id: string;
   name: string;
   category: string;
+  unit: string;
   description?: string;
   barcode?: string;
   imageUrl?: string;
@@ -16,6 +18,7 @@ export interface Product {
 export interface ProductInput {
   name: string;
   category: string;
+  unit: string;
   description?: string;
   barcode?: string;
   imageUrl?: string;
@@ -31,4 +34,7 @@ export interface ProductListParams {
   sort?: ProductSort;
 }
 
-export interface ProductListResult { content: Product[]; total: number; }
+export interface ProductListResult {
+  content: Product[];
+  total: number;
+}

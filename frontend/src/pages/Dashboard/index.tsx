@@ -1,4 +1,14 @@
-import { BarChart3, ChartNoAxesColumnIncreasing, CircleDollarSign, ListChecks, Package, ScanSearch, Store, Tags } from "lucide-react";
+import {
+  BarChart3,
+  ChartNoAxesColumnIncreasing,
+  CircleDollarSign,
+  ListChecks,
+  Package,
+  ScanSearch,
+  Store,
+  Tags,
+  Users
+} from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ApiError } from "@/components/ui/ApiError";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -14,7 +24,7 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { useDashboard } from "@/hooks/useDashboard";
 import type { DashboardMetric } from "@/types/dashboard";
 
-const metricIcons = { products: Package, markets: Store, prices: Tags, lists: ListChecks, savings: CircleDollarSign, monitored: ScanSearch };
+const metricIcons = { products: Package, markets: Store, prices: Tags, lists: ListChecks, savings: CircleDollarSign, monitored: ScanSearch, users: Users };
 
 function DashboardSkeleton() { return <><div className="mb-8"><div className="h-7 w-48 animate-pulse rounded bg-slate-200 dark:bg-slate-800" /><div className="mt-3 h-4 w-72 animate-pulse rounded bg-slate-100 dark:bg-slate-900" /></div><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 6 }, (_, index) => <SkeletonCard key={index} />)}</div><div className="mt-6 grid gap-6 lg:grid-cols-2"><SkeletonCard /><SkeletonCard /></div></>; }
 

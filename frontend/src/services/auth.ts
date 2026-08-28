@@ -1,6 +1,7 @@
 import { api } from "./api";
 import type { LoginRequest, LoginResponse, RegisterRequest } from "@/types/auth";
 import type { User } from "@/types/user";
+import { normalizeUserRole } from "@/config/navigation";
 
 export const AUTH_TOKEN_KEY = "quantota-token";
 export const AUTH_USER_KEY = "quantota-user";
@@ -39,7 +40,8 @@ export function getStoredUser(): User | null {
     const storedUser = JSON.parse(user) as User;
     // Sessões criadas antes da separação de áreas não tinham perfil.
     // Elas pertencem à área do cliente até que o usuário faça login novamente.
-    return { ...storedUser, role: storedUser.role ?? "USER" };
+    const role = normalizeUserRole(storedUser.role);
+    return role ? { ...storedUser, role } : null;
   } catch {
     localStorage.removeItem(AUTH_USER_KEY);
     return null;

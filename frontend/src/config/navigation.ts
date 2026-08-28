@@ -24,6 +24,20 @@ export const defaultRouteByRole: Record<UserRole, string> = {
   VENDEDOR: "/vendedor/dashboard",
 };
 
+export function normalizeUserRole(role?: string): UserRole | undefined {
+  switch (role?.trim().toUpperCase()) {
+    case "ADMIN":
+      return "ADMIN";
+    case "USER":
+    case "CLIENTE":
+      return "USER";
+    case "VENDEDOR":
+      return "VENDEDOR";
+    default:
+      return undefined;
+  }
+}
+
 export const navigationByRole: Record<UserRole, NavigationItem[]> = {
   ADMIN: [
     {
@@ -118,17 +132,11 @@ export const navigationByRole: Record<UserRole, NavigationItem[]> = {
 export function getNavigationByRole(
   role?: string
 ): NavigationItem[] {
-  if (role === "ADMIN" || role === "USER" || role === "VENDEDOR") {
-    return navigationByRole[role];
-  }
-
-  return [];
+  const normalizedRole = normalizeUserRole(role);
+  return normalizedRole ? navigationByRole[normalizedRole] : [];
 }
 
 export function getDefaultRouteByRole(role?: string): string {
-  if (role === "ADMIN" || role === "USER" || role === "VENDEDOR") {
-    return defaultRouteByRole[role];
-  }
-
-  return "/login";
+  const normalizedRole = normalizeUserRole(role);
+  return normalizedRole ? defaultRouteByRole[normalizedRole] : "/login";
 }

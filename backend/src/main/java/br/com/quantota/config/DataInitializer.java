@@ -55,7 +55,12 @@ public class DataInitializer {
             String senha,
             PerfilUsuario perfil
     ) {
-        if (!usuarioRepository.existsByEmail(email)) {
+        usuarioRepository.findByEmail(email).ifPresentOrElse(usuarioExistente -> {
+            if (usuarioExistente.getPerfil() != perfil) {
+                usuarioExistente.setPerfil(perfil);
+                usuarioRepository.save(usuarioExistente);
+            }
+        }, () -> {
 
             Usuario usuario = Usuario.builder()
                     .nome(nome)
@@ -68,6 +73,6 @@ public class DataInitializer {
             usuarioRepository.save(usuario);
 
             System.out.println("Usuário de teste criado: " + email);
-        }
+        });
     }
 }

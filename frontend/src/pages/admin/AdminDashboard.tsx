@@ -1,6 +1,17 @@
-import { BarChart3, Package, Store, Tags, Users } from "lucide-react";
+import {
+  BarChart3,
+  Package,
+  Plus,
+  Store,
+  Tags,
+  Users,
+} from "lucide-react";
+import { Link } from "react-router-dom";
+
 import { useDashboard } from "@/hooks/useDashboard";
 import { ApiError } from "@/components/ui/ApiError";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { DashboardGrid } from "@/components/dashboard/DashboardGrid";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -47,7 +58,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl pb-4">
+    <div className="mx-auto max-w-7xl space-y-6 pb-6">
       <SectionTitle
         title="Painel administrativo"
         description="Gerencie produtos, mercados, preços e usuários do QuantoTá."
@@ -79,6 +90,116 @@ export default function AdminDashboard() {
           <p>Nenhuma métrica disponível.</p>
         )}
       </DashboardGrid>
+
+      <div>
+        <h2 className="mb-4 text-lg font-bold text-slate-800">
+          Ações rápidas
+        </h2>
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
+          <Card>
+            <CardContent className="space-y-4 p-5">
+              <div className="flex items-center gap-3">
+                <Package className="size-6 text-blue-600" />
+
+                <div>
+                  <h3 className="font-semibold">
+                    Novo produto
+                  </h3>
+
+                  <p className="text-sm text-slate-500">
+                    Cadastre um produto para comparação.
+                  </p>
+                </div>
+              </div>
+
+              <Button asChild className="w-full">
+                <Link to="/admin/produtos/novo">
+                  <Plus className="size-4" />
+                  Novo produto
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="space-y-4 p-5">
+              <div className="flex items-center gap-3">
+                <Store className="size-6 text-blue-600" />
+
+                <div>
+                  <h3 className="font-semibold">
+                    Novo mercado
+                  </h3>
+
+                  <p className="text-sm text-slate-500">
+                    Cadastre um novo mercado.
+                  </p>
+                </div>
+              </div>
+
+              <Button asChild className="w-full">
+                <Link to="/admin/mercados/novo">
+                  <Plus className="size-4" />
+                  Novo mercado
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="space-y-4 p-5">
+              <div className="flex items-center gap-3">
+                <Users className="size-6 text-blue-600" />
+
+                <div>
+                  <h3 className="font-semibold">
+                    Novo usuário
+                  </h3>
+
+                  <p className="text-sm text-slate-500">
+                    Gerencie clientes e vendedores.
+                  </p>
+                </div>
+              </div>
+
+              <Button asChild className="w-full">
+                <Link to="/admin/usuarios/novo">
+                  <Plus className="size-4" />
+                  Novo usuário
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="space-y-4 p-5">
+              <div className="flex items-center gap-3">
+                <Tags className="size-6 text-blue-600" />
+
+                <div>
+                  <h3 className="font-semibold">
+                    Gerenciar preços
+                  </h3>
+
+                  <p className="text-sm text-slate-500">
+                    Consulte os preços cadastrados.
+                  </p>
+                </div>
+              </div>
+
+              <Button asChild className="w-full">
+                <Link to="/admin/precos">
+                  <Tags className="size-4" />
+                  Ver preços
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+
+        </div>
+      </div>
     </div>
   );
 }
