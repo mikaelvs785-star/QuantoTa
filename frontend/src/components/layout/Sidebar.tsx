@@ -1,4 +1,4 @@
-import { BarChart3, ChevronLeft, ChevronRight, LayoutDashboard, ListChecks, Package, Settings, Store, Tags, Users } from "lucide-react";
+import { BarChart3, ChevronLeft, ChevronRight, LayoutDashboard, ListChecks, Package, Settings, Store, Tags } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
@@ -16,7 +16,6 @@ export function Sidebar({ collapsed, onCollapsedChange }: Props) {
         { label: "Dashboard", icon: LayoutDashboard, to: `${area}/dashboard` },
         { label: "Produtos", icon: Package, to: `${area}/produtos` },
         { label: "Mercados", icon: Store, to: `${area}/mercados` },
-        { label: "Usuários", icon: Users, to: `${area}/usuarios` },
         { label: "Preços", icon: Tags, to: `${area}/precos` },
       ]
     : [

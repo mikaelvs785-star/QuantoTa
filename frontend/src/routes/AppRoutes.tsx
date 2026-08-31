@@ -14,8 +14,6 @@ import { ProductEditorPage } from "../pages/Products/ProductEditorPage";
 import Markets from "../pages/Markets";
 import { MarketDetailsPage } from "../pages/Markets/MarketDetailsPage";
 import { MarketEditorPage } from "../pages/Markets/MarketEditorPage";
-import Users from "../pages/Users";
-import { UserEditorPage } from "../pages/Users/UserEditorPage";
 import { MainLayout } from "../layouts/MainLayout";
 import { PrivateRoute } from "./PrivateRoute";
 import { AreaRedirect } from "./AreaRedirect";
@@ -39,8 +37,6 @@ export function AppRoutes() {
           <Route path="/admin/mercados/novo" element={<MarketEditorPage mode="create" />} />
           <Route path="/admin/mercados/:id" element={<MarketDetailsPage />} />
           <Route path="/admin/mercados/:id/editar" element={<MarketEditorPage mode="edit" />} />
-          <Route path="/admin/usuarios" element={<Users />} />
-          <Route path="/admin/usuarios/novo" element={<UserEditorPage />} />
           <Route path="/admin/precos" element={<PrecosPage />} />
         </Route>
 

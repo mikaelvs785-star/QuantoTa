@@ -10,7 +10,6 @@ const pageNames: Record<string, string> = {
   "/admin/dashboard": "Administração",
   "/admin/produtos": "Produtos",
   "/admin/mercados": "Mercados",
-  "/admin/usuarios": "Usuários",
   "/admin/precos": "Preços",
   "/cliente/dashboard": "Minha área",
   "/cliente/mercados": "Mercados",
