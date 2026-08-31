@@ -5,6 +5,19 @@ import type { User } from "@/types/user";
 export const AUTH_TOKEN_KEY = "quantota-token";
 export const AUTH_USER_KEY = "quantota-user";
 
+export function isTokenExpired(token: string): boolean {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return true;
+
+    const decodedPayload = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+    const { exp } = JSON.parse(decodedPayload) as { exp?: number };
+    return typeof exp !== "number" || exp * 1_000 <= Date.now();
+  } catch {
+    return true;
+  }
+}
+
 export async function login(credentials: LoginRequest) {
   const { data } = await api.post<LoginResponse>("/auth/login", {
     email: credentials.email,

@@ -1,11 +1,18 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
-import { AUTH_TOKEN_KEY, AUTH_USER_KEY, getStoredUser, login as loginRequest, logout as clearSession } from "@/services/auth";
+import { AUTH_TOKEN_KEY, AUTH_USER_KEY, getStoredUser, isTokenExpired, login as loginRequest, logout as clearSession } from "@/services/auth";
 import type { AuthContextType, LoginRequest } from "@/types/auth";
 import type { User } from "@/types/user";
 import { AuthContext } from "./authContextValue";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem(AUTH_TOKEN_KEY));
+  const [token, setToken] = useState<string | null>(() => {
+    const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
+    if (storedToken && isTokenExpired(storedToken)) {
+      clearSession();
+      return null;
+    }
+    return storedToken;
+  });
   const [user, setUser] = useState<User | null>(getStoredUser);
   const [loading, setLoading] = useState(false);
 
