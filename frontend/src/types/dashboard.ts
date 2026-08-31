@@ -21,6 +21,8 @@ export interface MarketPrice { market: string; price: number; }
 
 export interface PriceRecord {
   id: string;
+  productId?: string;
+  marketId?: string;
   product: string;
   market: string;
   price: number;

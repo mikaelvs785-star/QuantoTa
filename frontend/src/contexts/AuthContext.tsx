@@ -20,7 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: String(loginUser?.id ?? response.id ?? ""),
         name: loginUser?.name ?? response.nome ?? response.email ?? credentials.email,
         email: loginUser?.email ?? response.email ?? credentials.email,
-        role: normalizeUserRole(loginUser?.role ?? response.perfil),
+        role: normalizeUserRole(loginUser?.role ?? response.perfil) ?? "USER",
         active: loginUser?.active ?? response.ativo ?? true,
       };
 

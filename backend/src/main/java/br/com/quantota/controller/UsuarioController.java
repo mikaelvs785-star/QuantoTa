@@ -27,6 +27,24 @@ public class UsuarioController {
         return usuarioService.listarTodos();
     }
 
+    @GetMapping("/{id}")
+    public Usuario buscarPorId(@PathVariable Long id) {
+        return usuarioService.buscarPorId(id);
+    }
+
+    @PutMapping("/{id}")
+    public Usuario atualizar(
+            @PathVariable Long id,
+            @RequestBody CadastroUsuarioDTO usuario
+    ) {
+        return usuarioService.atualizar(id, usuario);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deletar(@PathVariable Long id) {
+        usuarioService.deletar(id);
+    }
+
     @GetMapping("/vendedores")
     public List<Usuario> listarVendedores() {
         return usuarioService.listarVendedores();

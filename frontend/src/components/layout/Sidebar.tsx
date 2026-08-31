@@ -8,9 +8,7 @@ import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  getNavigationByRole,
-} from "@/config/navigation";
+import { getNavigationByRole } from "@/config/navigation";
 
 type Props = {
   collapsed: boolean;
@@ -66,6 +64,7 @@ export function Sidebar({
             size="icon"
             className="lg:hidden"
             onClick={onMobileClose}
+            aria-label="Fechar menu"
           >
             <X className="size-5" />
           </Button>
@@ -113,3 +112,4 @@ export function Sidebar({
     </>
   );
 }
+

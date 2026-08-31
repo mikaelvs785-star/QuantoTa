@@ -51,6 +51,8 @@ export async function getDashboard() {
 
     const latestPrices: PriceRecord[] = prices.map((price) => ({
       id: String(price.id),
+      productId: price.produto ? String(price.produto.id) : undefined,
+      marketId: price.mercado ? String(price.mercado.id) : undefined,
       product: price.produto?.nome ?? "Produto",
       market: price.mercado?.nome ?? "Mercado",
       price: Number(price.valor ?? 0),
@@ -162,6 +164,8 @@ export async function getPrecos() {
   const { data } = await api.get<BackendPrice[] | PayloadEnvelope<BackendPrice>>("/precos");
   return unwrapList<BackendPrice>(data).map((price) => ({
     id: String(price.id),
+    productId: price.produto ? String(price.produto.id) : undefined,
+    marketId: price.mercado ? String(price.mercado.id) : undefined,
     product: price.produto?.nome ?? "Produto",
     market: price.mercado?.nome ?? "Mercado",
     price: Number(price.valor ?? 0),
