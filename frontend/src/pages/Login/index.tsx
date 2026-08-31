@@ -17,15 +17,17 @@ const loginSchema = z.object({
 });
 
 const registerSchema = z.object({
-  nome: z.string().min(2, "Informe seu nome"),
-  email: z.string().email("Informe um e-mail válido"),
+  nome: z.string().trim().min(2, "Informe seu nome"),
+  email: z.string().trim().email("Informe um e-mail válido"),
   password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
 });
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, loading, isAuthenticated, user } = useAuth();
+  const { login, loading: authLoading, isAuthenticated, user } = useAuth();
   const [mode, setMode] = useState<"login" | "register">("login");
+  const [registering, setRegistering] = useState(false);
+  const loading = mode === "register" ? registering : authLoading;
 
   const loginForm = useForm<LoginRequest>({
     resolver: zodResolver(loginSchema),
@@ -51,11 +53,13 @@ export default function Login() {
   }
 
   async function onRegisterSubmit(values: RegisterRequest) {
+    setRegistering(true);
     try {
-      await registerUser(values);
+      const normalizedValues = { ...values, nome: values.nome.trim(), email: values.email.trim().toLowerCase() };
+      await registerUser(normalizedValues);
       toast.success("Conta criada com sucesso. Você já pode entrar.");
       setMode("login");
-      loginForm.reset({ email: values.email, password: values.password });
+      loginForm.reset({ email: normalizedValues.email, password: values.password });
       registerForm.reset();
     } catch (error: unknown) {
       const status = typeof error === "object" && error !== null && "response" in error ? (error.response as { status?: number }).status : undefined;
@@ -64,6 +68,8 @@ export default function Login() {
         return;
       }
       toast.error("Não foi possível criar a conta. Tente novamente.");
+    } finally {
+      setRegistering(false);
     }
   }
 

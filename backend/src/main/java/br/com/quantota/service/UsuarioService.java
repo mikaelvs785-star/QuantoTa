@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class UsuarioService {
@@ -25,13 +26,14 @@ public class UsuarioService {
     }
 
     public Usuario cadastrar(CadastroUsuarioDTO dto) {
-        if (usuarioRepository.existsByEmail(dto.getEmail())) {
+        String email = dto.getEmail().trim().toLowerCase(Locale.ROOT);
+        if (usuarioRepository.existsByEmail(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado");
         }
 
         Usuario usuario = Usuario.builder()
-                .nome(dto.getNome())
-                .email(dto.getEmail())
+                .nome(dto.getNome().trim())
+                .email(email)
                 .senha(passwordEncoder.encode(dto.getSenha()))
                 .perfil(PerfilUsuario.USER)
                 .ativo(true)
