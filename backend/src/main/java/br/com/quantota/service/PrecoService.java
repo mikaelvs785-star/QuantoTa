@@ -8,6 +8,8 @@ import br.com.quantota.model.Produto;
 import br.com.quantota.model.Usuario;
 import br.com.quantota.repository.PrecoRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import br.com.quantota.exception.BusinessRuleException;
 import br.com.quantota.exception.ResourceNotFoundException;
 
@@ -41,10 +43,10 @@ public class PrecoService {
         return precoRepository.findByProdutoIdOrderByValorAsc(produtoId);
     }
 
-    public Preco salvar(CadastroPrecoDTO dto) {
+    public Preco salvar(CadastroPrecoDTO dto, String emailUsuarioAutenticado) {
         Produto produto = produtoService.buscarPorId(dto.getProdutoId());
         Mercado mercado = mercadoService.buscarPorId(dto.getMercadoId());
-        Usuario usuario = usuarioService.buscarPorId(dto.getUsuarioCadastroId());
+        Usuario usuario = usuarioService.buscarPorEmail(emailUsuarioAutenticado);
 
         validarPermissaoCadastro(usuario);
 
@@ -62,12 +64,13 @@ public class PrecoService {
         return precoRepository.save(preco);
     }
 
-    public Preco atualizar(Long id, CadastroPrecoDTO dto) {
+    public Preco atualizar(Long id, CadastroPrecoDTO dto, String emailUsuarioAutenticado) {
         Preco preco = precoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Preço não encontrado."));
 
-        Usuario usuario = usuarioService.buscarPorId(dto.getUsuarioCadastroId());
+        Usuario usuario = usuarioService.buscarPorEmail(emailUsuarioAutenticado);
         validarPermissaoCadastro(usuario);
+        validarPropriedade(preco, usuario);
 
         preco.setValor(dto.getValor());
         preco.setDataColeta(dto.getDataColeta());
@@ -80,8 +83,13 @@ public class PrecoService {
         return precoRepository.save(preco);
     }
 
-    public void deletar(Long id) {
-        precoRepository.deleteById(id);
+    public void deletar(Long id, String emailUsuarioAutenticado) {
+        Preco preco = precoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Preço não encontrado."));
+        Usuario usuario = usuarioService.buscarPorEmail(emailUsuarioAutenticado);
+        validarPermissaoCadastro(usuario);
+        validarPropriedade(preco, usuario);
+        precoRepository.delete(preco);
     }
 
     public BigDecimal buscarMenorPreco(Long produtoId) {
@@ -95,6 +103,17 @@ public class PrecoService {
 
         if (usuario.getPerfil() == PerfilUsuario.VENDEDOR && !Boolean.TRUE.equals(usuario.getAtivo())) {
             throw new BusinessRuleException("Vendedor ainda não aprovado.");
+        }
+    }
+
+    private void validarPropriedade(Preco preco, Usuario usuario) {
+        if (usuario.getPerfil() == PerfilUsuario.ADMIN) {
+            return;
+        }
+
+        if (preco.getUsuarioCadastro() == null
+                || !usuario.getId().equals(preco.getUsuarioCadastro().getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Vendedor só pode alterar os próprios preços.");
         }
     }
 }

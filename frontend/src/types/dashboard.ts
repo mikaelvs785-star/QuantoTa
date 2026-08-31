@@ -23,6 +23,7 @@ export interface PriceRecord {
   id: string;
   productId?: string;
   marketId?: string;
+  submittedByUserId?: string;
   product: string;
   market: string;
   price: number;

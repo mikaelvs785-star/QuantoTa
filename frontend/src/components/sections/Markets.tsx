@@ -1,4 +1,12 @@
-import { MapPin, Star } from "lucide-react";
+import { MapPin } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionTitle } from "@/components/ui/SectionTitle";
-const markets = [{ name: "Carrefour", initials: "C", color: "bg-blue-600" }, { name: "Assaí", initials: "A", color: "bg-orange-500" }, { name: "Atacadão", initials: "At", color: "bg-blue-700" }, { name: "Pão de Açúcar", initials: "PA", color: "bg-emerald-600" }];
-export function Markets() { return <section><SectionTitle title="Mercados parceiros" description="Compare preços onde você já compra." /><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{markets.map((market) => <article key={market.name} className="flex items-center gap-3 rounded-2xl border bg-white p-4 shadow-sm dark:bg-slate-900"><span className={`grid size-12 place-items-center rounded-xl font-black text-white ${market.color}`}>{market.initials}</span><div><h3 className="font-bold">{market.name}</h3><p className="mt-1 flex items-center gap-1 text-xs text-slate-500"><Star className="size-3 fill-amber-400 text-amber-400" /> 4.8 <MapPin className="ml-1 size-3" /> Próximo a você</p></div></article>)}</div></section>; }
+import { useMercados } from "@/hooks/useMercados";
+
+export function Markets() {
+  const mercadosQuery = useMercados();
+  const mercados = mercadosQuery.data ?? [];
+  return <section><SectionTitle title="Mercados cadastrados" description="Estabelecimentos disponíveis para comparação." />{mercadosQuery.isLoading ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><div className="h-20 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800" /><div className="h-20 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800" /></div> : mercados.length ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{mercados.slice(0, 4).map((mercado) => <Card key={mercado.id}><CardContent className="flex items-center gap-3"><span className="grid size-12 place-items-center rounded-xl bg-brand-600 font-black text-white">{mercado.name.slice(0, 1)}</span><div className="min-w-0"><h3 className="truncate font-bold">{mercado.name}</h3><Link to="/dashboard" className="mt-1 flex items-center gap-1 text-xs text-slate-500 hover:text-brand-600"><MapPin className="size-3" /> Ver preços cadastrados</Link></div></CardContent></Card>)}</div> : <Card><EmptyState title="Nenhum mercado cadastrado" description="Os mercados aparecerão aqui quando forem cadastrados pela administração." action={false} /></Card>}</section>;
+}

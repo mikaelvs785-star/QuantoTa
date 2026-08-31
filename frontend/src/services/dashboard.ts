@@ -1,11 +1,10 @@
-import { isAxiosError } from "axios";
 import { api } from "./api";
 import type { DashboardData, FavoriteMarket, MonitoredProduct, PriceRecord } from "@/types/dashboard";
 
 type PayloadEnvelope<T> = { value?: T[]; Count?: number };
 type BackendProduct = { id: number; nome: string; categoria?: string; marca?: string; descricao?: string; ativo?: boolean };
 type BackendMarket = { id: number; nome: string; cidade?: string; estado?: string; bairro?: string; endereco?: string; telefone?: string; ativo?: boolean };
-type BackendPrice = { id: number; produto?: BackendProduct; mercado?: BackendMarket; valor?: number; dataColeta?: string; dataCadastro?: string };
+type BackendPrice = { id: number; produto?: BackendProduct; mercado?: BackendMarket; usuarioCadastro?: BackendUser; valor?: number; dataColeta?: string; dataCadastro?: string };
 type BackendUser = {
   id: number;
   nome: string;
@@ -23,16 +22,11 @@ function unwrapList<T>(payload: unknown): T[] {
 }
 
 export async function getDashboard() {
-  try {
-    const { data } = await api.get<DashboardData>("/dashboard");
-    return data;
-  } catch (error) {
     // O backend atual não possui o endpoint agregado /dashboard. Em alguns
     // cenários o Spring Security responde 403 antes de devolver o 404; nos
     // dois casos montamos o painel a partir dos endpoints disponíveis.
-    if (!isAxiosError(error) || ![403, 404].includes(error.response?.status ?? 0)) throw error;
 
-    const [
+  const [
   productsResponse,
   marketsResponse,
   pricesResponse,
@@ -53,13 +47,14 @@ export async function getDashboard() {
       id: String(price.id),
       productId: price.produto ? String(price.produto.id) : undefined,
       marketId: price.mercado ? String(price.mercado.id) : undefined,
+      submittedByUserId: price.usuarioCadastro ? String(price.usuarioCadastro.id) : undefined,
       product: price.produto?.nome ?? "Produto",
       market: price.mercado?.nome ?? "Mercado",
       price: Number(price.valor ?? 0),
-      date: price.dataColeta ?? price.dataCadastro ?? new Date().toISOString(),
+      date: price.dataColeta ?? price.dataCadastro ?? "",
     }));
 
-    const favoriteMarkets: FavoriteMarket[] = markets.map((market, index) => {
+    const favoriteMarkets: FavoriteMarket[] = markets.map((market) => {
       const marketPrices = prices.filter((price) => price.mercado?.id === market.id);
       const bestPrice = marketPrices.length > 0 ? Math.min(...marketPrices.map((price) => Number(price.valor ?? 0))) : 0;
       return {
@@ -67,7 +62,6 @@ export async function getDashboard() {
         name: market.nome,
         productCount: marketPrices.length,
         bestPrice,
-        distance: index + 1,
       };
     });
 
@@ -112,26 +106,15 @@ export async function getDashboard() {
     variation: 0,
   },
 ],
-      monthlySavings: [
-        { month: "Jan", value: 85 },
-        { month: "Fev", value: 110 },
-        { month: "Mar", value: 95 },
-        { month: "Abr", value: 138 },
-      ],
-      popularProducts: [
-        { name: "Arroz", searches: 26 },
-        { name: "Leite", searches: 18 },
-        { name: "Banana", searches: 14 },
-      ],
-      pricesByMarket: [
-        { market: "Mercado Econômico", price: 4.99 },
-        { market: "SuperPreço", price: 5.49 },
-      ],
+      monthlySavings: [],
+      popularProducts: [],
+      pricesByMarket: favoriteMarkets
+        .filter((market) => market.productCount > 0)
+        .map((market) => ({ market: market.name, price: market.bestPrice })),
       latestPrices,
       favoriteMarkets,
       monitoredProducts,
     } satisfies DashboardData;
-  }
 }
 
 export async function getProdutos() {
@@ -166,9 +149,10 @@ export async function getPrecos() {
     id: String(price.id),
     productId: price.produto ? String(price.produto.id) : undefined,
     marketId: price.mercado ? String(price.mercado.id) : undefined,
+    submittedByUserId: price.usuarioCadastro ? String(price.usuarioCadastro.id) : undefined,
     product: price.produto?.nome ?? "Produto",
     market: price.mercado?.nome ?? "Mercado",
     price: Number(price.valor ?? 0),
-    date: price.dataColeta ?? price.dataCadastro ?? new Date().toISOString(),
+    date: price.dataColeta ?? price.dataCadastro ?? "",
   }));
 }

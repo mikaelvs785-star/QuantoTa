@@ -1,9 +1,23 @@
-import { Heart, ShoppingCart } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionTitle } from "@/components/ui/SectionTitle";
+import { usePrecos } from "@/hooks/usePrecos";
+import { useProdutos } from "@/hooks/useProdutos";
 import { formatCurrency } from "@/lib/utils";
-import type { Product } from "@/types/catalog";
-const products: Product[] = [{ id: "1", name: "Arroz Tipo 1 Camil 5kg", category: "Mercearia", market: "Atacadão", price: 18.9, previousPrice: 23.79, image: "🍚" }, { id: "2", name: "Café Tradicional 500g", category: "Mercearia", market: "Carrefour", price: 17.49, previousPrice: 21.99, image: "☕" }, { id: "3", name: "Leite Integral 1L", category: "Laticínios", market: "Assaí", price: 4.89, previousPrice: 5.59, image: "🥛" }, { id: "4", name: "Azeite Extra Virgem 500ml", category: "Mercearia", market: "Pão de Açúcar", price: 29.9, previousPrice: 36.9, image: "🫒" }];
-export function FeaturedProducts() { return <section><SectionTitle title="🔥 Ofertas em destaque" description="Preços atualizados nos mercados da sua região." action={<Button variant="ghost" className="hidden sm:inline-flex">Ver todas</Button>} /><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{products.map((product) => { const discount = product.previousPrice ? Math.round((1 - product.price / product.previousPrice) * 100) : 0; return <Card key={product.id} className="group overflow-hidden transition hover:-translate-y-1 hover:shadow-lg"><CardContent className="p-0"><div className="relative grid h-36 place-items-center bg-slate-50 text-6xl dark:bg-slate-800"><span>{product.image}</span><Badge className="absolute left-3 top-3 bg-red-500 text-white">-{discount}%</Badge><Button variant="ghost" size="icon" className="absolute right-2 top-2 rounded-full bg-white/80 dark:bg-slate-900/80"><Heart className="size-4" /></Button></div><div className="p-4"><p className="line-clamp-2 min-h-10 text-sm font-semibold">{product.name}</p><p className="mt-3 text-2xl font-black">{formatCurrency(product.price)}</p><p className="text-xs text-slate-500 line-through">{formatCurrency(product.previousPrice ?? product.price)}</p><div className="mt-4 flex items-center justify-between"><span className="text-xs font-medium text-slate-500">{product.market}</span><Button size="sm"><ShoppingCart className="size-3.5" /> Adicionar</Button></div></div></CardContent></Card>; })}</div></section>; }
+export function FeaturedProducts() {
+  const produtosQuery = useProdutos({ size: 100 });
+  const precosQuery = usePrecos();
+  const produtos = produtosQuery.data?.content ?? [];
+  const precos = precosQuery.data ?? [];
+  const ofertas = produtos.flatMap((produto) => {
+    const precosDoProduto = precos.filter((preco) => preco.productId === produto.id);
+    if (!precosDoProduto.length) return [];
+    const menorPreco = precosDoProduto.reduce((menor, preco) => preco.price < menor.price ? preco : menor);
+    return [{ produto, menorPreco }];
+  }).sort((a, b) => a.menorPreco.price - b.menorPreco.price).slice(0, 4);
+
+  return <section><SectionTitle title="Ofertas cadastradas" description="Preços publicados pelos mercados." action={<Button asChild variant="ghost" className="hidden sm:inline-flex"><Link to="/dashboard">Ver comparações</Link></Button>} />{produtosQuery.isLoading || precosQuery.isLoading ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><div className="h-48 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800" /><div className="h-48 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800" /></div> : ofertas.length ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{ofertas.map(({ produto, menorPreco }) => <Card key={produto.id} className="overflow-hidden"><CardContent className="p-5"><p className="text-sm text-slate-500">{produto.category}</p><p className="mt-2 min-h-10 font-semibold">{produto.name}</p><p className="mt-4 text-2xl font-black text-emerald-600">{formatCurrency(menorPreco.price)}</p><p className="mt-1 text-xs text-slate-500">Menor preço em {menorPreco.market}</p><Button asChild size="sm" className="mt-4"><Link to="/dashboard"><ShoppingCart className="size-3.5" /> Comparar</Link></Button></CardContent></Card>)}</div> : <Card><EmptyState title="Nenhuma oferta cadastrada" description="As ofertas serão exibidas quando mercados publicarem preços." action={false} /></Card>}</section>;
+}
