@@ -32,6 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            log.debug("Autenticado: {} authorities: {}", user.getUsername(), user.getAuthorities());
         } catch (Exception exception) {
             log.warn("Token JWT inválido: {}", exception.getMessage());
             SecurityContextHolder.clearContext();
