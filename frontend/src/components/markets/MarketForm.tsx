@@ -1,5 +1,8 @@
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
+import { useCatalogPermissions } from "@/hooks/useCatalogPermissions";
+import { userService } from "@/services/userService";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/Button";
@@ -13,19 +16,30 @@ const schema = z.object({
   state: z.string().trim().length(2, "Use a sigla do estado"),
   phone: z.string(),
   status: z.enum(["ACTIVE", "INACTIVE"]),
+  vendedorId: z.string().optional(),
 });
 type Values = z.infer<typeof schema>;
 export function MarketForm({
   market,
   submitting,
+  vendedorId,
   onSubmit,
 }: {
   market?: Market;
+  vendedorId?: string;
   submitting?: boolean;
   onSubmit: (input: MarketInput) => void;
 }) {
+  const permissions = useCatalogPermissions();
+  const admin = permissions.data?.gerenciarTodosMercados === true;
+  const sellers = useQuery({
+    queryKey: ["usuarios", "vendedores"],
+    queryFn: userService.listarUsuarios,
+    enabled: admin,
+  });
   const {
     register,
+    control,
     reset,
     handleSubmit,
     formState: { errors },
@@ -39,6 +53,7 @@ export function MarketForm({
       state: "",
       phone: "",
       status: "ACTIVE",
+      vendedorId: "",
     },
   });
   useEffect(() => {
@@ -51,8 +66,9 @@ export function MarketForm({
         state: market.state,
         phone: market.phone,
         status: market.status,
+        vendedorId: vendedorId ?? "",
       });
-  }, [market, reset]);
+  }, [market, vendedorId, reset]);
   return (
     <form
       onSubmit={handleSubmit((values) =>
@@ -97,14 +113,57 @@ export function MarketForm({
           </label>
         ))}
       </div>
-      <label className="block">
-        <span className="mb-2 block text-sm font-semibold">Status</span>
-        <select {...register("status")} className="qt-select">
-          <option value="ACTIVE">Ativo</option>
-          <option value="INACTIVE">Inativo</option>
-        </select>
-      </label>
-      <Button type="submit" disabled={submitting}>
+      {admin && (
+        <label className="block">
+          <span className="mb-2 block text-sm font-semibold">
+            Vendedor responsável (opcional)
+          </span>
+          <Controller
+            name="vendedorId"
+            control={control}
+            render={({ field }) => (
+              <select
+                {...field}
+                value={field.value ?? ""}
+                className="qt-select"
+                disabled={sellers.isPending || sellers.isError}
+              >
+                <option value="">Sem vendedor responsável</option>
+                {sellers.data
+                  ?.filter((u) => u.active && u.role === "VENDEDOR")
+                  .map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.name}
+                    </option>
+                  ))}
+              </select>
+            )}
+          />
+          {sellers.isError && (
+            <p role="alert">
+              Não foi possível carregar os vendedores.{" "}
+              <button type="button" onClick={() => void sellers.refetch()}>
+                Tentar novamente
+              </button>
+            </p>
+          )}
+        </label>
+      )}
+      {admin && (
+        <label className="block">
+          <span className="mb-2 block text-sm font-semibold">Status</span>
+          <select {...register("status")} className="qt-select">
+            <option value="ACTIVE">Ativo</option>
+            <option value="INACTIVE">Inativo</option>
+          </select>
+        </label>
+      )}
+      <Button
+        type="submit"
+        disabled={
+          submitting || (admin && (sellers.isPending || sellers.isError))
+        }
+      >
         {submitting ? "Salvando..." : "Salvar mercado"}
       </Button>
     </form>

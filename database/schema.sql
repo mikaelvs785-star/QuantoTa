@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS mercados (
     cidade VARCHAR(255),
     estado VARCHAR(255),
     telefone VARCHAR(50),
+    vendedor_id BIGINT,
     ativo BOOLEAN NOT NULL DEFAULT TRUE
 );
 

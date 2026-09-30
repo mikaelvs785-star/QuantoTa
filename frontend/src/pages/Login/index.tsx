@@ -38,7 +38,7 @@ export default function Login() {
     !requestedPath.startsWith("/login")
       ? requestedPath
       : null;
-  const { login, loading: authLoading, isAuthenticated, user } = useAuth();
+  const { login, loading: authLoading, isAuthenticated } = useAuth();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [registering, setRegistering] = useState(false);
   const loading = mode === "register" ? registering : authLoading;
@@ -53,30 +53,13 @@ export default function Login() {
   });
 
   if (isAuthenticated)
-    return (
-      <Navigate
-        to={
-          destination ??
-          (user?.role === "ADMIN" ? "/admin/dashboard" : "/cliente/dashboard")
-        }
-        replace
-      />
-    );
+    return <Navigate to={destination ?? "/dashboard"} replace />;
 
   async function onLoginSubmit(credentials: LoginRequest) {
     try {
       await login(credentials);
       toast.success("Login realizado com sucesso.");
-      const authenticatedUser = JSON.parse(
-        localStorage.getItem("quantota-user") ?? "{}",
-      );
-      navigate(
-        destination ??
-          (authenticatedUser.role === "ADMIN"
-            ? "/admin/dashboard"
-            : "/cliente/dashboard"),
-        { replace: true },
-      );
+      navigate(destination ?? "/dashboard", { replace: true });
     } catch (error: unknown) {
       const status =
         typeof error === "object" && error !== null && "response" in error

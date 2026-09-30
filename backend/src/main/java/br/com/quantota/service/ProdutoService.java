@@ -12,8 +12,10 @@ public class ProdutoService {
 
     private final ProdutoRepository produtoRepository;
 
-    public ProdutoService(ProdutoRepository produtoRepository) {
+    private final CatalogoPermissaoService permissoes;
+    public ProdutoService(ProdutoRepository produtoRepository, CatalogoPermissaoService permissoes) {
         this.produtoRepository = produtoRepository;
+        this.permissoes = permissoes;
     }
 
     public List<Produto> listarTodos() { return produtoRepository.findAll(); }
@@ -32,6 +34,8 @@ public class ProdutoService {
     }
 
     public Produto salvar(Produto produto) {
+        permissoes.exigirAdmin();
+        produto.setId(null);
         if (produto.getAtivo() == null) {
             produto.setAtivo(true);
         }
@@ -39,6 +43,7 @@ public class ProdutoService {
     }
 
     public Produto atualizar(Long id, Produto novoProduto) {
+        permissoes.exigirAdmin();
         Produto produto = buscarPorId(id);
         produto.setNome(novoProduto.getNome());
         produto.setCategoria(novoProduto.getCategoria());
@@ -50,6 +55,7 @@ public class ProdutoService {
     }
 
     public void deletar(Long id) {
+        permissoes.exigirAdmin();
         Produto produto = buscarPorId(id);
         produto.setAtivo(false);
         produtoRepository.save(produto);

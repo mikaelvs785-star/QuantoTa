@@ -29,6 +29,13 @@ public class MercadoController {
         return mercadoService.buscarPorId(id);
     }
 
+    @GetMapping("/{id}/vendedor")
+    public java.util.Map<String, Object> vendedor(@PathVariable Long id) {
+        mercadoService.exigirAdmin();
+        Long vendedor = mercadoService.buscarPorId(id).getVendedorId();
+        return java.util.Map.of("vendedorId", vendedor == null ? "" : vendedor);
+    }
+
     @PostMapping
     public Mercado salvar(@Valid @RequestBody Mercado mercado) {
         return mercadoService.salvar(mercado);

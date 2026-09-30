@@ -154,7 +154,7 @@ export default function ComparadorPage() {
                 </div>
               </div>
               <Link
-                to={`/cliente/lista?produto=${selected.id}`}
+                to={`/lista?produto=${selected.id}`}
                 className="qt-action mt-6"
               >
                 Adicionar à minha lista <ArrowRight className="size-4" />

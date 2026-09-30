@@ -147,7 +147,7 @@ export default function Home() {
                 icon: ListChecks,
                 title: "Monte sua lista",
                 text: "Escolha os itens e as quantidades. Sua lista fica salva na sua conta.",
-                href: "/cliente/lista",
+                href: "/lista",
                 action: "Criar minha lista",
               },
               {

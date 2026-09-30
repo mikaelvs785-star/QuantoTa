@@ -27,7 +27,7 @@ export default function Users() {
         description="Consulte os usuários e cadastre contas de consumidor."
         action={
           <Button asChild>
-            <Link to="/admin/usuarios/novo">
+            <Link to="/usuarios/novo">
               <PlusCircle className="size-4" /> Novo usuário
             </Link>
           </Button>
@@ -37,7 +37,7 @@ export default function Users() {
         <Card className="p-8 text-center">
           <p className="text-sm text-slate-500">Nenhum usuário encontrado.</p>
           <Button asChild className="mt-4">
-            <Link to="/admin/usuarios/novo">Cadastrar usuário</Link>
+            <Link to="/usuarios/novo">Cadastrar usuário</Link>
           </Button>
         </Card>
       ) : (

@@ -22,17 +22,17 @@ export function ProductEditorPage({ mode }: { mode: "create" | "edit" }) {
   if (isEdit && productQuery.isError)
     return <ApiError onRetry={() => void productQuery.refetch()} />;
   if (isEdit && !productQuery.data)
-    return <Navigate to="/admin/produtos" replace />;
+    return <Navigate to="/catalogo?aba=produtos" replace />;
   async function submit(input: ProductInput) {
     try {
       if (isEdit) {
         await editProduct.mutateAsync({ id, input });
         toast.success("Produto atualizado.");
-        navigate("/admin/produtos");
+        navigate("/catalogo?aba=produtos");
       } else {
         await createProduct.mutateAsync(input);
         toast.success("Produto criado.");
-        navigate("/admin/produtos");
+        navigate("/catalogo?aba=produtos");
       }
     } catch {
       toast.error("Erro ao salvar produto.");
@@ -49,7 +49,7 @@ export function ProductEditorPage({ mode }: { mode: "create" | "edit" }) {
         }
         action={
           <Button asChild variant="outline">
-            <Link to="/admin/produtos">Cancelar</Link>
+            <Link to="/catalogo?aba=produtos">Cancelar</Link>
           </Button>
         }
       />

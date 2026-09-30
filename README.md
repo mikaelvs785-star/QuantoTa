@@ -11,7 +11,7 @@ O QuantoTá é um projeto acadêmico do SENAC com frontend em **React + TypeScri
 3. Entre ou crie uma conta para salvar listas e ajustar quantidades.
 4. Consulte a estimativa e os itens que ainda não têm preço.
 
-O administrador mantém produtos, mercados e preços em uma área separada. Há tema claro, escuro e preferência do sistema, além de navegação para celular.
+Produtos e mercados ficam em um catálogo compartilhado. A API define as ações de cada perfil; os formulários são os mesmos para todos os usuários autorizados. Há tema claro, escuro e preferência do sistema, além de navegação para celular.
 
 ## Regras implementadas
 
@@ -23,17 +23,19 @@ O administrador mantém produtos, mercados e preços em uma área separada. Há 
 - Produtos sem preço deixam a estimativa incompleta. O valor conhecido é um subtotal, não um total definitivo.
 - A estimativa combina os menores preços de cada item, que podem estar em mercados diferentes. Deslocamento e compras realizadas não fazem parte desse cálculo.
 - Desativar produto ou mercado preserva os registros anteriores. O administrador pode consultar e reativar os cadastros.
-- Cadastro público cria apenas consumidores. A API exige ADMIN para alterar catálogo, preços e cadastrar usuários pela área administrativa.
-- O perfil VENDEDOR é mantido para compatibilidade com contas existentes, com acesso de consumidor. Solicitação e aprovação de vendedores ficam fora deste MVP; o formulário anterior apenas imprimia dados no console.
+- Cadastro público cria apenas consumidores. Produtos, preços, desativação de mercados e gestão de usuários exigem ADMIN.
+- Contas VENDEDOR podem criar mercados e editar apenas os seus próprios mercados ativos. O backend atribui o vínculo ao criar, ignora tentativas de alterar responsável ou status pelo vendedor e bloqueia a edição entre contas.
+- O administrador pode atribuir ou transferir um mercado a um vendedor ativo pelo formulário compartilhado. Mercados existentes ficam sem vendedor até essa atribuição. Aprovação e cadastro de vendedores continuam fora desta etapa.
 
 ## Rotas e navegação
 
-- Públicas: `/`, `/login`, `/comparar`, `/mercados` e `/cliente/dashboard`.
-- Conta autenticada: `/cliente/lista` e `/cliente/configuracoes`.
-- Administração: `/admin/dashboard`, `/admin/produtos`, `/admin/mercados`, `/admin/precos` e `/admin/usuarios`.
-- Produtos e mercados têm cadastro em `/novo` e edição em `/:id/editar`. Ao salvar, o administrador retorna à listagem.
-- `/dashboard` direciona para a área do perfil conectado. `/admin` e `/cliente` abrem seus respectivos painéis.
-- Links antigos de detalhes administrativos redirecionam à edição. `/cliente/comparador` e `/cliente/mercados` redirecionam às páginas públicas, preservando busca e fragmento, sem exigir login.
+- Públicas: `/`, `/login`, `/dashboard`, `/comparar` e `/catalogo`.
+- `/catalogo?aba=produtos` e `/catalogo?aba=mercados` são seções da mesma tela, disponíveis para todos os perfis.
+- Conta autenticada: `/lista` e `/conta`.
+- Formulários compartilhados: `/produtos/novo`, `/produtos/:id/editar`, `/mercados/novo` e `/mercados/:id/editar`. A interface consulta `GET /catalogo/permissoes`; os serviços também validam cada alteração no backend.
+- Gestão de preços e contas: `/precos`, `/usuarios` e `/usuarios/novo`, com permissão ADMIN.
+- Endereços antigos com `/admin` e `/cliente`, além de `/produtos` e `/mercados`, redirecionam às rotas atuais, mantendo parâmetros e fragmentos. Eles não possuem telas próprias.
+- Ao salvar ou cancelar um formulário, o usuário retorna à seção correspondente do catálogo.
 
 O projeto usa npm. O único lockfile é `frontend/package-lock.json`; a raiz oferece scripts de conveniência e não instala dependências próprias. O Docker do frontend também usa `npm ci`.
 
@@ -69,6 +71,8 @@ A API exige `SPRING_DATASOURCE_PASSWORD` e `JWT_SECRET`. Os valores não estão 
 
 Uma senha de banco e uma chave JWT padrão existiam no histórico do projeto. A remoção no código atual não apaga esse histórico: substitua a senha exposta no provedor e use uma chave JWT privada. Nenhuma credencial remota foi alterada automaticamente.
 
+O vínculo usa a coluna nullable `mercados.vendedor_id`. Com `ddl-auto=update`, ela é criada ao iniciar a API; instalações com `validate` devem aplicar `ALTER TABLE mercados ADD COLUMN IF NOT EXISTS vendedor_id BIGINT;` antes da atualização. Os registros existentes permanecem sem vínculo até a atribuição pelo admin.
+
 O schema em `database/schema.sql` é um exemplo PostgreSQL. Para desenvolvimento, a API continua com `ddl-auto=update`; os testes usam H2 isolado e `create-drop`. Não execute os scripts de exemplo sobre um banco em produção sem revisar as alterações.
 
 ## Validação
@@ -81,7 +85,7 @@ cd backend
 .\gradlew.bat test
 ```
 
-Os testes de frontend exigem Node 22.13 ou superior. Os cinco testes de integração Java iniciam a API real em porta aleatória com H2 e verificam cadastro, permissões, isolamento de listas, persistência, validações, preços atuais e contas desativadas. Quatro testes de frontend cobrem identidade dos produtos, registros históricos, preços inválidos e cálculo em centavos.
+Os testes de frontend exigem Node 22.13 ou superior. Os seis testes de integração Java iniciam a API real em porta aleatória com H2 e verificam cadastro, permissões, isolamento de listas, persistência, validações, preços atuais e contas desativadas, além de edição por vendedor, bloqueio entre vendedores, atribuição pelo administrador e proteção contra alteração indevida de vínculo. Quatro testes de frontend cobrem identidade dos produtos, registros históricos, preços inválidos e cálculo em centavos.
 
 A revisão visual também exercitou a aplicação com uma API local e dados de teste. As capturas em `docs/screenshots` são dessa execução, não dos dados de produção.
 

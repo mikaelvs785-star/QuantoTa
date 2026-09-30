@@ -9,12 +9,20 @@
 - Consultar uma estimativa e os produtos sem preço disponível.
 - Escolher tema claro, escuro ou do sistema.
 
+## Vendedor
+
+- Usar o mesmo catálogo e os mesmos formulários dos demais perfis.
+- Criar mercados vinculados automaticamente à própria conta.
+- Editar dados dos próprios mercados ativos, sem alterar vínculo ou status.
+- Consultar e comparar produtos e manter listas como consumidor.
+
 ## Administração
 
 - Consultar e cadastrar contas de consumidor.
 - Criar, editar, desativar e reativar produtos e mercados.
 - Cadastrar, editar e excluir registros de preços, com valor e data de coleta.
 - Consultar contagens reais do catálogo e preços recentes.
+- Atribuir e transferir mercados a vendedores ativos pelo formulário compartilhado.
 
 ## Regras
 
@@ -29,8 +37,9 @@
 9. Registro de preço tem autoria obtida da sessão; o corpo não escolhe o usuário responsável.
 10. Falhas de carregamento devem permitir tentar novamente e não aparecer como catálogo vazio.
 11. Cadastro público não cria ADMIN nem VENDEDOR.
-12. Cadastros desativados ficam fora da consulta do consumidor e permanecem disponíveis ao administrador.
+12. A API verifica o vínculo entre vendedor e mercado em cada edição; o cliente não decide o responsável nem libera permissões.
+13. Cadastros desativados ficam fora da consulta do consumidor e permanecem disponíveis ao administrador.
 
 ## Fora do MVP
 
-Aprovação de vendedores, vinculação de vendedores a mercados, anúncios, checkout, pagamento, localização por GPS, distância, favoritos, notificações e economia efetivamente realizada. O perfil VENDEDOR antigo continua com acesso de consumidor para não quebrar contas existentes.
+Cadastro e aprovação de vendedores, anúncios, checkout, pagamento, localização por GPS, distância, favoritos, notificações e economia efetivamente realizada. A gestão de produtos e preços permanece com ADMIN nesta etapa.

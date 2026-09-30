@@ -1,5 +1,8 @@
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useQuery } from "@tanstack/react-query";
+import { useCatalogPermissions } from "@/hooks/useCatalogPermissions";
+import { api } from "@/services/api";
 import { ApiError } from "@/components/ui/ApiError";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -15,6 +18,18 @@ export function MarketEditorPage({ mode }: { mode: "create" | "edit" }) {
   const { id = "" } = useParams();
   const navigate = useNavigate();
   const marketQuery = useMarket(id);
+  const permissions = useCatalogPermissions();
+  const assignment = useQuery({
+    queryKey: ["mercado", id, "vendedor"],
+    queryFn: async () =>
+      (
+        await api.get<{ vendedorId: string | number }>(
+          `/mercados/${id}/vendedor`,
+        )
+      ).data,
+    enabled:
+      mode === "edit" && permissions.data?.gerenciarTodosMercados === true,
+  });
   const createMarket = useCreateMarket();
   const updateMarket = useUpdateMarket();
 
@@ -23,11 +38,11 @@ export function MarketEditorPage({ mode }: { mode: "create" | "edit" }) {
       if (mode === "edit") {
         await updateMarket.mutateAsync({ id, input });
         toast.success("Mercado atualizado.");
-        navigate("/admin/mercados");
+        navigate("/catalogo?aba=mercados");
       } else {
         await createMarket.mutateAsync(input);
         toast.success("Mercado criado.");
-        navigate("/admin/mercados");
+        navigate("/catalogo?aba=mercados");
       }
     } catch {
       toast.error("Erro ao salvar mercado.");
@@ -35,7 +50,13 @@ export function MarketEditorPage({ mode }: { mode: "create" | "edit" }) {
   }
 
   if (mode === "edit") {
-    if (marketQuery.isLoading) return <MarketSkeleton />;
+    if (
+      marketQuery.isLoading ||
+      (permissions.data?.gerenciarTodosMercados && assignment.isPending)
+    )
+      return <MarketSkeleton />;
+    if (permissions.data?.gerenciarTodosMercados && assignment.isError)
+      return <ApiError onRetry={() => void assignment.refetch()} />;
     if (marketQuery.isError || !marketQuery.data)
       return <ApiError onRetry={() => void marketQuery.refetch()} />;
   }
@@ -50,7 +71,10 @@ export function MarketEditorPage({ mode }: { mode: "create" | "edit" }) {
             : "Cadastre um mercado para acompanhar preços."
         }
         action={
-          <Button variant="outline" onClick={() => navigate("/admin/mercados")}>
+          <Button
+            variant="outline"
+            onClick={() => navigate("/catalogo?aba=mercados")}
+          >
             Cancelar
           </Button>
         }
@@ -59,6 +83,7 @@ export function MarketEditorPage({ mode }: { mode: "create" | "edit" }) {
         <CardContent className="p-5 sm:p-7">
           <MarketForm
             market={marketQuery.data}
+            vendedorId={String(assignment.data?.vendedorId ?? "")}
             submitting={createMarket.isPending || updateMarket.isPending}
             onSubmit={submit}
           />

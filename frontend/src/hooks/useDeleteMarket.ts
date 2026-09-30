@@ -6,6 +6,7 @@ export function useDeleteMarket() {
   return useMutation({
     mutationFn: (id: string) => marketService.excluirMercado(id),
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["catalogo", "permissoes"] });
       void queryClient.invalidateQueries({ queryKey: ["mercados"] });
       void queryClient.invalidateQueries({ queryKey: ["precos"] });
       void queryClient.invalidateQueries({ queryKey: ["dashboard"] });

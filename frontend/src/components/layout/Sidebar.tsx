@@ -1,17 +1,15 @@
 import {
-  ArrowLeft,
   ChevronLeft,
   ChevronRight,
   LayoutDashboard,
   ListChecks,
   Package,
   Settings,
-  Store,
   Tags,
   Users,
   Search,
 } from "lucide-react";
-import { NavLink, Link, useLocation } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { TabBar } from "./TabBar";
@@ -24,23 +22,19 @@ export function Sidebar({
   onCollapsedChange: () => void;
 }) {
   const { user } = useAuth();
-  const { pathname } = useLocation();
-  const admin = pathname.startsWith("/admin");
-  const items = admin
-    ? [
-        { label: "Visão geral", icon: LayoutDashboard, to: "/admin/dashboard" },
-        { label: "Produtos", icon: Package, to: "/admin/produtos" },
-        { label: "Mercados", icon: Store, to: "/admin/mercados" },
-        { label: "Preços", icon: Tags, to: "/admin/precos" },
-        { label: "Usuários", icon: Users, to: "/admin/usuarios" },
-      ]
-    : [
-        { label: "Início", icon: LayoutDashboard, to: "/cliente/dashboard" },
-        { label: "Comparar preços", icon: Search, to: "/comparar" },
-        { label: "Minha lista", icon: ListChecks, to: "/cliente/lista" },
-        { label: "Mercados", icon: Store, to: "/mercados" },
-        { label: "Minha conta", icon: Settings, to: "/cliente/configuracoes" },
-      ];
+  const items = [
+    { label: "Início", icon: LayoutDashboard, to: "/dashboard" },
+    { label: "Comparar preços", icon: Search, to: "/comparar" },
+    { label: "Minha lista", icon: ListChecks, to: "/lista" },
+    { label: "Catálogo", icon: Package, to: "/catalogo" },
+    { label: "Minha conta", icon: Settings, to: "/conta" },
+    ...(user?.role === "ADMIN"
+      ? [
+          { label: "Preços", icon: Tags, to: "/precos" },
+          { label: "Usuários", icon: Users, to: "/usuarios" },
+        ]
+      : []),
+  ];
   return (
     <>
       <aside className={cn("qt-sidebar", collapsed && "qt-sidebar-small")}>
@@ -48,11 +42,7 @@ export function Sidebar({
           <span>q.</span>
           {!collapsed && "QuantoTá"}
         </Link>
-        {!collapsed && (
-          <p className="qt-eyebrow mt-10 mb-4">
-            {admin ? "ADMINISTRAÇÃO" : "SUA COMPRA"}
-          </p>
-        )}
+        {!collapsed && <p className="qt-eyebrow mt-10 mb-4">SEU QUANTOTÁ</p>}
         <nav aria-label="Menu principal" className="mt-4 space-y-2">
           {items.map(({ label, icon: Icon, to }) => (
             <NavLink
@@ -77,18 +67,6 @@ export function Sidebar({
                 Compare o mesmo produto e confira a data de cada preço.
               </p>
             </div>
-          )}
-          {!admin && user?.role === "ADMIN" && (
-            <Link to="/admin/dashboard" className="qt-nav-item mt-3">
-              <LayoutDashboard className="size-4" />
-              {!collapsed && "Administração"}
-            </Link>
-          )}
-          {admin && (
-            <Link to="/comparar" className="qt-nav-item mt-3">
-              <ArrowLeft className="size-4" />
-              {!collapsed && "Ver como consumidor"}
-            </Link>
           )}
           <Button
             variant="ghost"

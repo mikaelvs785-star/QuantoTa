@@ -14,6 +14,7 @@ export interface Market {
 }
 
 export interface MarketInput {
+  vendedorId?: string;
   name: string;
   phone: string;
   address?: string;

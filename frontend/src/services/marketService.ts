@@ -24,6 +24,7 @@ function normalizeMarket(market: BackendMarket): Market {
 }
 function payload(input: MarketInput) {
   return {
+    vendedorId: input.vendedorId ? Number(input.vendedorId) : null,
     nome: input.name,
     telefone: input.phone,
     endereco: input.address,

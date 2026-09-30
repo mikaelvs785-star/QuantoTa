@@ -27,6 +27,9 @@ public class Mercado {
     private String estado;
     private String telefone;
 
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
+    private Long vendedorId;
+
     @Column(nullable = false)
     private Boolean ativo;
 }

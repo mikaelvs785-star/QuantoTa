@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ApiFlowTest {
     static ConfigurableApplicationContext context;
-    static String base, alice, bob, admin;
+    static String base, alice, bob, admin, seller, otherSeller;
     static long listId, productId, marketId, itemId;
     static final ObjectMapper json = new ObjectMapper();
     static final HttpClient client = HttpClient.newHttpClient();
@@ -28,6 +28,7 @@ public class ApiFlowTest {
         request("POST", "/auth/register", "{\"nome\":\"Alice\",\"email\":\"alice@test.local\",\"senha\":\"teste123\"}", null, 201);
         request("POST", "/auth/register", "{\"nome\":\"Bob\",\"email\":\"bob@test.local\",\"senha\":\"teste123\"}", null, 201);
         alice = login("alice@test.local"); bob = login("bob@test.local"); admin = login("admin@test.local");
+        seller = login("seller@test.local"); otherSeller = login("other-seller@test.local");
     }
     public static ConfigurableApplicationContext startServer(int port) {
         var app = new SpringApplication(QuantotaApplication.class);
@@ -37,6 +38,10 @@ public class ApiFlowTest {
         var repository = ctx.getBean(UsuarioRepository.class);
         repository.save(Usuario.builder().nome("Admin de teste").email("admin@test.local")
             .senha(ctx.getBean(PasswordEncoder.class).encode("teste123")).perfil(PerfilUsuario.ADMIN).ativo(true).build());
+        for (String email : java.util.List.of("seller@test.local", "other-seller@test.local")) {
+            repository.save(Usuario.builder().nome(email.startsWith("other") ? "Outro vendedor" : "Vendedor de teste").email(email)
+                .senha(ctx.getBean(PasswordEncoder.class).encode("teste123")).perfil(PerfilUsuario.VENDEDOR).ativo(true).build());
+        }
         return ctx;
     }
     public static void main(String[] args) { startServer(8080); }
@@ -100,6 +105,37 @@ public class ApiFlowTest {
         var repository = context.getBean(UsuarioRepository.class);
         var user = repository.findByEmail("bob@test.local").orElseThrow(); user.setAtivo(false); repository.save(user);
         request("GET", "/listas", null, bob, 403);
+    }
+    @Test @Order(6) void cataloguePermissionsAndSellerOwnership() throws Exception {
+        assertFalse(request("GET", "/catalogo/permissoes", null, null, 200).get("gerenciarProdutos").asBoolean());
+        assertFalse(request("GET", "/catalogo/permissoes", null, alice, 200).get("criarMercado").asBoolean());
+        assertTrue(request("GET", "/catalogo/permissoes", null, admin, 200).get("gerenciarProdutos").asBoolean());
+        request("POST", "/mercados", "{\"nome\":\"Mercado bloqueado\"}", alice, 403);
+        request("POST", "/produtos", "{\"nome\":\"Produto bloqueado\"}", seller, 403);
+        long sellerId = context.getBean(UsuarioRepository.class).findByEmail("seller@test.local").orElseThrow().getId();
+        long otherId = context.getBean(UsuarioRepository.class).findByEmail("other-seller@test.local").orElseThrow().getId();
+        var own = request("POST", "/mercados", "{\"id\":" + marketId + ",\"nome\":\"Mercado do vendedor\",\"vendedorId\":" + otherId + ",\"ativo\":false}", seller, 200);
+        long ownId = own.get("id").asLong(); assertNotEquals(marketId, ownId); assertTrue(own.get("ativo").asBoolean());
+        assertFalse(own.has("vendedorId"));
+        var repository = context.getBean(br.com.quantota.repository.MercadoRepository.class);
+        assertEquals(sellerId, repository.findById(ownId).orElseThrow().getVendedorId());
+        assertEquals(ownId, request("GET", "/catalogo/permissoes", null, seller, 200).get("mercadosEditaveis").get(0).asLong());
+        request("PUT", "/mercados/" + ownId, "{\"nome\":\"Tentativa de outro vendedor\",\"ativo\":true}", otherSeller, 403);
+        request("PUT", "/mercados/" + marketId, "{\"nome\":\"Tentativa sem vínculo\",\"ativo\":true}", seller, 403);
+        request("DELETE", "/mercados/" + ownId, null, seller, 403);
+        request("GET", "/mercados/" + ownId + "/vendedor", null, seller, 403);
+        request("GET", "/mercados/" + ownId + "/vendedor", null, null, 401);
+        assertEquals(sellerId, request("GET", "/mercados/" + ownId + "/vendedor", null, admin, 200).get("vendedorId").asLong());
+        request("PUT", "/mercados/" + ownId, "{\"nome\":\"Mercado atualizado pelo dono\",\"vendedorId\":" + otherId + ",\"ativo\":false}", seller, 200);
+        assertTrue(repository.findById(ownId).orElseThrow().getAtivo());
+        assertEquals(sellerId, repository.findById(ownId).orElseThrow().getVendedorId());
+        request("PUT", "/mercados/" + ownId, "{\"nome\":\"Mercado transferido\",\"vendedorId\":" + otherId + ",\"ativo\":true}", admin, 200);
+        request("PUT", "/mercados/" + ownId, "{\"nome\":\"Ex-dono bloqueado\",\"ativo\":true}", seller, 403);
+        request("PUT", "/mercados/" + ownId, "{\"nome\":\"Novo dono\",\"ativo\":true}", otherSeller, 200);
+        request("PUT", "/mercados/" + ownId, "{\"nome\":\"Vínculo inválido\",\"vendedorId\":999999,\"ativo\":true}", admin, 400);
+        request("DELETE", "/mercados/" + ownId, null, admin, 200);
+        request("PUT", "/mercados/" + ownId, "{\"nome\":\"Reativação proibida\",\"ativo\":true}", otherSeller, 403);
+        assertFalse(repository.findById(ownId).orElseThrow().getAtivo());
     }
     static String pricePayload(String value, LocalDate date) { return "{\"produtoId\":" + productId + ",\"mercadoId\":" + marketId + ",\"usuarioCadastroId\":999,\"valor\":" + value + ",\"dataColeta\":\"" + date + "\"}"; }
     static String itemPayload(int quantity) { return "{\"produtoId\":" + productId + ",\"quantidade\":" + quantity + "}"; }

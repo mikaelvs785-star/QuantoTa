@@ -1,5 +1,5 @@
 import { ArrowRight, Package, Store, Tags } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import { ApiError } from "@/components/ui/ApiError";
@@ -10,8 +10,7 @@ const icons = { products: Package, markets: Store, prices: Tags };
 export default function Dashboard() {
   const query = useDashboard();
   const { user } = useAuth();
-  const { pathname } = useLocation();
-  const admin = pathname.startsWith("/admin");
+  const admin = user?.role === "ADMIN";
   return (
     <div className="mx-auto max-w-6xl">
       <SectionTitle
@@ -77,7 +76,7 @@ export default function Dashboard() {
                 </p>
               </div>
               <Link
-                to={admin ? "/admin/precos" : "/comparar"}
+                to={admin ? "/precos" : "/comparar"}
                 className="text-sm font-bold text-brand-600 dark:text-brand-200"
               >
                 {admin ? "Gerenciar preços" : "Ver comparador"} →
@@ -119,19 +118,19 @@ export default function Dashboard() {
               {
                 title: "Organizar produtos",
                 text: "Marca, categoria e unidade precisam identificar o item comparado.",
-                href: "/admin/produtos",
+                href: "/produtos",
               },
               {
                 title: "Atualizar preços",
                 text: "Registre produto, mercado, valor e data de coleta.",
-                href: "/admin/precos",
+                href: "/precos",
               },
             ]
           : [
               {
                 title: "Minha lista de compras",
                 text: "Itens e quantidades salvos para consultar depois.",
-                href: "/cliente/lista",
+                href: "/lista",
               },
               {
                 title: "Conhecer os mercados",

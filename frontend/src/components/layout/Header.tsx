@@ -1,20 +1,19 @@
 import { LogOut, Moon, Sun, ArrowUpRight } from "lucide-react";
 import { useTheme } from "next-themes";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
 export function Header() {
   const { resolvedTheme, setTheme } = useTheme();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const { pathname } = useLocation();
   return (
     <header className="qt-header">
       <Link to="/" className="qt-logo lg:hidden">
         <span>q.</span>QuantoTá
       </Link>
       <p className="hidden text-sm text-slate-500 lg:block">
-        {pathname.startsWith("/admin")
+        {user?.role === "ADMIN"
           ? "Gestão do catálogo"
           : "Uma compra bem planejada começa aqui."}
       </p>

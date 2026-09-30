@@ -7,46 +7,65 @@ import {
   useLocation,
   useParams,
 } from "react-router-dom";
-
 import { MainLayout } from "../layouts/MainLayout";
 import { PrivateRoute } from "./PrivateRoute";
-import { AreaRedirect } from "./AreaRedirect";
-
+import { CatalogEditorRoute } from "./CatalogEditorRoute";
 const Home = lazy(() => import("../pages/Home"));
 const Login = lazy(() => import("../pages/Login"));
-const MercadosPage = lazy(() => import("../pages/Mercados"));
-const ComparadorPage = lazy(() => import("../pages/Comparator"));
-const ConfiguracoesPage = lazy(() => import("../pages/Configuracoes"));
-const ProductEditorPage = lazy(() =>
-  import("../pages/Products/ProductEditorPage").then((module) => ({
-    default: module.ProductEditorPage,
-  })),
-);
-const Users = lazy(() => import("../pages/Users"));
-
+const Catalogo = lazy(() => import("../pages/Catalogo"));
+const Comparador = lazy(() => import("../pages/Comparator"));
 const Dashboard = lazy(() => import("../pages/Dashboard"));
-const Products = lazy(() => import("../pages/Products"));
-const PrecosPage = lazy(() => import("../pages/Precos"));
-const ListaPage = lazy(() => import("../pages/Lista"));
-const Markets = lazy(() => import("../pages/Markets"));
-const MarketEditorPage = lazy(() =>
-  import("../pages/Markets/MarketEditorPage").then((module) => ({
-    default: module.MarketEditorPage,
+const Lista = lazy(() => import("../pages/Lista"));
+const Configuracoes = lazy(() => import("../pages/Configuracoes"));
+const Precos = lazy(() => import("../pages/Precos"));
+const Users = lazy(() => import("../pages/Users"));
+const ProductEditor = lazy(() =>
+  import("../pages/Products/ProductEditorPage").then((m) => ({
+    default: m.ProductEditorPage,
   })),
 );
-const UserEditorPage = lazy(() =>
-  import("../pages/Users/UserEditorPage").then((module) => ({
-    default: module.UserEditorPage,
+const MarketEditor = lazy(() =>
+  import("../pages/Markets/MarketEditorPage").then((m) => ({
+    default: m.MarketEditorPage,
   })),
 );
-
-// Preserve parâmetros de busca e fragmentos nos endereços antigos.
+const UserEditor = lazy(() =>
+  import("../pages/Users/UserEditorPage").then((m) => ({
+    default: m.UserEditorPage,
+  })),
+);
 function RouteRedirect({ to }: { to: string }) {
   const { search, hash } = useLocation();
   const { id = "" } = useParams();
-  return <Navigate to={to.replace(":id", id) + search + hash} replace />;
+  const [path, defaults] = to.replace(":id", id).split("?");
+  const params = new URLSearchParams(search);
+  new URLSearchParams(defaults).forEach((value, key) => params.set(key, value));
+  const query = params.toString();
+  return <Navigate to={path + (query ? "?" + query : "") + hash} replace />;
 }
-
+const aliases: Record<string, string> = {
+  "/cliente": "/dashboard",
+  "/cliente/dashboard": "/dashboard",
+  "/admin": "/dashboard",
+  "/admin/dashboard": "/dashboard",
+  "/cliente/comparador": "/comparar",
+  "/cliente/mercados": "/catalogo?aba=mercados",
+  "/mercados": "/catalogo?aba=mercados",
+  "/produtos": "/catalogo?aba=produtos",
+  "/admin/produtos": "/catalogo?aba=produtos",
+  "/admin/mercados": "/catalogo?aba=mercados",
+  "/admin/produtos/novo": "/produtos/novo",
+  "/admin/produtos/:id": "/produtos/:id/editar",
+  "/admin/produtos/:id/editar": "/produtos/:id/editar",
+  "/admin/mercados/novo": "/mercados/novo",
+  "/admin/mercados/:id": "/mercados/:id/editar",
+  "/admin/mercados/:id/editar": "/mercados/:id/editar",
+  "/cliente/lista": "/lista",
+  "/cliente/configuracoes": "/conta",
+  "/admin/precos": "/precos",
+  "/admin/usuarios": "/usuarios",
+  "/admin/usuarios/novo": "/usuarios/novo",
+};
 export function AppRoutes() {
   return (
     <BrowserRouter>
@@ -60,85 +79,92 @@ export function AppRoutes() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
-          <Route
-            path="/cliente"
-            element={<RouteRedirect to="/cliente/dashboard" />}
-          />
-          <Route
-            path="/cliente/mercados"
-            element={<RouteRedirect to="/mercados" />}
-          />
-          <Route
-            path="/cliente/comparador"
-            element={<RouteRedirect to="/comparar" />}
-          />
+          {Object.entries(aliases).map(([path, to]) => (
+            <Route key={path} path={path} element={<RouteRedirect to={to} />} />
+          ))}
           <Route element={<MainLayout />}>
-            <Route path="/comparar" element={<ComparadorPage />} />
-            <Route path="/mercados" element={<MercadosPage />} />
-            <Route path="/cliente/dashboard" element={<Dashboard />} />
-          </Route>
-
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <AreaRedirect />
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/admin"
-            element={
-              <PrivateRoute allowedRoles={["ADMIN"]}>
-                <MainLayout />
-              </PrivateRoute>
-            }
-          >
-            <Route index element={<RouteRedirect to="/admin/dashboard" />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="produtos" element={<Products />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/catalogo" element={<Catalogo />} />
+            <Route path="/comparar" element={<Comparador />} />
             <Route
-              path="produtos/novo"
-              element={<ProductEditorPage mode="create" />}
+              path="/produtos/novo"
+              element={
+                <PrivateRoute>
+                  <CatalogEditorRoute type="produto" create>
+                    <ProductEditor mode="create" />
+                  </CatalogEditorRoute>
+                </PrivateRoute>
+              }
             />
             <Route
-              path="produtos/:id"
-              element={<RouteRedirect to="/admin/produtos/:id/editar" />}
+              path="/produtos/:id/editar"
+              element={
+                <PrivateRoute>
+                  <CatalogEditorRoute type="produto">
+                    <ProductEditor mode="edit" />
+                  </CatalogEditorRoute>
+                </PrivateRoute>
+              }
             />
             <Route
-              path="produtos/:id/editar"
-              element={<ProductEditorPage mode="edit" />}
-            />
-            <Route path="mercados" element={<Markets />} />
-            <Route
-              path="mercados/novo"
-              element={<MarketEditorPage mode="create" />}
-            />
-            <Route
-              path="mercados/:id"
-              element={<RouteRedirect to="/admin/mercados/:id/editar" />}
+              path="/mercados/novo"
+              element={
+                <PrivateRoute>
+                  <CatalogEditorRoute type="mercado" create>
+                    <MarketEditor mode="create" />
+                  </CatalogEditorRoute>
+                </PrivateRoute>
+              }
             />
             <Route
-              path="mercados/:id/editar"
-              element={<MarketEditorPage mode="edit" />}
+              path="/mercados/:id/editar"
+              element={
+                <PrivateRoute>
+                  <CatalogEditorRoute type="mercado">
+                    <MarketEditor mode="edit" />
+                  </CatalogEditorRoute>
+                </PrivateRoute>
+              }
             />
-            <Route path="usuarios" element={<Users />} />
-            <Route path="usuarios/novo" element={<UserEditorPage />} />
-            <Route path="precos" element={<PrecosPage />} />
-          </Route>
-
-          <Route
-            element={
-              <PrivateRoute allowedRoles={["USER", "VENDEDOR", "ADMIN"]}>
-                <MainLayout />
-              </PrivateRoute>
-            }
-          >
-            <Route path="/cliente/lista" element={<ListaPage />} />
             <Route
-              path="/cliente/configuracoes"
-              element={<ConfiguracoesPage />}
+              path="/lista"
+              element={
+                <PrivateRoute>
+                  <Lista />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/conta"
+              element={
+                <PrivateRoute>
+                  <Configuracoes />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/precos"
+              element={
+                <PrivateRoute allowedRoles={["ADMIN"]}>
+                  <Precos />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/usuarios"
+              element={
+                <PrivateRoute allowedRoles={["ADMIN"]}>
+                  <Users />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/usuarios/novo"
+              element={
+                <PrivateRoute allowedRoles={["ADMIN"]}>
+                  <UserEditor />
+                </PrivateRoute>
+              }
             />
           </Route>
           <Route

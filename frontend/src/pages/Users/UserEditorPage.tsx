@@ -15,7 +15,7 @@ export function UserEditorPage() {
     try {
       await createUser.mutateAsync(input);
       toast.success("Usuário criado.");
-      navigate("/admin/usuarios");
+      navigate("/usuarios");
     } catch {
       toast.error("Erro ao criar usuário.");
     }
@@ -28,7 +28,7 @@ export function UserEditorPage() {
         description="Cadastre um novo usuário para acessar o sistema."
         action={
           <Button variant="outline" asChild>
-            <Link to="/admin/usuarios">Cancelar</Link>
+            <Link to="/usuarios">Cancelar</Link>
           </Button>
         }
       />

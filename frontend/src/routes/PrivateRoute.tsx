@@ -17,7 +17,7 @@ export function PrivateRoute({
     return (
       <Navigate
         to="/login"
-        state={{ from: location.pathname + location.search }}
+        state={{ from: location.pathname + location.search + location.hash }}
         replace
       />
     );
@@ -25,17 +25,12 @@ export function PrivateRoute({
     return (
       <Navigate
         to="/login"
-        state={{ from: location.pathname + location.search }}
+        state={{ from: location.pathname + location.search + location.hash }}
         replace
       />
     );
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return (
-      <Navigate
-        to={user?.role === "ADMIN" ? "/admin/dashboard" : "/cliente/dashboard"}
-        replace
-      />
-    );
+    return <Navigate to={"/dashboard"} replace />;
   }
   return children;
 }

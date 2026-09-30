@@ -25,31 +25,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(getStoredUser);
   const [loading, setLoading] = useState(false);
 
-  const login = useCallback(async (credentials: LoginRequest) => {
-    setLoading(true);
-    try {
-      const response = await loginRequest(credentials);
+  const login = useCallback(
+    async (credentials: LoginRequest) => {
+      setLoading(true);
+      try {
+        const response = await loginRequest(credentials);
 
-      const normalizedUser: User = response.usuario ?? {
-        id: String(response.id ?? ""),
-        name: response.nome ?? response.email ?? credentials.email,
-        email: response.email ?? credentials.email,
-        role: response.perfil ?? "USER",
-        active: response.ativo ?? true,
-      };
+        const normalizedUser: User = response.usuario ?? {
+          id: String(response.id ?? ""),
+          name: response.nome ?? response.email ?? credentials.email,
+          email: response.email ?? credentials.email,
+          role: response.perfil ?? "USER",
+          active: response.ativo ?? true,
+        };
 
-      if (!response.token?.trim())
-        throw new Error("A resposta de login não possui uma sessão válida.");
-      const normalizedToken = response.token.trim();
+        if (!response.token?.trim())
+          throw new Error("A resposta de login não possui uma sessão válida.");
+        const normalizedToken = response.token.trim();
 
-      localStorage.setItem(AUTH_TOKEN_KEY, normalizedToken);
-      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(normalizedUser));
-      setToken(normalizedToken);
-      setUser(normalizedUser);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        localStorage.setItem(AUTH_TOKEN_KEY, normalizedToken);
+        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(normalizedUser));
+        queryClient.clear();
+        setToken(normalizedToken);
+        setUser(normalizedUser);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [queryClient],
+  );
 
   const logout = useCallback(() => {
     clearSession();
