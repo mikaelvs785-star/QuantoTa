@@ -6,6 +6,7 @@ import br.com.quantota.service.PrecoService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/precos")
@@ -28,12 +29,12 @@ public class PrecoController {
     }
 
     @PostMapping
-    public Preco salvar(@RequestBody CadastroPrecoDTO dto) {
+    public Preco salvar(@Valid @RequestBody CadastroPrecoDTO dto) {
         return precoService.salvar(dto);
     }
 
     @PutMapping("/{id}")
-    public Preco atualizar(@PathVariable Long id, @RequestBody CadastroPrecoDTO dto) {
+    public Preco atualizar(@PathVariable Long id, @Valid @RequestBody CadastroPrecoDTO dto) {
         return precoService.atualizar(id, dto);
     }
 

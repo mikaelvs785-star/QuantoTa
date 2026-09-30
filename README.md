@@ -1,258 +1,87 @@
-# 🛒 QuantoTá?
+# QuantoTá
 
-> Compare preços, economize nas compras e encontre o melhor mercado.
+Compare preços do mesmo produto em diferentes mercados e organize sua lista de compras.
 
-O **QuantoTá?** é uma aplicação web desenvolvida para facilitar a comparação de preços entre mercados, permitindo que os usuários encontrem os melhores valores para seus produtos e organizem listas de compras de forma prática.
+O QuantoTá é um projeto acadêmico do SENAC com frontend em **React + TypeScript + Vite**, API em **Java 17 + Spring Boot**, autenticação JWT e banco **PostgreSQL**. A conexão existente com Supabase continua sendo feita pelo backend via JDBC.
 
-Este projeto foi desenvolvido utilizando **Spring Boot** no back-end e **HTML, CSS e JavaScript** no front-end, seguindo a arquitetura Cliente-Servidor.
+## Experiência
 
----
+1. Busque um produto no início ou em `/comparar`, sem precisar entrar.
+2. Selecione o produto e compare os preços registrados em cada mercado.
+3. Entre ou crie uma conta para salvar listas e ajustar quantidades.
+4. Consulte a estimativa e os itens que ainda não têm preço.
 
-# 📖 Sobre o projeto
+O administrador mantém produtos, mercados e preços em uma área separada. Há tema claro, escuro e preferência do sistema, além de navegação para celular.
 
-O objetivo do QuantoTá? é ajudar consumidores a economizar durante suas compras, oferecendo um sistema simples para pesquisar produtos, comparar preços e visualizar os mercados que oferecem o menor valor.
+## Regras implementadas
 
-Além disso, o sistema possui um painel administrativo para gerenciamento de usuários, produtos, mercados e preços cadastrados.
+- Produtos são relacionados a preços por **ID**, nunca pelo nome. Marca e unidade/embalagem ajudam a identificar o que está sendo comparado.
+- Para cada produto e mercado, vale a maior **data de coleta**; empates usam o maior ID do registro. Um preço antigo mais baixo não substitui o atual.
+- A diferença entre preços é uma **possibilidade de economia**, não dinheiro já economizado. Não há gráficos, distâncias, favoritos ou notificações simulados.
+- Uma lista pertence ao usuário autenticado. O cliente não escolhe o dono no corpo da requisição.
+- Adicionar o mesmo produto novamente soma a quantidade. Quantidades são inteiras, de 1 a 999.
+- Produtos sem preço deixam a estimativa incompleta. O valor conhecido é um subtotal, não um total definitivo.
+- A estimativa combina os menores preços de cada item, que podem estar em mercados diferentes. Deslocamento e compras realizadas não fazem parte desse cálculo.
+- Desativar produto ou mercado preserva os registros anteriores. O administrador pode consultar e reativar os cadastros.
+- Cadastro público cria apenas consumidores. A API exige ADMIN para alterar catálogo, preços e cadastrar usuários pela área administrativa.
+- O perfil VENDEDOR é mantido para compatibilidade com contas existentes, com acesso de consumidor. Solicitação e aprovação de vendedores ficam fora deste MVP; o formulário anterior apenas imprimia dados no console.
 
----
+## Executar no Windows / PowerShell
 
-# ✨ Funcionalidades
+Na raiz:
 
-✅ Cadastro de usuários
-
-✅ Login
-
-✅ Pesquisa de produtos
-
-✅ Comparação de preços
-
-✅ Consulta de mercados
-
-✅ Lista de compras
-
-✅ Cálculo do valor estimado da compra
-
-✅ Cadastro de preços
-
-✅ Cadastro de produtos
-
-✅ Gerenciamento de mercados
-
-✅ Aprovação de vendedores
-
-✅ Painel administrativo
-
-✅ Tema claro e escuro
-
----
-
-# 👥 Perfis de usuários
-
-### 👤 Usuário
-
-* Criar conta
-* Fazer login
-* Pesquisar produtos
-* Comparar preços
-* Criar lista de compras
-* Consultar mercados
-
-### 🛒 Vendedor
-
-* Solicitar acesso
-* Cadastrar produtos
-* Atualizar preços
-* Gerenciar seus anúncios
-
-### 👨‍💼 Administrador
-
-* Gerenciar usuários
-* Aprovar vendedores
-* Gerenciar produtos
-* Gerenciar mercados
-* Gerenciar preços
-
----
-
-# 🏗 Arquitetura
-
-```text
-Usuário
-    │
-    ▼
-Frontend (HTML + CSS + JavaScript)
-    │
-Requisições HTTP
-    │
-    ▼
-API REST (Spring Boot)
-    │
-Spring Data JPA
-    │
-    ▼
-Banco de Dados MySQL
+```powershell
+npm --prefix frontend ci
+npm --prefix frontend run dev
 ```
 
----
+Em outro terminal, configure a senha e uma chave JWT privada. Se o seu servidor já configura essas variáveis, preserve os valores existentes. Gere uma chave apenas para uma nova configuração; trocá-la invalida sessões anteriores.
 
-# 🛠 Tecnologias utilizadas
-
-### Front-end
-
-* HTML5
-* CSS3
-* JavaScript
-* React
-### Back-end
-
-* Java
-* Spring Boot
-* Spring Data JPA
-* Gradle
-
-### Banco de Dados
-
-* MySQL
-* Docker (para conteinerização)
-### Ferramentas
-
-* IntelliJ IDEA
-* VS Code
-* Git
-* GitHub
-
----
-
-# 📁 Estrutura do projeto
-
-```text
-QuantoTa/
-
-├── backend/
-│   ├── src/
-│   ├── gradle/
-│   └── build.gradle
-│
-├── frontend/
-│   ├── css/
-│   ├── js/
-│   ├── imagens/
-│   └── index.html
-│
-├── database/
-│
-├── docs/
-│
-└── README.md
+```powershell
+$senhaBanco = Read-Host "Senha do PostgreSQL" -AsSecureString
+$env:SPRING_DATASOURCE_PASSWORD = [System.Net.NetworkCredential]::new("", $senhaBanco).Password
+# Para um banco diferente, configure também SPRING_DATASOURCE_URL e SPRING_DATASOURCE_USERNAME.
+$bytes = New-Object byte[] 32
+[System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+$env:JWT_SECRET = [Convert]::ToBase64String($bytes)
+cd backend
+.\gradlew.bat bootRun
 ```
 
----
+Em Linux/macOS, execute `bash gradlew bootRun` dentro de `backend`, com as mesmas variáveis de ambiente configuradas.
 
-# 🚀 Como executar
+- Frontend: `http://localhost:5173`
+- API: `http://localhost:8080`
+- `VITE_API_URL` pode alterar a URL da API. Variáveis com esse prefixo são públicas; não coloque segredos nelas.
 
-## 1. Clone o projeto
+A API exige `SPRING_DATASOURCE_PASSWORD` e `JWT_SECRET`. Os valores não estão no código. O Compose usa `SUPABASE_DB_PASSWORD` e `JWT_SECRET`, que precisam estar no ambiente ou em um `.env` local não versionado.
 
-```bash
-git clone https://github.com/SEU-USUARIO/QuantoTa.git
+Uma senha de banco e uma chave JWT padrão existiam no histórico do projeto. A remoção no código atual não apaga esse histórico: substitua a senha exposta no provedor e use uma chave JWT privada. Nenhuma credencial remota foi alterada automaticamente.
+
+O schema em `database/schema.sql` é um exemplo PostgreSQL. Para desenvolvimento, a API continua com `ddl-auto=update`; os testes usam H2 isolado e `create-drop`. Não execute os scripts de exemplo sobre um banco em produção sem revisar as alterações.
+
+## Validação
+
+```powershell
+npm --prefix frontend run build
+npm --prefix frontend run lint
+npm --prefix frontend test
+cd backend
+.\gradlew.bat test
 ```
 
----
+Os testes de frontend exigem Node 22.13 ou superior. Os cinco testes de integração Java iniciam a API real em porta aleatória com H2 e verificam cadastro, permissões, isolamento de listas, persistência, validações, preços atuais e contas desativadas. Quatro testes de frontend cobrem identidade dos produtos, registros históricos, preços inválidos e cálculo em centavos.
 
-## 2. Banco de Dados
+A revisão visual também exercitou a aplicação com uma API local e dados de teste. As capturas em `docs/screenshots` são dessa execução, não dos dados de produção.
 
-Crie um banco chamado:
+## Estrutura
 
-```sql
-quantota
-```
+- `frontend/src/pages`: telas públicas, listas, conta e administração.
+- `frontend/src/services`: contratos com a API.
+- `frontend/src/lib/offers.ts`: seleção dos preços atuais e cálculo monetário.
+- `backend/src/main/java/br/com/quantota`: controladores, serviços, entidades e repositórios.
+- `backend/src/test`: testes da API.
+- `docs/requisitos.md`: escopo e regras do MVP.
+- `docs/repaginacao.md`: alterações e validações da revisão.
 
-Configure o arquivo:
-
-```
-backend/src/main/resources/application.properties
-```
-
-com seu usuário e senha do MySQL.
-
----
-
-## 3. Executando o Back-end
-
-Abra a pasta **backend** no IntelliJ IDEA.
-
-Execute a classe:
-
-```
-QuantotaApplication.java
-```
-
-A API ficará disponível em:
-
-```
-http://localhost:8080
-```
-
----
-
-## 4. Executando o Front-end
-
-Abra a pasta **frontend**.
-
-Depois:
-
-* Execute utilizando o Live Server
-
-ou
-
-* Abra o arquivo `index.html`.
-
----
-
-# 🔑 Usuário administrador
-
-```
-Email:
-admin@quantota.com
-
-Senha:
-123456
-```
-
----
-
-# 📌 Próximas melhorias
-
-* Login com JWT
-* Senhas criptografadas (BCrypt)
-* Upload de imagens
-* Histórico de preços
-* Favoritar mercados
-* Pesquisa por localização
-* Dashboard com gráficos
-
----
-
-# 🎯 Objetivo acadêmico
-
-Este projeto foi desenvolvido como atividade acadêmica para colocar em prática conhecimentos em:
-
-* Programação Web
-* Java
-* Spring Boot
-* APIs REST
-* Banco de Dados
-* HTML
-* CSS
-* JavaScript
-
-
----
-
-# 👨‍💻 Autor
-
-**Felipe Lima
-**Francisco Mikael
-**Pietro de Almeida
-
-Técnico de Desenvolvimento de Sistemas — SENAC
--
+Desenvolvido por Felipe Lima, Francisco Mikael e Pietro de Almeida.

@@ -16,6 +16,8 @@ public class ProdutoService {
         this.produtoRepository = produtoRepository;
     }
 
+    public List<Produto> listarTodos() { return produtoRepository.findAll(); }
+
     public List<Produto> listarAtivos() {
         return produtoRepository.findByAtivoTrue();
     }

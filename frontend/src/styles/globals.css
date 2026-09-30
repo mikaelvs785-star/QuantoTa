@@ -1,22 +1,120 @@
 @import "tailwindcss";
-
-/* No Tailwind v4, o modo escuro precisa ser associado à classe gerenciada pelo next-themes. */
 @custom-variant dark (&:where(.dark, .dark *));
-
 @theme {
-  --font-sans: Geist, Inter, ui-sans-serif, system-ui, sans-serif;
-  --color-brand-50: #edfff4;
-  --color-brand-100: #d4f9e2;
-  --color-brand-500: #3b82f6;
-  --color-brand-600: #2563eb;
-  --color-brand-700: #1d4ed8;
+  --font-sans: "Segoe UI", Inter, ui-sans-serif, system-ui, sans-serif;
+  --color-brand-50: #edf7f5;
+  --color-brand-100: #d7ede7;
+  --color-brand-200: #acd9cd;
+  --color-brand-400: #53b8a3;
+  --color-brand-500: #208b75;
+  --color-brand-600: #126b58;
+  --color-brand-700: #0f5345;
 }
-
 @layer base {
-  :root { color-scheme: light; }
-  .dark { color-scheme: dark; }
-  * { @apply border-slate-200 dark:border-slate-800; }
-  body { @apply min-w-80 bg-slate-50 font-sans text-slate-950 antialiased dark:bg-slate-950 dark:text-slate-50; }
-  button, input { font: inherit; }
-  ::selection { @apply bg-brand-100 text-brand-700; }
+  :root {
+    color-scheme: light;
+  }
+  .dark {
+    color-scheme: dark;
+  }
+  * {
+    @apply border-slate-200 dark:border-slate-800;
+  }
+  body {
+    @apply min-w-80 font-sans text-slate-900 antialiased dark:text-slate-100;
+    background: #f6f7f4;
+  }
+  .dark body {
+    background: #0d1715;
+  }
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    @apply focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-500;
+  }
+  ::selection {
+    @apply bg-brand-100 text-brand-700;
+  }
+}
+@layer components {
+  .qt-logo {
+    @apply inline-flex items-center gap-3 text-xl font-bold tracking-tight;
+  }
+  .qt-logo > span {
+    @apply grid size-10 place-items-center rounded-xl bg-brand-600 text-2xl font-black text-white;
+  }
+  .qt-sidebar {
+    @apply hidden w-64 shrink-0 flex-col border-r bg-white p-6 dark:bg-slate-950 lg:flex;
+  }
+  .qt-sidebar-small {
+    @apply w-24 px-4;
+  }
+  .qt-eyebrow {
+    @apply text-[10px] font-bold uppercase tracking-[.18em] text-slate-500;
+  }
+  .qt-nav-item {
+    @apply flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800;
+  }
+  .qt-nav-active {
+    @apply bg-brand-50 font-bold text-brand-700 dark:bg-brand-500/15 dark:text-brand-200;
+  }
+  .qt-sidebar-tip {
+    @apply rounded-2xl bg-brand-50 p-4 text-brand-700 dark:bg-brand-500/10 dark:text-brand-200;
+  }
+  .qt-header {
+    @apply sticky top-0 z-20 flex h-20 shrink-0 items-center border-b bg-white/95 px-5 backdrop-blur dark:bg-slate-950/95 sm:px-8;
+  }
+  .qt-heading {
+    @apply text-3xl font-bold leading-tight tracking-tight sm:text-4xl;
+  }
+  .qt-muted {
+    @apply text-sm leading-6 text-slate-500 dark:text-slate-400;
+  }
+  .qt-panel {
+    @apply rounded-2xl border bg-white p-5 dark:bg-slate-900 sm:p-7;
+  }
+  .qt-stat {
+    @apply rounded-2xl border bg-white p-5 dark:bg-slate-900;
+  }
+  .qt-chip {
+    @apply inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition hover:border-brand-500;
+  }
+  .qt-chip-active {
+    @apply border-brand-600 bg-brand-600 text-white;
+  }
+  .qt-hero {
+    background: #123e34;
+    @apply relative overflow-hidden rounded-3xl p-7 text-white sm:p-12;
+  }
+  .qt-action {
+    background: #f9b05b;
+    color: #173c32;
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-6 font-bold transition hover:brightness-105;
+  }
+  .qt-offer {
+    @apply flex flex-wrap items-center justify-between gap-4 rounded-2xl border bg-white p-5 dark:bg-slate-900;
+  }
+  .qt-select {
+    @apply h-11 w-full rounded-xl border bg-white px-3 text-sm dark:bg-slate-900;
+  }
+  .qt-empty {
+    @apply rounded-2xl border border-dashed p-10 text-center;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }

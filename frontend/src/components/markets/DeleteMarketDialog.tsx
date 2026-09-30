@@ -8,13 +8,18 @@ interface DeleteMarketDialogProps {
   onClose: () => void;
 }
 
-export function DeleteMarketDialog({ market, loading, onConfirm, onClose }: DeleteMarketDialogProps) {
+export function DeleteMarketDialog({
+  market,
+  loading,
+  onConfirm,
+  onClose,
+}: DeleteMarketDialogProps) {
   return (
     <ConfirmDialog
       open={Boolean(market)}
-      title="Excluir mercado?"
-      message={`Esta ação removerá ${market?.name ?? "o mercado"} permanentemente.`}
-      confirmLabel="Excluir mercado"
+      title="Desativar mercado?"
+      message={`Esta ação desativará ${market?.name ?? "o mercado"} no catálogo. Os registros anteriores serão preservados.`}
+      confirmLabel="Desativar mercado"
       loading={loading}
       onConfirm={onConfirm}
       onClose={onClose}

@@ -1,14 +1,19 @@
 package br.com.quantota.dto;
 
 import java.math.BigDecimal;
+import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 
 public class CadastroPrecoDTO {
 
+    @NotNull @Positive
     private Long produtoId;
+    @NotNull @Positive
     private Long mercadoId;
-    private Long usuarioCadastroId;
+    // A autoria é obtida da sessão autenticada.
+    @NotNull @DecimalMin("0.01") @Digits(integer = 8, fraction = 2)
     private BigDecimal valor;
+    @NotNull @PastOrPresent
     private LocalDate dataColeta;
     private String observacao;
 
@@ -26,14 +31,6 @@ public class CadastroPrecoDTO {
 
     public void setMercadoId(Long mercadoId) {
         this.mercadoId = mercadoId;
-    }
-
-    public Long getUsuarioCadastroId() {
-        return usuarioCadastroId;
-    }
-
-    public void setUsuarioCadastroId(Long usuarioCadastroId) {
-        this.usuarioCadastroId = usuarioCadastroId;
     }
 
     public BigDecimal getValor() {

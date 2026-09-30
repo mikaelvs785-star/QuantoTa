@@ -1,2 +1,20 @@
 import type { ReactNode } from "react";
-export function SectionTitle({ title, description, action }: { title: string; description?: string; action?: ReactNode }) { return <div className="mb-5 flex items-end justify-between gap-4"><div><h2 className="text-xl font-bold tracking-tight sm:text-2xl">{title}</h2>{description && <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{description}</p>}</div>{action}</div>; }
+export function SectionTitle({
+  title,
+  description,
+  action,
+}: {
+  title: string;
+  description?: string;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 className="qt-heading">{title}</h1>
+        {description && <p className="qt-muted mt-3 max-w-xl">{description}</p>}
+      </div>
+      {action}
+    </div>
+  );
+}

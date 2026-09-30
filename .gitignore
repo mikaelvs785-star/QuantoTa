@@ -19,3 +19,6 @@ frontend/dist/
 
 # OS
 .DS_Store
+# Generated Gradle caches and runtime logs
+backend/.gradle-user/
+*.log

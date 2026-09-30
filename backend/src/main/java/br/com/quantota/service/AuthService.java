@@ -23,8 +23,8 @@ public class AuthService {
     }
 
     public LoginResponseDTO login(LoginRequestDTO request) {
-        Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
-                .filter(Usuario::getAtivo)
+        Usuario usuario = usuarioRepository.findByEmail(request.getEmail() == null ? "" : request.getEmail().trim().toLowerCase(java.util.Locale.ROOT))
+                .filter(user -> Boolean.TRUE.equals(user.getAtivo()))
                 .filter(user -> senhaConfere(request.getSenha(), user.getSenha()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha invalidos"));
 
@@ -45,6 +45,7 @@ public class AuthService {
     }
 
     private boolean senhaConfere(String senha, String armazenada) {
+        if (senha == null || armazenada == null) return false;
         return armazenada.startsWith("$2") ? passwordEncoder.matches(senha, armazenada) : armazenada.equals(senha);
     }
 }

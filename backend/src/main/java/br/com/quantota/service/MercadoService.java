@@ -16,6 +16,8 @@ public class MercadoService {
         this.mercadoRepository = mercadoRepository;
     }
 
+    public List<Mercado> listarTodos() { return mercadoRepository.findAll(); }
+
     public List<Mercado> listarAtivos() {
         return mercadoRepository.findByAtivoTrue();
     }

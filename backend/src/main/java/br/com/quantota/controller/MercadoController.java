@@ -5,6 +5,8 @@ import br.com.quantota.service.MercadoService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.security.core.Authentication;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/mercados")
@@ -17,8 +19,9 @@ public class MercadoController {
     }
 
     @GetMapping
-    public List<Mercado> listar() {
-        return mercadoService.listarAtivos();
+    public List<Mercado> listar(Authentication auth) {
+        boolean admin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        return admin ? mercadoService.listarTodos() : mercadoService.listarAtivos();
     }
 
     @GetMapping("/{id}")
@@ -27,12 +30,12 @@ public class MercadoController {
     }
 
     @PostMapping
-    public Mercado salvar(@RequestBody Mercado mercado) {
+    public Mercado salvar(@Valid @RequestBody Mercado mercado) {
         return mercadoService.salvar(mercado);
     }
 
     @PutMapping("/{id}")
-    public Mercado atualizar(@PathVariable Long id, @RequestBody Mercado mercado) {
+    public Mercado atualizar(@PathVariable Long id, @Valid @RequestBody Mercado mercado) {
         return mercadoService.atualizar(id, mercado);
     }
 

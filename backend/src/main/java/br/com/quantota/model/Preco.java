@@ -1,6 +1,7 @@
 package br.com.quantota.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,6 +32,7 @@ public class Preco {
 
     @ManyToOne
     @JoinColumn(name = "usuario_cadastro_id")
+    @JsonIgnore
     private Usuario usuarioCadastro;
 
     @Column(nullable = false, precision = 10, scale = 2)

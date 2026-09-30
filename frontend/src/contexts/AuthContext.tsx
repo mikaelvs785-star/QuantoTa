@@ -1,10 +1,19 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
-import { AUTH_TOKEN_KEY, AUTH_USER_KEY, getStoredUser, isTokenExpired, login as loginRequest, logout as clearSession } from "@/services/auth";
+import {
+  AUTH_TOKEN_KEY,
+  AUTH_USER_KEY,
+  getStoredUser,
+  isTokenExpired,
+  login as loginRequest,
+  logout as clearSession,
+} from "@/services/auth";
 import type { AuthContextType, LoginRequest } from "@/types/auth";
 import type { User } from "@/types/user";
+import { useQueryClient } from "@tanstack/react-query";
 import { AuthContext } from "./authContextValue";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [token, setToken] = useState<string | null>(() => {
     const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
     if (storedToken && isTokenExpired(storedToken)) {
@@ -29,7 +38,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         active: response.ativo ?? true,
       };
 
-      if (!response.token?.trim()) throw new Error("A resposta de login não possui uma sessão válida.");
+      if (!response.token?.trim())
+        throw new Error("A resposta de login não possui uma sessão válida.");
       const normalizedToken = response.token.trim();
 
       localStorage.setItem(AUTH_TOKEN_KEY, normalizedToken);
@@ -43,10 +53,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     clearSession();
+    queryClient.clear();
     setToken(null);
     setUser(null);
-  }, []);
+  }, [queryClient]);
 
-  const value = useMemo<AuthContextType>(() => ({ user, token, loading, isAuthenticated: Boolean(token), login, logout }), [user, token, loading, login, logout]);
+  const value = useMemo<AuthContextType>(
+    () => ({
+      user,
+      token,
+      loading,
+      isAuthenticated: Boolean(token),
+      login,
+      logout,
+    }),
+    [user, token, loading, login, logout],
+  );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -25,16 +25,21 @@ export function MarketFilters({ onSearch, onReset }: MarketFiltersProps) {
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm"
+      className="rounded-3xl border border-slate-200 bg-white dark:bg-slate-900 p-4 shadow-sm"
     >
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between"
+      >
         <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">Buscar mercado</label>
+            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              Buscar mercado
+            </label>
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Nome, cidade ou CNPJ"
+              placeholder="Nome, cidade ou bairro"
             />
           </div>
         </div>

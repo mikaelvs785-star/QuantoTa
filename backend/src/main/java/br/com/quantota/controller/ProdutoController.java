@@ -5,6 +5,8 @@ import br.com.quantota.service.ProdutoService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.security.core.Authentication;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/produtos")
@@ -17,8 +19,9 @@ public class ProdutoController {
     }
 
     @GetMapping
-    public List<Produto> listar() {
-        return produtoService.listarAtivos();
+    public List<Produto> listar(Authentication auth) {
+        boolean admin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        return admin ? produtoService.listarTodos() : produtoService.listarAtivos();
     }
 
     @GetMapping("/{id}")
@@ -32,12 +35,12 @@ public class ProdutoController {
     }
 
     @PostMapping
-    public Produto salvar(@RequestBody Produto produto) {
+    public Produto salvar(@Valid @RequestBody Produto produto) {
         return produtoService.salvar(produto);
     }
 
     @PutMapping("/{id}")
-    public Produto atualizar(@PathVariable Long id, @RequestBody Produto produto) {
+    public Produto atualizar(@PathVariable Long id, @Valid @RequestBody Produto produto) {
         return produtoService.atualizar(id, produto);
     }
 

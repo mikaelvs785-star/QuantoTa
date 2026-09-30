@@ -1,5 +1,10 @@
 import { api } from "./api";
-import type { Product, ProductInput, ProductListParams, ProductListResult } from "@/types/product";
+import type {
+  Product,
+  ProductInput,
+  ProductListParams,
+  ProductListResult,
+} from "@/types/product";
 
 type BackendProduct = {
   id: number;
@@ -18,25 +23,32 @@ function toFrontendProduct(product: BackendProduct): Product {
     name: product.nome,
     category: product.categoria ?? "Sem categoria",
     description: product.descricao,
-    barcode: undefined,
+    brand: product.marca,
+    unit: product.unidadeMedida,
     imageUrl: undefined,
     status: product.ativo === false ? "INACTIVE" : "ACTIVE",
-    priceCount: 0,
-    updatedAt: new Date().toISOString(),
   };
 }
 
-function toListResult(data: BackendProduct[] | PageableResponse): ProductListResult {
+function toListResult(
+  data: BackendProduct[] | PageableResponse,
+): ProductListResult {
   if (Array.isArray(data)) {
     return { content: data.map(toFrontendProduct), total: data.length };
   }
 
-  return { content: data.content.map(toFrontendProduct), total: data.totalElements };
+  return {
+    content: data.content.map(toFrontendProduct),
+    total: data.totalElements,
+  };
 }
 
 export const produtoService = {
   async listarProdutos(params: ProductListParams = {}) {
-    const { data } = await api.get<BackendProduct[] | PageableResponse>("/produtos", { params });
+    const { data } = await api.get<BackendProduct[] | PageableResponse>(
+      "/produtos",
+      { params },
+    );
     return toListResult(data);
   },
   async buscarProduto(id: string) {
@@ -48,7 +60,8 @@ export const produtoService = {
       nome: input.name,
       categoria: input.category,
       descricao: input.description,
-      marca: input.barcode,
+      marca: input.brand,
+      unidadeMedida: input.unit,
       ativo: input.status === "ACTIVE",
     };
     const { data } = await api.post<BackendProduct>("/produtos", payload);
@@ -59,11 +72,14 @@ export const produtoService = {
       nome: input.name,
       categoria: input.category,
       descricao: input.description,
-      marca: input.barcode,
+      marca: input.brand,
+      unidadeMedida: input.unit,
       ativo: input.status === "ACTIVE",
     };
     const { data } = await api.put<BackendProduct>(`/produtos/${id}`, payload);
     return toFrontendProduct(data);
   },
-  async excluirProduto(id: string) { await api.delete(`/produtos/${id}`); },
+  async excluirProduto(id: string) {
+    await api.delete(`/produtos/${id}`);
+  },
 };

@@ -20,7 +20,8 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
     private final JwtService jwtService;
-    public JwtAuthenticationFilter(JwtService jwtService) { this.jwtService = jwtService; }
+    private final br.com.quantota.repository.UsuarioRepository usuarios;
+    public JwtAuthenticationFilter(JwtService jwtService, br.com.quantota.repository.UsuarioRepository usuarios) { this.jwtService = jwtService; this.usuarios = usuarios; }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
@@ -29,6 +30,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (header == null || !header.startsWith("Bearer ")) { chain.doFilter(request, response); return; }
         try {
             var user = jwtService.validarToken(header.substring(7));
+            var account = usuarios.findByEmail(user.getUsername()).filter(u -> Boolean.TRUE.equals(u.getAtivo()))
+                    .orElseThrow(() -> new IllegalArgumentException("Conta indisponível"));
+            user = (org.springframework.security.core.userdetails.User) org.springframework.security.core.userdetails.User.withUsername(account.getEmail()).password("").roles(account.getPerfil().name()).build();
             var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);

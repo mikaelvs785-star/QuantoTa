@@ -14,6 +14,9 @@ import br.com.quantota.exception.ResourceNotFoundException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class PrecoService {
@@ -21,16 +24,16 @@ public class PrecoService {
     private final PrecoRepository precoRepository;
     private final ProdutoService produtoService;
     private final MercadoService mercadoService;
-    private final UsuarioService usuarioService;
+    private final SessaoService sessaoService;
 
     public PrecoService(PrecoRepository precoRepository,
                         ProdutoService produtoService,
                         MercadoService mercadoService,
-                        UsuarioService usuarioService) {
+                        SessaoService sessaoService) {
         this.precoRepository = precoRepository;
         this.produtoService = produtoService;
         this.mercadoService = mercadoService;
-        this.usuarioService = usuarioService;
+        this.sessaoService = sessaoService;
     }
 
     public List<Preco> listarTodos() {
@@ -44,9 +47,10 @@ public class PrecoService {
     public Preco salvar(CadastroPrecoDTO dto) {
         Produto produto = produtoService.buscarPorId(dto.getProdutoId());
         Mercado mercado = mercadoService.buscarPorId(dto.getMercadoId());
-        Usuario usuario = usuarioService.buscarPorId(dto.getUsuarioCadastroId());
+        Usuario usuario = sessaoService.usuarioAtual();
 
         validarPermissaoCadastro(usuario);
+        validarPreco(dto);
 
         Preco preco = Preco.builder()
                 .produto(produto)
@@ -66,8 +70,9 @@ public class PrecoService {
         Preco preco = precoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Preço não encontrado."));
 
-        Usuario usuario = usuarioService.buscarPorId(dto.getUsuarioCadastroId());
+        Usuario usuario = sessaoService.usuarioAtual();
         validarPermissaoCadastro(usuario);
+        validarPreco(dto);
 
         preco.setValor(dto.getValor());
         preco.setDataColeta(dto.getDataColeta());
@@ -84,17 +89,21 @@ public class PrecoService {
         precoRepository.deleteById(id);
     }
 
-    public BigDecimal buscarMenorPreco(Long produtoId) {
-        return precoRepository.buscarMenorPrecoPorProduto(produtoId).orElse(BigDecimal.ZERO);
+    public Optional<BigDecimal> buscarMenorPrecoDisponivel(Long produtoId) {
+        return precoRepository.buscarPrecosAtuaisPorProduto(produtoId).stream().map(Preco::getValor).findFirst();
+    }
+    private void validarPreco(CadastroPrecoDTO dto) {
+        if (dto.getValor() == null || dto.getValor().signum() <= 0 || dto.getValor().scale() > 2 || dto.getValor().compareTo(new BigDecimal("99999999.99")) > 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe um preço positivo com até duas casas decimais.");
+        if (dto.getDataColeta() == null || dto.getDataColeta().isAfter(java.time.LocalDate.now()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe uma data de coleta válida, não futura.");
+        if (!Boolean.TRUE.equals(produtoService.buscarPorId(dto.getProdutoId()).getAtivo()) || !Boolean.TRUE.equals(mercadoService.buscarPorId(dto.getMercadoId()).getAtivo()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Produto e mercado precisam estar ativos.");
     }
 
     private void validarPermissaoCadastro(Usuario usuario) {
-        if (usuario.getPerfil() != PerfilUsuario.VENDEDOR && usuario.getPerfil() != PerfilUsuario.ADMIN) {
-            throw new BusinessRuleException("Apenas vendedor aprovado ou ADMIN podem cadastrar preços.");
-        }
-
-        if (usuario.getPerfil() == PerfilUsuario.VENDEDOR && !Boolean.TRUE.equals(usuario.getAtivo())) {
-            throw new BusinessRuleException("Vendedor ainda não aprovado.");
+        if (usuario.getPerfil() != PerfilUsuario.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Somente administradores podem gerenciar preços.");
         }
     }
 }

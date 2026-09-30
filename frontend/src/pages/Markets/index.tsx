@@ -28,18 +28,26 @@ export default function Markets() {
 
   const filtered = useMemo(() => {
     const markets = marketsQuery.data?.content ?? [];
-    const result = markets.filter((market) =>
-      (!search || market.name.toLocaleLowerCase("pt-BR").includes(search.toLocaleLowerCase("pt-BR"))) &&
-      (status === "ALL" || market.status === status),
+    const result = markets.filter(
+      (market) =>
+        (!search ||
+          `${market.name} ${market.city} ${market.neighborhood ?? ""}`
+            .toLocaleLowerCase("pt-BR")
+            .includes(search.toLocaleLowerCase("pt-BR"))) &&
+        (status === "ALL" || market.status === status),
     );
 
     return result.sort((first, second) =>
-      new Date(second.updatedAt).getTime() - new Date(first.updatedAt).getTime(),
+      first.name.localeCompare(second.name),
     );
   }, [marketsQuery.data, search, status]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const displayed = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const currentPage = Math.min(page, pageCount);
+  const displayed = filtered.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
 
   function handleSearch(query: string) {
     setSearch(query);
@@ -64,7 +72,8 @@ export default function Markets() {
   }
 
   if (marketsQuery.isLoading) return <MarketSkeleton />;
-  if (marketsQuery.isError) return <ApiError onRetry={() => void marketsQuery.refetch()} offline />;
+  if (marketsQuery.isError)
+    return <ApiError onRetry={() => void marketsQuery.refetch()} offline />;
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -87,22 +96,44 @@ export default function Markets() {
           <>
             <MarketTable
               markets={displayed}
-              onEdit={(market) => navigate(`/admin/mercados/${market.id}/editar`)}
+              onEdit={(market) =>
+                navigate(`/admin/mercados/${market.id}/editar`)
+              }
               onDelete={setSelected}
             />
             <div className="space-y-3 md:hidden">
               {displayed.map((market) => (
-                <MarketCard key={market.id} market={market} onDelete={setSelected} />
+                <MarketCard
+                  key={market.id}
+                  market={market}
+                  onDelete={setSelected}
+                />
               ))}
             </div>
             <div className="mt-5 flex items-center justify-between text-sm">
-              <p className="text-slate-500">{filtered.length} mercado{filtered.length === 1 ? "" : "s"}</p>
+              <p className="text-slate-500">
+                {filtered.length} mercado{filtered.length === 1 ? "" : "s"}
+              </p>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" aria-label="Página anterior" disabled={page === 1} onClick={() => setPage((value) => value - 1)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-label="Página anterior"
+                  disabled={currentPage === 1}
+                  onClick={() => setPage(currentPage - 1)}
+                >
                   <ChevronLeft className="size-4" /> Anterior
                 </Button>
-                <span className="text-xs text-slate-500">Página {page} de {pageCount}</span>
-                <Button variant="outline" size="sm" aria-label="Próxima página" disabled={page === pageCount} onClick={() => setPage((value) => value + 1)}>
+                <span className="text-xs text-slate-500">
+                  Página {currentPage} de {pageCount}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-label="Próxima página"
+                  disabled={currentPage === pageCount}
+                  onClick={() => setPage(currentPage + 1)}
+                >
                   Próxima <ChevronRight className="size-4" />
                 </Button>
               </div>
@@ -113,8 +144,12 @@ export default function Markets() {
         )}
       </div>
 
-      <DeleteMarketDialog market={selected} loading={removeMarket.isPending} onConfirm={() => void confirmDelete()} onClose={() => setSelected(null)} />
+      <DeleteMarketDialog
+        market={selected}
+        loading={removeMarket.isPending}
+        onConfirm={() => void confirmDelete()}
+        onClose={() => setSelected(null)}
+      />
     </div>
   );
 }
-

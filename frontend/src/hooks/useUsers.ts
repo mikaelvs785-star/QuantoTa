@@ -2,5 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { userService } from "@/services/userService";
 
 export function useUsers() {
-  return useQuery({ queryKey: ["usuarios"], queryFn: userService.listarUsuarios });
+  return useQuery({
+    queryKey: ["usuarios"],
+    queryFn: userService.listarUsuarios,
+  });
 }

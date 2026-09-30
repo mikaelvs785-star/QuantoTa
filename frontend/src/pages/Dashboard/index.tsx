@@ -1,31 +1,154 @@
-import { BarChart3, ChartNoAxesColumnIncreasing, CircleDollarSign, ListChecks, Package, ScanSearch, Store, Tags } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { ApiError } from "@/components/ui/ApiError";
-import { Card, CardContent } from "@/components/ui/Card";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SectionTitle } from "@/components/ui/SectionTitle";
-import { ChartCard } from "@/components/dashboard/ChartCard";
-import { DashboardGrid } from "@/components/dashboard/DashboardGrid";
-import { MarketCard } from "@/components/dashboard/MarketCard";
-import { PriceTable } from "@/components/dashboard/PriceTable";
-import { ProductCard } from "@/components/dashboard/ProductCard";
-import { SkeletonCard } from "@/components/dashboard/SkeletonCard";
-import { StatCard } from "@/components/dashboard/StatCard";
+import { ArrowRight, Package, Store, Tags } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 import { useDashboard } from "@/hooks/useDashboard";
-import type { DashboardMetric } from "@/types/dashboard";
-
-const metricIcons = { products: Package, markets: Store, prices: Tags, lists: ListChecks, savings: CircleDollarSign, monitored: ScanSearch };
-
-function DashboardSkeleton() { return <><div className="mb-8"><div className="h-7 w-48 animate-pulse rounded bg-slate-200 dark:bg-slate-800" /><div className="mt-3 h-4 w-72 animate-pulse rounded bg-slate-100 dark:bg-slate-900" /></div><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 6 }, (_, index) => <SkeletonCard key={index} />)}</div><div className="mt-6 grid gap-6 lg:grid-cols-2"><SkeletonCard /><SkeletonCard /></div></>; }
-
-function Charts({ data }: { data: NonNullable<ReturnType<typeof useDashboard>["data"]> }) { return <div className="mt-6 grid gap-6 xl:grid-cols-2"><ChartCard title="Economia mensal" description="Total economizado em suas compras"><ResponsiveContainer width="100%" height="100%"><LineChart data={data.monthlySavings}><CartesianGrid vertical={false} strokeDasharray="3 3" /><XAxis dataKey="month" axisLine={false} tickLine={false} /><YAxis axisLine={false} tickLine={false} /><Tooltip formatter={(value) => [`R$ ${Number(value).toFixed(2)}`, "Economia"]} /><Line type="monotone" dataKey="value" stroke="#22C55E" strokeWidth={3} dot={false} /></LineChart></ResponsiveContainer></ChartCard><ChartCard title="Produtos mais pesquisados" description="Interesse na sua região"><ResponsiveContainer width="100%" height="100%"><BarChart data={data.popularProducts}><CartesianGrid vertical={false} strokeDasharray="3 3" /><XAxis dataKey="name" axisLine={false} tickLine={false} /><YAxis axisLine={false} tickLine={false} /><Tooltip /><Bar dataKey="searches" fill="#2563EB" radius={[6, 6, 0, 0]} /></BarChart></ResponsiveContainer></ChartCard><ChartCard title="Preços por mercado" description="Menores preços encontrados"><ResponsiveContainer width="100%" height="100%"><BarChart data={data.pricesByMarket} layout="vertical"><CartesianGrid horizontal={false} strokeDasharray="3 3" /><XAxis type="number" hide /><YAxis dataKey="market" type="category" axisLine={false} tickLine={false} width={90} /><Tooltip formatter={(value) => [`R$ ${Number(value).toFixed(2)}`, "Preço"]} /><Bar dataKey="price" fill="#F59E0B" radius={[0, 6, 6, 0]} /></BarChart></ResponsiveContainer></ChartCard><ChartCard title="Visão de preços" description="Acompanhe variações em tempo real"><div className="flex h-full flex-col items-center justify-center text-center"><ChartNoAxesColumnIncreasing className="size-10 text-blue-500" /><p className="mt-3 font-semibold">Dados centralizados</p><p className="mt-1 max-w-56 text-sm text-slate-500">Os gráficos usam informações atualizadas pelo backend.</p></div></ChartCard></div>; }
-
+import { useAuth } from "@/hooks/useAuth";
+import { ApiError } from "@/components/ui/ApiError";
+import { SectionTitle } from "@/components/ui/SectionTitle";
+import { formatCurrency } from "@/lib/utils";
+import { displayDate } from "@/lib/offers";
+const icons = { products: Package, markets: Store, prices: Tags };
 export default function Dashboard() {
-  const dashboard = useDashboard();
-  if (dashboard.isLoading) return <DashboardSkeleton />;
-  if (dashboard.isError) return <ApiError onRetry={() => void dashboard.refetch()} offline />;
-  const data = dashboard.data;
-  if (!data) return <ApiError onRetry={() => void dashboard.refetch()} />;
-  const metrics = data.metrics;
-  return <div className="mx-auto max-w-7xl pb-4"><SectionTitle title="Visão geral" description="Acompanhe preços, ofertas e sua economia em um único lugar." action={<span className="hidden items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold text-slate-500 sm:flex"><BarChart3 className="size-4 text-blue-600" /> Dados atualizados</span>} /><DashboardGrid>{metrics.length ? metrics.map((metric: DashboardMetric) => { const Icon = metricIcons[metric.key]; return <StatCard key={metric.key} metric={metric} icon={Icon} />; }) : <div className="col-span-full"><EmptyState title="Sem métricas disponíveis" description="As métricas aparecerão assim que o backend receber seus dados." /></div>}</DashboardGrid><Charts data={data} /><section className="mt-6"><SectionTitle title="Últimos preços cadastrados" description="Acompanhe as atualizações mais recentes." /><Card><CardContent className="p-4 sm:p-5"><PriceTable prices={data.latestPrices} /></CardContent></Card></section><section className="mt-8"><SectionTitle title="Mercados favoritos" description="Mercados que você acompanha com mais frequência." /><div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{data.favoriteMarkets.length ? data.favoriteMarkets.map((market) => <MarketCard key={market.id} market={market} />) : <div className="col-span-full"><EmptyState title="Nenhum mercado favorito" description="Marque mercados para acompanhar os melhores preços." action={false} /></div>}</div></section><section className="mt-8"><SectionTitle title="Produtos monitorados" description="Histórico de preços dos produtos que importam para você." /><div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{data.monitoredProducts.length ? data.monitoredProducts.map((product) => <ProductCard key={product.id} product={product} />) : <div className="col-span-full"><EmptyState title="Nenhum produto monitorado" description="Cadastre um produto para receber alertas de preço." /></div>}</div></section></div>;
+  const query = useDashboard();
+  const { user } = useAuth();
+  const { pathname } = useLocation();
+  const admin = pathname.startsWith("/admin");
+  return (
+    <div className="mx-auto max-w-6xl">
+      <SectionTitle
+        title={
+          admin
+            ? "Catálogo sob controle."
+            : `Vamos planejar sua compra${user ? `, ${user.name.split(" ")[0]}` : ""}?`
+        }
+        description={
+          admin
+            ? "Produtos, mercados e preços que sustentam as comparações."
+            : "Encontre preços, compare mercados e organize o que você precisa."
+        }
+      />
+      {!admin && (
+        <section className="qt-hero mb-8 flex flex-wrap items-center justify-between gap-6">
+          <div>
+            <p className="text-xs font-semibold tracking-widest text-brand-200">
+              SUA PRÓXIMA COMPRA
+            </p>
+            <h2 className="mt-3 text-3xl font-bold">
+              Antes de comprar, compare.
+            </h2>
+            <p className="mt-3 text-sm text-white/70">
+              O menor preço de hoje pode mudar. Confira sempre a data.
+            </p>
+          </div>
+          <Link to="/comparar" className="qt-action">
+            Comparar preços <ArrowRight className="size-4" />
+          </Link>
+        </section>
+      )}
+      {query.isPending ? (
+        <p role="status" className="qt-panel">
+          Carregando catálogo...
+        </p>
+      ) : query.isError ? (
+        <ApiError onRetry={() => void query.refetch()} />
+      ) : (
+        <>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {query.data.metrics.map((metric) => {
+              const Icon = icons[metric.key];
+              return (
+                <div key={metric.key} className="qt-stat">
+                  <div className="flex items-center justify-between">
+                    <p className="qt-muted">{metric.label}</p>
+                    <Icon className="size-5 text-brand-600" />
+                  </div>
+                  <p className="mt-4 text-3xl font-bold">{metric.value}</p>
+                </div>
+              );
+            })}
+          </div>
+          <section className="qt-panel mt-8">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-semibold">
+                  Preços registrados recentemente
+                </h2>
+                <p className="qt-muted mt-1">
+                  Uma referência para planejar. Confira no estabelecimento.
+                </p>
+              </div>
+              <Link
+                to={admin ? "/admin/precos" : "/comparar"}
+                className="text-sm font-bold text-brand-600 dark:text-brand-200"
+              >
+                {admin ? "Gerenciar preços" : "Ver comparador"} →
+              </Link>
+            </div>
+            {query.data.latestPrices.length ? (
+              <div className="divide-y">
+                {query.data.latestPrices.map((price) => (
+                  <div
+                    key={price.id}
+                    className="flex flex-wrap items-center justify-between gap-3 py-4"
+                  >
+                    <div>
+                      <Link
+                        to={`/comparar?produto=${price.productId}`}
+                        className="font-semibold hover:underline"
+                      >
+                        {price.product}
+                      </Link>
+                      <p className="qt-muted">
+                        {price.market} · {displayDate(price.date)}
+                      </p>
+                    </div>
+                    <p className="text-xl font-bold text-brand-600 dark:text-brand-200">
+                      {formatCurrency(price.price)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="qt-muted">Ainda não há preços cadastrados.</p>
+            )}
+          </section>
+        </>
+      )}
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        {(admin
+          ? [
+              {
+                title: "Organizar produtos",
+                text: "Marca, categoria e unidade precisam identificar o item comparado.",
+                href: "/admin/produtos",
+              },
+              {
+                title: "Atualizar preços",
+                text: "Registre produto, mercado, valor e data de coleta.",
+                href: "/admin/precos",
+              },
+            ]
+          : [
+              {
+                title: "Minha lista de compras",
+                text: "Itens e quantidades salvos para consultar depois.",
+                href: "/cliente/lista",
+              },
+              {
+                title: "Conhecer os mercados",
+                text: "Consulte os estabelecimentos do catálogo.",
+                href: "/mercados",
+              },
+            ]
+        ).map((action) => (
+          <Link key={action.href} to={action.href} className="qt-panel group">
+            <h2 className="flex items-center justify-between text-lg font-semibold">
+              {action.title}
+              <ArrowRight className="size-5 text-brand-600 transition group-hover:translate-x-1" />
+            </h2>
+            <p className="qt-muted mt-2">{action.text}</p>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
 }

@@ -16,6 +16,8 @@ public class ListaCompraResumoDTO {
     private Long usuarioId;
     private List<ItemListaCompra> itens;
     private BigDecimal valorEstimado;
+    private int itensSemPreco;
+    private boolean estimativaCompleta;
 
     public static ListaCompraResumoDTO fromEntity(ListaCompra lista, BigDecimal valorEstimado) {
         return ListaCompraResumoDTO.builder()

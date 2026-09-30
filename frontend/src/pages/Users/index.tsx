@@ -24,7 +24,7 @@ export default function Users() {
     <div className="mx-auto max-w-7xl">
       <SectionTitle
         title="Usuários"
-        description="Gerencie os usuários do sistema e cadastre novos acessos."
+        description="Consulte os usuários e cadastre contas de consumidor."
         action={
           <Button asChild>
             <Link to="/admin/usuarios/novo">
@@ -41,20 +41,30 @@ export default function Users() {
           </Button>
         </Card>
       ) : (
-        <Card className="overflow-hidden">
+        <Card className="overflow-x-auto">
           <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
             <thead className="bg-slate-50 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
               <tr>
                 <th className="px-4 py-3">Nome</th>
                 <th className="px-4 py-3">E-mail</th>
+                <th className="px-4 py-3">Perfil</th>
                 <th className="px-4 py-3">Status</th>
               </tr>
             </thead>
             <tbody>
               {users.map((user) => (
                 <tr key={user.id} className="border-t last:border-b">
-                  <td className="px-4 py-4 font-medium text-slate-900 dark:text-slate-100">{user.name}</td>
+                  <td className="px-4 py-4 font-medium text-slate-900 dark:text-slate-100">
+                    {user.name}
+                  </td>
                   <td className="px-4 py-4 text-slate-500">{user.email}</td>
+                  <td className="px-4 py-4">
+                    {user.role === "ADMIN"
+                      ? "Administrador"
+                      : user.role === "VENDEDOR"
+                        ? "Vendedor (legado)"
+                        : "Consumidor"}
+                  </td>
                   <td className="px-4 py-4">
                     <Badge>{user.active === false ? "Inativo" : "Ativo"}</Badge>
                   </td>
@@ -67,4 +77,3 @@ export default function Users() {
     </div>
   );
 }
-

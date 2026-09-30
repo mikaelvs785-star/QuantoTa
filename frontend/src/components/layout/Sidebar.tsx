@@ -1,82 +1,125 @@
-import { BarChart3, ChevronLeft, ChevronRight, LayoutDashboard, ListChecks, Package, Settings, Store, Tags, Users } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  LayoutDashboard,
+  ListChecks,
+  Package,
+  Settings,
+  Store,
+  Tags,
+  Users,
+  Search,
+} from "lucide-react";
+import { NavLink, Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { TabBar } from "@/components/layout/TabBar";
+import { TabBar } from "./TabBar";
 import { useAuth } from "@/hooks/useAuth";
-
-type Props = { collapsed: boolean; onCollapsedChange: () => void };
-
-export function Sidebar({ collapsed, onCollapsedChange }: Props) {
+export function Sidebar({
+  collapsed,
+  onCollapsedChange,
+}: {
+  collapsed: boolean;
+  onCollapsedChange: () => void;
+}) {
   const { user } = useAuth();
-  const isAdmin = user?.role === "ADMIN";
-  const area = isAdmin ? "/admin" : "/cliente";
-  const items = isAdmin
+  const { pathname } = useLocation();
+  const admin = pathname.startsWith("/admin");
+  const items = admin
     ? [
-        { label: "Dashboard", icon: LayoutDashboard, to: `${area}/dashboard` },
-        { label: "Produtos", icon: Package, to: `${area}/produtos` },
-        { label: "Mercados", icon: Store, to: `${area}/mercados` },
-        { label: "Usuários", icon: Users, to: `${area}/usuarios` },
-        { label: "Preços", icon: Tags, to: `${area}/precos` },
+        { label: "Visão geral", icon: LayoutDashboard, to: "/admin/dashboard" },
+        { label: "Produtos", icon: Package, to: "/admin/produtos" },
+        { label: "Mercados", icon: Store, to: "/admin/mercados" },
+        { label: "Preços", icon: Tags, to: "/admin/precos" },
+        { label: "Usuários", icon: Users, to: "/admin/usuarios" },
       ]
     : [
-        { label: "Dashboard", icon: LayoutDashboard, to: `${area}/dashboard` },
-        { label: "Mercados", icon: Store, to: `${area}/mercados` },
-        { label: "Comparador", icon: BarChart3, to: `${area}/comparador` },
-        { label: "Lista de compras", icon: ListChecks, to: `${area}/lista` },
+        { label: "Início", icon: LayoutDashboard, to: "/cliente/dashboard" },
+        { label: "Comparar preços", icon: Search, to: "/comparar" },
+        { label: "Minha lista", icon: ListChecks, to: "/cliente/lista" },
+        { label: "Mercados", icon: Store, to: "/mercados" },
+        { label: "Minha conta", icon: Settings, to: "/cliente/configuracoes" },
       ];
-
-  const mobileItems = isAdmin
-    ? items
-    : [...items, { label: "Configurações", icon: Settings, to: `${area}/configuracoes` }];
-
   return (
     <>
-      <aside className={cn("hidden lg:flex flex-col border-r bg-white dark:bg-slate-950 lg:sticky lg:top-0 lg:z-10", collapsed ? "w-20" : "w-64")}>
-        <div className="flex h-16 items-center justify-between px-4">
-          <NavLink to="/" className="flex items-center gap-2 font-black text-brand-600">
-            <span className="grid size-8 place-items-center rounded-lg bg-brand-600 text-white">Q</span>
-            {!collapsed && "QuantoTá"}
-          </NavLink>
-        </div>
-
-        <nav className="flex-1 space-y-1 px-3 py-4">
+      <aside className={cn("qt-sidebar", collapsed && "qt-sidebar-small")}>
+        <Link to="/" className="qt-logo">
+          <span>q.</span>
+          {!collapsed && "QuantoTá"}
+        </Link>
+        {!collapsed && (
+          <p className="qt-eyebrow mt-10 mb-4">
+            {admin ? "ADMINISTRAÇÃO" : "SUA COMPRA"}
+          </p>
+        )}
+        <nav aria-label="Menu principal" className="mt-4 space-y-2">
           {items.map(({ label, icon: Icon, to }) => (
             <NavLink
               key={to}
               to={to}
+              title={label}
               className={({ isActive }) =>
-                cn(
-                  "flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition hover:bg-slate-100 dark:hover:bg-slate-800",
-                  isActive && "bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-100"
-                )
+                cn("qt-nav-item", isActive && "qt-nav-active")
               }
-              title={collapsed ? label : undefined}
             >
               <Icon className="size-5 shrink-0" />
-              {!collapsed && <span>{label}</span>}
+              {!collapsed && label}
             </NavLink>
           ))}
         </nav>
-
-        <div className="border-t p-3">
-          {!isAdmin && (
-            <NavLink
-              to={`${area}/configuracoes`}
-              className="flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800"
-            >
-              <Settings className="size-5 shrink-0" />
-              {!collapsed && "Configurações"}
-            </NavLink>
+        <div className="mt-auto pt-8">
+          {!collapsed && (
+            <div className="qt-sidebar-tip">
+              <ListChecks className="mb-3 size-6" />
+              <p className="font-semibold">Planeje antes de comprar.</p>
+              <p className="mt-2 text-xs leading-5">
+                Compare o mesmo produto e confira a data de cada preço.
+              </p>
+            </div>
           )}
-
-          <Button variant="ghost" className="mt-2 w-full" onClick={onCollapsedChange}>
-            {collapsed ? <ChevronRight className="size-5" /> : <><ChevronLeft className="size-5" /> Recolher</>}
+          {!admin && user?.role === "ADMIN" && (
+            <Link to="/admin/dashboard" className="qt-nav-item mt-3">
+              <LayoutDashboard className="size-4" />
+              {!collapsed && "Administração"}
+            </Link>
+          )}
+          {admin && (
+            <Link to="/comparar" className="qt-nav-item mt-3">
+              <ArrowLeft className="size-4" />
+              {!collapsed && "Ver como consumidor"}
+            </Link>
+          )}
+          <Button
+            variant="ghost"
+            className="mt-4 w-full"
+            aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
+            onClick={onCollapsedChange}
+          >
+            {collapsed ? (
+              <ChevronRight className="size-4" />
+            ) : (
+              <>
+                <ChevronLeft className="size-4" />
+                Recolher
+              </>
+            )}
           </Button>
         </div>
       </aside>
-
-      <TabBar items={mobileItems} />
+      <TabBar
+        items={items.map((i) => ({
+          ...i,
+          label:
+            i.label === "Comparar preços"
+              ? "Comparar"
+              : i.label === "Minha lista"
+                ? "Lista"
+                : i.label === "Minha conta"
+                  ? "Conta"
+                  : i.label,
+        }))}
+      />
     </>
   );
 }

@@ -1,6 +1,7 @@
 package br.com.quantota.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 @Entity
@@ -18,6 +19,7 @@ public class ItemListaCompra {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "lista_compra_id")
+    @JsonIgnore
     private ListaCompra listaCompra;
 
     @ManyToOne(optional = false)

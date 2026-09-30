@@ -37,22 +37,52 @@ export function UserForm({ submitting, onSubmit }: Props) {
     <form onSubmit={handleSubmit(submit)} className="space-y-5" noValidate>
       <label className="block">
         <span className="text-sm font-bold">Nome</span>
-        <Input className="mt-2" placeholder="Ex.: João da Silva" aria-invalid={Boolean(errors.name)} {...register("name")} />
-        {errors.name && <span className="mt-1 block text-xs text-red-600">{errors.name.message}</span>}
+        <Input
+          className="mt-2"
+          placeholder="Ex.: João da Silva"
+          aria-invalid={Boolean(errors.name)}
+          {...register("name")}
+        />
+        {errors.name && (
+          <span className="mt-1 block text-xs text-red-600">
+            {errors.name.message}
+          </span>
+        )}
       </label>
       <label className="block">
         <span className="text-sm font-bold">E-mail</span>
-        <Input className="mt-2" type="email" placeholder="usuario@exemplo.com" aria-invalid={Boolean(errors.email)} {...register("email")} />
-        {errors.email && <span className="mt-1 block text-xs text-red-600">{errors.email.message}</span>}
+        <Input
+          className="mt-2"
+          type="email"
+          placeholder="usuario@exemplo.com"
+          aria-invalid={Boolean(errors.email)}
+          {...register("email")}
+        />
+        {errors.email && (
+          <span className="mt-1 block text-xs text-red-600">
+            {errors.email.message}
+          </span>
+        )}
       </label>
       <label className="block">
         <span className="text-sm font-bold">Senha</span>
-        <Input className="mt-2" type="password" placeholder="Digite uma senha" aria-invalid={Boolean(errors.password)} {...register("password")} />
-        {errors.password && <span className="mt-1 block text-xs text-red-600">{errors.password.message}</span>}
+        <Input
+          className="mt-2"
+          type="password"
+          placeholder="Digite uma senha"
+          aria-invalid={Boolean(errors.password)}
+          {...register("password")}
+        />
+        {errors.password && (
+          <span className="mt-1 block text-xs text-red-600">
+            {errors.password.message}
+          </span>
+        )}
       </label>
       <div className="flex justify-end border-t pt-5">
         <Button type="submit" size="lg" disabled={submitting}>
-          <Save className="size-4" /> {submitting ? "Salvando..." : "Salvar usuário"}
+          <Save className="size-4" />{" "}
+          {submitting ? "Salvando..." : "Salvar usuário"}
         </Button>
       </div>
     </form>

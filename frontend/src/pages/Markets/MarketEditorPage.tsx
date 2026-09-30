@@ -43,16 +43,23 @@ export function MarketEditorPage({ mode }: { mode: "create" | "edit" }) {
 
   if (mode === "edit") {
     if (marketQuery.isLoading) return <MarketSkeleton />;
-    if (marketQuery.isError || !marketQuery.data) return <ApiError onRetry={() => void marketQuery.refetch()} />;
+    if (marketQuery.isError || !marketQuery.data)
+      return <ApiError onRetry={() => void marketQuery.refetch()} />;
   }
 
   return (
     <div className="mx-auto max-w-3xl">
       <SectionTitle
         title={mode === "edit" ? "Editar mercado" : "Novo mercado"}
-        description={mode === "edit" ? "Atualize as informações do mercado." : "Cadastre um mercado para acompanhar preços."}
+        description={
+          mode === "edit"
+            ? "Atualize as informações do mercado."
+            : "Cadastre um mercado para acompanhar preços."
+        }
         action={
-          <Button variant="outline" onClick={() => navigate("/admin/mercados")}>Cancelar</Button>
+          <Button variant="outline" onClick={() => navigate("/admin/mercados")}>
+            Cancelar
+          </Button>
         }
       />
       <Card>
@@ -67,4 +74,3 @@ export function MarketEditorPage({ mode }: { mode: "create" | "edit" }) {
     </div>
   );
 }
-

@@ -1,6 +1,7 @@
 package br.com.quantota.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Entity
@@ -17,6 +18,7 @@ public class Mercado {
     private Long id;
 
     @Column(nullable = false)
+    @NotBlank
     private String nome;
 
     private String endereco;

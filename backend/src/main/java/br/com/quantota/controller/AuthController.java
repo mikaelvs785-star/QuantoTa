@@ -2,9 +2,12 @@ package br.com.quantota.controller;
 
 import br.com.quantota.dto.LoginRequestDTO;
 import br.com.quantota.dto.LoginResponseDTO;
-import br.com.quantota.dto.CadastroVendedorDTO;
+import br.com.quantota.dto.CadastroUsuarioDTO;
+import br.com.quantota.model.Usuario;
+import br.com.quantota.service.UsuarioService;
+import br.com.quantota.service.SessaoService;
+import jakarta.validation.Valid;
 import br.com.quantota.service.AuthService;
-import br.com.quantota.service.SolicitacaoVendedorService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,12 +17,14 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
-    private final SolicitacaoVendedorService solicitacaoVendedorService;
+    private final UsuarioService usuarioService;
+    private final SessaoService sessaoService;
 
     public AuthController(AuthService authService,
-                          SolicitacaoVendedorService solicitacaoVendedorService) {
+                          UsuarioService usuarioService, SessaoService sessaoService) {
         this.authService = authService;
-        this.solicitacaoVendedorService = solicitacaoVendedorService;
+        this.usuarioService = usuarioService;
+        this.sessaoService = sessaoService;
     }
 
     // 🔐 LOGIN
@@ -28,10 +33,10 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request));
     }
 
-    // 📝 CADASTRO
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody CadastroVendedorDTO request) {
-        solicitacaoVendedorService.criarSolicitacao(request);
-        return ResponseEntity.ok("Solicitação enviada com sucesso!");
+    public ResponseEntity<Usuario> register(@Valid @RequestBody CadastroUsuarioDTO request) {
+        return ResponseEntity.status(201).body(usuarioService.cadastrar(request));
     }
+    @GetMapping("/profile")
+    public Usuario profile() { return sessaoService.usuarioAtual(); }
 }

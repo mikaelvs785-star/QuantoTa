@@ -1,138 +1,58 @@
-import { isAxiosError } from "axios";
 import { api } from "./api";
-import type { DashboardData, FavoriteMarket, MonitoredProduct, PriceRecord } from "@/types/dashboard";
+import { currentOffers } from "@/lib/offers";
+import type { DashboardData, PriceRecord } from "@/types/dashboard";
 
-type PayloadEnvelope<T> = { value?: T[]; Count?: number };
-type BackendProduct = { id: number; nome: string; categoria?: string; marca?: string; descricao?: string; ativo?: boolean };
-type BackendMarket = { id: number; nome: string; cidade?: string; estado?: string; bairro?: string; endereco?: string; telefone?: string; ativo?: boolean };
-type BackendPrice = { id: number; produto?: BackendProduct; mercado?: BackendMarket; valor?: number; dataColeta?: string; dataCadastro?: string };
+type BackendProduct = {
+  id: number;
+  nome: string;
+  categoria?: string;
+  descricao?: string;
+  ativo?: boolean;
+};
+type BackendMarket = { id: number; nome: string; ativo?: boolean };
+type BackendPrice = {
+  id: number;
+  produto: BackendProduct;
+  mercado: BackendMarket;
+  valor: number;
+  dataColeta: string;
+};
 
-function unwrapList<T>(payload: unknown): T[] {
-  if (Array.isArray(payload)) return payload as T[];
-  if (payload && typeof payload === "object" && Array.isArray((payload as PayloadEnvelope<T>).value)) {
-    return (payload as PayloadEnvelope<T>).value as T[];
-  }
-  return [];
-}
-
-export async function getDashboard() {
-  try {
-    const { data } = await api.get<DashboardData>("/dashboard");
-    return data;
-  } catch (error) {
-    // O backend atual não possui o endpoint agregado /dashboard. Em alguns
-    // cenários o Spring Security responde 403 antes de devolver o 404; nos
-    // dois casos montamos o painel a partir dos endpoints disponíveis.
-    if (!isAxiosError(error) || ![403, 404].includes(error.response?.status ?? 0)) throw error;
-
-    const [productsResponse, marketsResponse, pricesResponse] = await Promise.all([
-      api.get<PayloadEnvelope<BackendProduct> | BackendProduct[]>("/produtos"),
-      api.get<PayloadEnvelope<BackendMarket> | BackendMarket[]>("/mercados"),
-      api.get<PayloadEnvelope<BackendPrice> | BackendPrice[]>("/precos"),
-    ]);
-
-    const products = unwrapList<BackendProduct>(productsResponse.data);
-    const markets = unwrapList<BackendMarket>(marketsResponse.data);
-    const prices = unwrapList<BackendPrice>(pricesResponse.data);
-
-    const latestPrices: PriceRecord[] = prices.map((price) => ({
-      id: String(price.id),
-      product: price.produto?.nome ?? "Produto",
-      market: price.mercado?.nome ?? "Mercado",
-      price: Number(price.valor ?? 0),
-      date: price.dataColeta ?? price.dataCadastro ?? new Date().toISOString(),
+export async function getPrecos(): Promise<PriceRecord[]> {
+  const { data } = await api.get<BackendPrice[]>("/precos");
+  return data
+    .filter((p) => p.produto?.ativo !== false && p.mercado?.ativo !== false)
+    .map((p) => ({
+      id: String(p.id),
+      productId: String(p.produto.id),
+      marketId: String(p.mercado.id),
+      product: p.produto.nome,
+      market: p.mercado.nome,
+      price: Number(p.valor),
+      date: p.dataColeta,
     }));
-
-    const favoriteMarkets: FavoriteMarket[] = markets.map((market, index) => {
-      const marketPrices = prices.filter((price) => price.mercado?.id === market.id);
-      const bestPrice = marketPrices.length > 0 ? Math.min(...marketPrices.map((price) => Number(price.valor ?? 0))) : 0;
-      return {
-        id: String(market.id),
-        name: market.nome,
-        productCount: marketPrices.length,
-        bestPrice,
-        distance: index + 1,
-      };
-    });
-
-    const monitoredProducts: MonitoredProduct[] = products.map((product) => {
-      const productPrices = prices.filter((price) => price.produto?.id === product.id);
-      const lowestPrice = productPrices.length > 0 ? Math.min(...productPrices.map((price) => Number(price.valor ?? 0))) : 0;
-      const highestPrice = productPrices.length > 0 ? Math.max(...productPrices.map((price) => Number(price.valor ?? 0))) : 0;
-      return {
-        id: String(product.id),
-        name: product.nome,
-        imageUrl: undefined,
-        lowestPrice,
-        highestPrice,
-        savings: Math.max(highestPrice - lowestPrice, 0),
-      };
-    });
-
-    return {
-      metrics: [
-        { key: "products", label: "Produtos", value: products.length, variation: 4 },
-        { key: "markets", label: "Mercados", value: markets.length, variation: 2 },
-        { key: "prices", label: "Preços", value: prices.length, variation: 6 },
-        { key: "lists", label: "Listas", value: 2, variation: 1 },
-        { key: "savings", label: "Economia", value: 126.4, variation: 8 },
-        { key: "monitored", label: "Monitorados", value: monitoredProducts.length, variation: 3 },
-      ],
-      monthlySavings: [
-        { month: "Jan", value: 85 },
-        { month: "Fev", value: 110 },
-        { month: "Mar", value: 95 },
-        { month: "Abr", value: 138 },
-      ],
-      popularProducts: [
-        { name: "Arroz", searches: 26 },
-        { name: "Leite", searches: 18 },
-        { name: "Banana", searches: 14 },
-      ],
-      pricesByMarket: [
-        { market: "Mercado Econômico", price: 4.99 },
-        { market: "SuperPreço", price: 5.49 },
-      ],
-      latestPrices,
-      favoriteMarkets,
-      monitoredProducts,
-    } satisfies DashboardData;
-  }
 }
-
-export async function getProdutos() {
-  const { data } = await api.get<BackendProduct[] | PayloadEnvelope<BackendProduct>>("/produtos");
-  return unwrapList<BackendProduct>(data).map((product) => ({
-    id: String(product.id),
-    name: product.nome,
-    imageUrl: undefined,
-    category: product.categoria ?? "Sem categoria",
-    priceCount: 0,
-    updatedAt: new Date().toISOString(),
-    status: product.ativo === false ? "INACTIVE" : "ACTIVE",
-    description: product.descricao,
-    barcode: undefined,
-  }));
-}
-
-export async function getMercados() {
-  const { data } = await api.get<BackendMarket[] | PayloadEnvelope<BackendMarket>>("/mercados");
-  return unwrapList<BackendMarket>(data).map((market) => ({
-    id: String(market.id),
-    name: market.nome,
-    productCount: 0,
-    bestPrice: 0,
-    distance: undefined,
-  }));
-}
-
-export async function getPrecos() {
-  const { data } = await api.get<BackendPrice[] | PayloadEnvelope<BackendPrice>>("/precos");
-  return unwrapList<BackendPrice>(data).map((price) => ({
-    id: String(price.id),
-    product: price.produto?.nome ?? "Produto",
-    market: price.mercado?.nome ?? "Mercado",
-    price: Number(price.valor ?? 0),
-    date: price.dataColeta ?? price.dataCadastro ?? new Date().toISOString(),
-  }));
+export async function getDashboard(): Promise<DashboardData> {
+  const [productsResponse, marketsResponse, prices] = await Promise.all([
+    api.get<BackendProduct[]>("/produtos"),
+    api.get<BackendMarket[]>("/mercados"),
+    getPrecos(),
+  ]);
+  const products = productsResponse.data.filter((p) => p.ativo !== false);
+  const markets = marketsResponse.data.filter((m) => m.ativo !== false);
+  const offers = currentOffers(prices);
+  return {
+    metrics: [
+      {
+        key: "products",
+        label: "Produtos no catálogo",
+        value: products.length,
+      },
+      { key: "markets", label: "Mercados cadastrados", value: markets.length },
+      { key: "prices", label: "Preços disponíveis", value: offers.length },
+    ],
+    latestPrices: [...offers]
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, 8),
+  };
 }
