@@ -1,6 +1,10 @@
 export type ProductStatus = "ACTIVE" | "INACTIVE";
 
-export type ProductSort = "newest" | "oldest" | "az" | "za";
+export type ProductSort =
+  | "newest"
+  | "oldest"
+  | "az"
+  | "za";
 
 export interface Product {
   id: string;

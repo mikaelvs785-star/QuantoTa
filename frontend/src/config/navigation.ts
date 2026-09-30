@@ -1,3 +1,4 @@
+
 import type { LucideIcon } from "lucide-react";
 import {
   BarChart3,
@@ -28,11 +29,14 @@ export function normalizeUserRole(role?: string): UserRole | undefined {
   switch (role?.trim().toUpperCase()) {
     case "ADMIN":
       return "ADMIN";
+
     case "USER":
     case "CLIENTE":
       return "USER";
+
     case "VENDEDOR":
       return "VENDEDOR";
+
     default:
       return undefined;
   }
@@ -133,10 +137,17 @@ export function getNavigationByRole(
   role?: string
 ): NavigationItem[] {
   const normalizedRole = normalizeUserRole(role);
-  return normalizedRole ? navigationByRole[normalizedRole] : [];
+
+  return normalizedRole
+    ? navigationByRole[normalizedRole]
+    : [];
 }
 
 export function getDefaultRouteByRole(role?: string): string {
   const normalizedRole = normalizeUserRole(role);
-  return normalizedRole ? defaultRouteByRole[normalizedRole] : "/login";
+
+  return normalizedRole
+    ? defaultRouteByRole[normalizedRole]
+    : "/login";
 }
+

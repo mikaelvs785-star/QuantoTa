@@ -34,3 +34,29 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+def envFile = rootProject.file('../.env')
+
+def loadEnvFile = {
+    if (envFile.exists()) {
+        envFile.eachLine { line ->
+            line = line.trim()
+
+            if (line && !line.startsWith('#') && line.contains('=')) {
+                def parts = line.split('=', 2)
+                def key = parts[0].trim()
+                def value = parts[1].trim()
+
+                if (key && !value.isEmpty()) {
+                    environment key, value
+                }
+            }
+        }
+    }
+}
+
+tasks.named('bootRun') {
+    doFirst {
+        loadEnvFile()
+    }
+}
