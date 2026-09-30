@@ -21,19 +21,11 @@ export function ProductCard({
     >
       <div className="flex gap-3">
         <span className="grid size-12 place-items-center overflow-hidden rounded-xl bg-slate-100 text-xl dark:bg-slate-800">
-          {product.imageUrl ? (
-            <img
-              src={product.imageUrl}
-              alt=""
-              className="size-full object-cover"
-            />
-          ) : (
-            "🛒"
-          )}
+          🛒
         </span>
         <div className="min-w-0 flex-1">
           <Link
-            to={`/admin/produtos/${product.id}`}
+            to={`/admin/produtos/${product.id}/editar`}
             className="block truncate font-bold hover:text-brand-600"
           >
             {product.name}
@@ -66,7 +58,7 @@ export function ProductCard({
         <Button
           variant="ghost"
           size="icon"
-          aria-label={`Excluir ${product.name}`}
+          aria-label={`Desativar ${product.name}`}
           onClick={() => onDelete(product)}
         >
           <Trash2 className="size-4 text-red-600" />

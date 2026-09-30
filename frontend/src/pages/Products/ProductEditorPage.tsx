@@ -28,11 +28,11 @@ export function ProductEditorPage({ mode }: { mode: "create" | "edit" }) {
       if (isEdit) {
         await editProduct.mutateAsync({ id, input });
         toast.success("Produto atualizado.");
-        navigate(`/admin/produtos/${id}`);
+        navigate("/admin/produtos");
       } else {
-        const product = await createProduct.mutateAsync(input);
+        await createProduct.mutateAsync(input);
         toast.success("Produto criado.");
-        navigate(`/admin/produtos/${product.id}`);
+        navigate("/admin/produtos");
       }
     } catch {
       toast.error("Erro ao salvar produto.");

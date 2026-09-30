@@ -26,7 +26,7 @@ export function ProductTable({
           {products.map((product) => (
             <tr key={product.id} className="border-b last:border-0">
               <td className="px-3 py-4 font-semibold">
-                <Link to={`/admin/produtos/${product.id}`}>{product.name}</Link>
+                <Link to={`/admin/produtos/${product.id}/editar`}>{product.name}</Link>
               </td>
               <td className="px-3 py-4">{product.category}</td>
               <td className="px-3 py-4">

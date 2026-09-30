@@ -25,7 +25,6 @@ function toFrontendProduct(product: BackendProduct): Product {
     description: product.descricao,
     brand: product.marca,
     unit: product.unidadeMedida,
-    imageUrl: undefined,
     status: product.ativo === false ? "INACTIVE" : "ACTIVE",
   };
 }

@@ -1,8 +1,0 @@
--- Modelo lógico do QuantoTá (documentação; não executa alterações).
--- usuarios 1:N listas_compra
--- listas_compra 1:N itens_lista_compra
--- produtos 1:N itens_lista_compra
--- produtos 1:N precos
--- mercados 1:N precos
--- usuarios 1:N precos (autoria privada do cadastro administrativo)
--- A definição PostgreSQL de exemplo está em schema.sql.

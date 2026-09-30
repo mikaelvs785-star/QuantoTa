@@ -26,6 +26,17 @@ O administrador mantém produtos, mercados e preços em uma área separada. Há 
 - Cadastro público cria apenas consumidores. A API exige ADMIN para alterar catálogo, preços e cadastrar usuários pela área administrativa.
 - O perfil VENDEDOR é mantido para compatibilidade com contas existentes, com acesso de consumidor. Solicitação e aprovação de vendedores ficam fora deste MVP; o formulário anterior apenas imprimia dados no console.
 
+## Rotas e navegação
+
+- Públicas: `/`, `/login`, `/comparar`, `/mercados` e `/cliente/dashboard`.
+- Conta autenticada: `/cliente/lista` e `/cliente/configuracoes`.
+- Administração: `/admin/dashboard`, `/admin/produtos`, `/admin/mercados`, `/admin/precos` e `/admin/usuarios`.
+- Produtos e mercados têm cadastro em `/novo` e edição em `/:id/editar`. Ao salvar, o administrador retorna à listagem.
+- `/dashboard` direciona para a área do perfil conectado. `/admin` e `/cliente` abrem seus respectivos painéis.
+- Links antigos de detalhes administrativos redirecionam à edição. `/cliente/comparador` e `/cliente/mercados` redirecionam às páginas públicas, preservando busca e fragmento, sem exigir login.
+
+O projeto usa npm. O único lockfile é `frontend/package-lock.json`; a raiz oferece scripts de conveniência e não instala dependências próprias. O Docker do frontend também usa `npm ci`.
+
 ## Executar no Windows / PowerShell
 
 Na raiz:

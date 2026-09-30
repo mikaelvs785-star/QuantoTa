@@ -1,5 +1,12 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+  useParams,
+} from "react-router-dom";
 
 import { MainLayout } from "../layouts/MainLayout";
 import { PrivateRoute } from "./PrivateRoute";
@@ -15,22 +22,12 @@ const ProductEditorPage = lazy(() =>
     default: module.ProductEditorPage,
   })),
 );
-const MarketDetailsPage = lazy(() =>
-  import("../pages/Markets/MarketDetailsPage").then((module) => ({
-    default: module.MarketDetailsPage,
-  })),
-);
 const Users = lazy(() => import("../pages/Users"));
 
 const Dashboard = lazy(() => import("../pages/Dashboard"));
 const Products = lazy(() => import("../pages/Products"));
 const PrecosPage = lazy(() => import("../pages/Precos"));
 const ListaPage = lazy(() => import("../pages/Lista"));
-const ProductDetailsPage = lazy(() =>
-  import("../pages/Products/ProductDetailsPage").then((module) => ({
-    default: module.ProductDetailsPage,
-  })),
-);
 const Markets = lazy(() => import("../pages/Markets"));
 const MarketEditorPage = lazy(() =>
   import("../pages/Markets/MarketEditorPage").then((module) => ({
@@ -42,6 +39,13 @@ const UserEditorPage = lazy(() =>
     default: module.UserEditorPage,
   })),
 );
+
+// Preserve parâmetros de busca e fragmentos nos endereços antigos.
+function RouteRedirect({ to }: { to: string }) {
+  const { search, hash } = useLocation();
+  const { id = "" } = useParams();
+  return <Navigate to={to.replace(":id", id) + search + hash} replace />;
+}
 
 export function AppRoutes() {
   return (
@@ -56,6 +60,18 @@ export function AppRoutes() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route
+            path="/cliente"
+            element={<RouteRedirect to="/cliente/dashboard" />}
+          />
+          <Route
+            path="/cliente/mercados"
+            element={<RouteRedirect to="/mercados" />}
+          />
+          <Route
+            path="/cliente/comparador"
+            element={<RouteRedirect to="/comparar" />}
+          />
           <Route element={<MainLayout />}>
             <Route path="/comparar" element={<ComparadorPage />} />
             <Route path="/mercados" element={<MercadosPage />} />
@@ -72,39 +88,44 @@ export function AppRoutes() {
           />
 
           <Route
+            path="/admin"
             element={
               <PrivateRoute allowedRoles={["ADMIN"]}>
                 <MainLayout />
               </PrivateRoute>
             }
           >
-            <Route path="/admin/dashboard" element={<Dashboard />} />
-            <Route path="/admin/produtos" element={<Products />} />
+            <Route index element={<RouteRedirect to="/admin/dashboard" />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="produtos" element={<Products />} />
             <Route
-              path="/admin/produtos/novo"
+              path="produtos/novo"
               element={<ProductEditorPage mode="create" />}
             />
             <Route
-              path="/admin/produtos/:id"
-              element={<ProductDetailsPage />}
+              path="produtos/:id"
+              element={<RouteRedirect to="/admin/produtos/:id/editar" />}
             />
             <Route
-              path="/admin/produtos/:id/editar"
+              path="produtos/:id/editar"
               element={<ProductEditorPage mode="edit" />}
             />
-            <Route path="/admin/mercados" element={<Markets />} />
+            <Route path="mercados" element={<Markets />} />
             <Route
-              path="/admin/mercados/novo"
+              path="mercados/novo"
               element={<MarketEditorPage mode="create" />}
             />
-            <Route path="/admin/mercados/:id" element={<MarketDetailsPage />} />
             <Route
-              path="/admin/mercados/:id/editar"
+              path="mercados/:id"
+              element={<RouteRedirect to="/admin/mercados/:id/editar" />}
+            />
+            <Route
+              path="mercados/:id/editar"
               element={<MarketEditorPage mode="edit" />}
             />
-            <Route path="/admin/usuarios" element={<Users />} />
-            <Route path="/admin/usuarios/novo" element={<UserEditorPage />} />
-            <Route path="/admin/precos" element={<PrecosPage />} />
+            <Route path="usuarios" element={<Users />} />
+            <Route path="usuarios/novo" element={<UserEditorPage />} />
+            <Route path="precos" element={<PrecosPage />} />
           </Route>
 
           <Route
@@ -114,14 +135,6 @@ export function AppRoutes() {
               </PrivateRoute>
             }
           >
-            <Route
-              path="/cliente/mercados"
-              element={<Navigate to="/mercados" replace />}
-            />
-            <Route
-              path="/cliente/comparador"
-              element={<Navigate to="/comparar" replace />}
-            />
             <Route path="/cliente/lista" element={<ListaPage />} />
             <Route
               path="/cliente/configuracoes"

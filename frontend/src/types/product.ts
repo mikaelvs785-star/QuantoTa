@@ -8,7 +8,6 @@ export interface Product {
   description?: string;
   brand?: string;
   unit?: string;
-  imageUrl?: string;
   status: ProductStatus;
 }
 
@@ -18,7 +17,6 @@ export interface ProductInput {
   description?: string;
   brand?: string;
   unit?: string;
-  imageUrl?: string;
   status: ProductStatus;
 }
 

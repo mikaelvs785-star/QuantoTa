@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { ApiError } from "@/components/ui/ApiError";
@@ -19,22 +18,16 @@ export function MarketEditorPage({ mode }: { mode: "create" | "edit" }) {
   const createMarket = useCreateMarket();
   const updateMarket = useUpdateMarket();
 
-  useEffect(() => {
-    if (mode === "edit" && !id) {
-      navigate("/admin/mercados");
-    }
-  }, [id, mode, navigate]);
-
   async function submit(input: MarketInput) {
     try {
       if (mode === "edit") {
         await updateMarket.mutateAsync({ id, input });
         toast.success("Mercado atualizado.");
-        navigate(`/admin/mercados/${id}`);
+        navigate("/admin/mercados");
       } else {
-        const market = await createMarket.mutateAsync(input);
+        await createMarket.mutateAsync(input);
         toast.success("Mercado criado.");
-        navigate(`/admin/mercados/${market.id}`);
+        navigate("/admin/mercados");
       }
     } catch {
       toast.error("Erro ao salvar mercado.");

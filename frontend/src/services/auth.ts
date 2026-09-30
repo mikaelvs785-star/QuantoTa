@@ -49,11 +49,6 @@ export function logout() {
   localStorage.removeItem(AUTH_USER_KEY);
 }
 
-export async function getProfile() {
-  const { data } = await api.get<User>("/auth/profile");
-  return data;
-}
-
 export function getStoredUser(): User | null {
   const user = localStorage.getItem(AUTH_USER_KEY);
   if (!user) return null;
