@@ -15,6 +15,8 @@ public class ListaCompraResumoDTO {
     private String nomeLista;
     private Long usuarioId;
     private List<ItemListaCompra> itens;
+    public record ItemEstimativa(Long itemId, BigDecimal precoUnitario, BigDecimal subtotal, Long mercadoId, String mercado) {}
+    private List<ItemEstimativa> estimativas;
     private BigDecimal valorEstimado;
     private int itensSemPreco;
     private boolean estimativaCompleta;

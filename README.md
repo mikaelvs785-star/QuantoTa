@@ -11,7 +11,7 @@ O QuantoTá é um projeto acadêmico do SENAC com frontend em **React + TypeScri
 3. Entre ou crie uma conta para salvar listas e ajustar quantidades.
 4. Consulte a estimativa e os itens que ainda não têm preço.
 
-Produtos e mercados ficam em um catálogo compartilhado. A API define as ações de cada perfil; os formulários são os mesmos para todos os usuários autorizados. Há tema claro, escuro e preferência do sistema, além de navegação para celular.
+Todas as telas compartilham o mesmo layout e a mesma navegação. A API define as ações de cada conta; produtos, mercados e preços são consultados nas mesmas páginas, sem painéis separados por perfil. Há tema claro, escuro e preferência do sistema, além de navegação para celular.
 
 ## Regras implementadas
 
@@ -23,17 +23,21 @@ Produtos e mercados ficam em um catálogo compartilhado. A API define as ações
 - Produtos sem preço deixam a estimativa incompleta. O valor conhecido é um subtotal, não um total definitivo.
 - A estimativa combina os menores preços de cada item, que podem estar em mercados diferentes. Deslocamento e compras realizadas não fazem parte desse cálculo.
 - Desativar produto ou mercado preserva os registros anteriores. O administrador pode consultar e reativar os cadastros.
-- Cadastro público cria apenas consumidores. Produtos, preços, desativação de mercados e gestão de usuários exigem ADMIN.
+- Cadastro público cria apenas consumidores, mesmo se a requisição tentar enviar outro perfil. Produtos, desativação de mercados e gestão de usuários exigem ADMIN. O administrador cadastra consumidores, vendedores e administradores na mesma tela de usuários.
 - Contas VENDEDOR podem criar mercados e editar apenas os seus próprios mercados ativos. O backend atribui o vínculo ao criar, ignora tentativas de alterar responsável ou status pelo vendedor e bloqueia a edição entre contas.
-- O administrador pode atribuir ou transferir um mercado a um vendedor ativo pelo formulário compartilhado. Mercados existentes ficam sem vendedor até essa atribuição. Aprovação e cadastro de vendedores continuam fora desta etapa.
+- Vendedores cadastram, editam e excluem preços apenas dos seus mercados ativos. A API verifica tanto o mercado original quanto o destino ao editar um preço. Transferências e desativações revogam esse acesso imediatamente.
+- O administrador pode atribuir ou transferir um mercado a um vendedor ativo pelo formulário compartilhado. Mercados existentes ficam sem vendedor até essa atribuição.
+- A lista exibe a estimativa e os subtotais por item calculados na API. A comparação e o início usam `GET /precos/atuais`, que seleciona os registros atuais no banco.
 
 ## Rotas e navegação
 
-- Públicas: `/`, `/login`, `/dashboard`, `/comparar` e `/catalogo`.
+- Públicas: `/` (início único), `/login`, `/comparar`, `/catalogo` e `/precos`.
 - `/catalogo?aba=produtos` e `/catalogo?aba=mercados` são seções da mesma tela, disponíveis para todos os perfis.
 - Conta autenticada: `/lista` e `/conta`.
-- Formulários compartilhados: `/produtos/novo`, `/produtos/:id/editar`, `/mercados/novo` e `/mercados/:id/editar`. A interface consulta `GET /catalogo/permissoes`; os serviços também validam cada alteração no backend.
-- Gestão de preços e contas: `/precos`, `/usuarios` e `/usuarios/novo`, com permissão ADMIN.
+- Formulários compartilhados: `/produtos/novo`, `/produtos/:id/editar`, `/mercados/novo` e `/mercados/:id/editar`. A interface consulta `GET /permissoes`; os serviços também validam cada alteração no backend.
+- `/precos` é compartilhada: consulta pública, edição dos mercados próprios para vendedores e gestão completa para administradores.
+- `/usuarios` exige a permissão administrativa retornada pela API. O cadastro abre nessa mesma tela com `?novo=1`.
+- `/dashboard` redireciona ao início. `/usuarios/novo` abre o formulário integrado; não há telas extras para esses endereços.
 - Endereços antigos com `/admin` e `/cliente`, além de `/produtos` e `/mercados`, redirecionam às rotas atuais, mantendo parâmetros e fragmentos. Eles não possuem telas próprias.
 - Ao salvar ou cancelar um formulário, o usuário retorna à seção correspondente do catálogo.
 
@@ -85,15 +89,17 @@ cd backend
 .\gradlew.bat test
 ```
 
-Os testes de frontend exigem Node 22.13 ou superior. Os seis testes de integração Java iniciam a API real em porta aleatória com H2 e verificam cadastro, permissões, isolamento de listas, persistência, validações, preços atuais e contas desativadas, além de edição por vendedor, bloqueio entre vendedores, atribuição pelo administrador e proteção contra alteração indevida de vínculo. Quatro testes de frontend cobrem identidade dos produtos, registros históricos, preços inválidos e cálculo em centavos.
+Os testes de frontend exigem Node 22.13 ou superior. Os nove testes de integração Java iniciam a API real em porta aleatória com H2 e verificam cadastro, permissões, isolamento de listas, persistência, validações, preços atuais e contas desativadas, além de edição por vendedor, bloqueio entre vendedores, atribuição pelo administrador, preços por mercado, bloqueio de transferências indevidas e tentativas de escalada de perfil. Quatro testes de frontend cobrem identidade dos produtos, registros históricos, preços inválidos e cálculo em centavos.
 
-A revisão visual também exercitou a aplicação com uma API local e dados de teste. As capturas em `docs/screenshots` são dessa execução, não dos dados de produção.
+A revisão visual também exercitou a aplicação com uma API local e dados de teste. As capturas atuais em `docs/screenshots/telas-unificadas` usam dados locais de teste, não dados de produção. As capturas anteriores ficam como registro das etapas de revisão.
 
 ## Estrutura
 
-- `frontend/src/pages`: telas públicas, listas, conta e administração.
+- `frontend/src/pages`: telas compartilhadas, sem diretórios por perfil.
 - `frontend/src/services`: contratos com a API.
-- `frontend/src/lib/offers.ts`: seleção dos preços atuais e cálculo monetário.
+- `frontend/src/hooks/usePermissions.ts`: ações disponíveis retornadas pela API.
+- `backend/src/main/java/br/com/quantota/service/PermissaoService.java`: decisões de acesso e vínculo de mercados.
+- `backend/src/main/java/br/com/quantota/service/ListaCompraService.java`: estimativas de listas e isolamento entre contas.
 - `backend/src/main/java/br/com/quantota`: controladores, serviços, entidades e repositórios.
 - `backend/src/test`: testes da API.
 - `docs/requisitos.md`: escopo e regras do MVP.

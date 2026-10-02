@@ -8,9 +8,12 @@ export function useUpdateMarket() {
     mutationFn: ({ id, input }: { id: string; input: MarketInput }) =>
       marketService.editarMercado(id, input),
     onSuccess: (_, variables) => {
+      void queryClient.invalidateQueries({ queryKey: ["resumo-lista"] });
       void queryClient.invalidateQueries({ queryKey: ["precos"] });
       void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      void queryClient.invalidateQueries({ queryKey: ["catalogo", "permissoes"] });
+      void queryClient.invalidateQueries({
+        queryKey: ["permissoes"],
+      });
       void queryClient.invalidateQueries({ queryKey: ["mercados"] });
       void queryClient.invalidateQueries({
         queryKey: ["mercado", variables.id],

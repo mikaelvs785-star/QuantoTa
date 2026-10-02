@@ -35,7 +35,6 @@ export async function registerUser(payload: RegisterRequest) {
     id: number;
     nome: string;
     email: string;
-    senha: string;
   }>("/auth/register", {
     nome: payload.nome,
     email: payload.email,
@@ -54,8 +53,7 @@ export function getStoredUser(): User | null {
   if (!user) return null;
   try {
     const storedUser = JSON.parse(user) as User;
-    // Sessões criadas antes da separação de áreas não tinham perfil.
-    // Elas pertencem à área do cliente até que o usuário faça login novamente.
+    // Perfil armazenado serve apenas para identificação; a API decide o acesso.
     return { ...storedUser, role: storedUser.role ?? "USER" };
   } catch {
     localStorage.removeItem(AUTH_USER_KEY);

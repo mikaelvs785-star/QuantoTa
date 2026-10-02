@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
-import { useCatalogPermissions } from "@/hooks/useCatalogPermissions";
+import { usePermissions } from "@/hooks/usePermissions";
 import { api } from "@/services/api";
 import { ApiError } from "@/components/ui/ApiError";
 import { Button } from "@/components/ui/Button";
@@ -18,7 +18,7 @@ export function MarketEditorPage({ mode }: { mode: "create" | "edit" }) {
   const { id = "" } = useParams();
   const navigate = useNavigate();
   const marketQuery = useMarket(id);
-  const permissions = useCatalogPermissions();
+  const permissions = usePermissions();
   const assignment = useQuery({
     queryKey: ["mercado", id, "vendedor"],
     queryFn: async () =>
@@ -62,7 +62,7 @@ export function MarketEditorPage({ mode }: { mode: "create" | "edit" }) {
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-6xl">
       <SectionTitle
         title={mode === "edit" ? "Editar mercado" : "Novo mercado"}
         description={

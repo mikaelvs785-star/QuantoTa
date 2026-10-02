@@ -5,9 +5,7 @@ import { Plus, Trash2, ListChecks } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useProdutos } from "@/hooks/useProdutos";
-import { usePrecos } from "@/hooks/usePrecos";
 import { listsService } from "@/services/lists";
-import { offersForProduct, moneyTotal } from "@/lib/offers";
 import { formatCurrency } from "@/lib/utils";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { Button } from "@/components/ui/Button";
@@ -24,30 +22,38 @@ export default function ListaPage() {
   const queryKey = ["listas", user?.id];
   const query = useQuery({ queryKey, queryFn: listsService.getAll });
   const productsQuery = useProdutos();
-  const pricesQuery = usePrecos();
   const lists = query.data ?? [];
   const selected = lists.find((l) => l.id === selectedListId) ?? lists[0];
   const products = (productsQuery.data?.content ?? []).filter(
     (p) => p.status === "ACTIVE",
   );
+  const summary = useQuery({
+    queryKey: ["resumo-lista", user?.id, selected?.id],
+    queryFn: () => listsService.summary(selected!.id),
+    enabled: Boolean(selected),
+  });
   const rows = (selected?.itens ?? []).map((item) => {
-    const offer =
-      item.produto.ativo === false
-        ? undefined
-        : offersForProduct(pricesQuery.data ?? [], String(item.produto.id))[0];
+    const estimate = summary.data?.estimativas.find(
+      (e) => e.itemId === item.id,
+    );
     return {
       ...item,
       quantity: item.quantidade,
-      unitPrice: offer?.price ?? null,
-      market: offer?.market,
+      unitPrice: estimate?.precoUnitario ?? null,
+      subtotal: estimate?.subtotal ?? null,
+      market: estimate?.mercado,
+      marketId: estimate?.mercadoId,
     };
   });
-  const missing = rows.filter((item) => item.unitPrice === null).length;
-  const total = moneyTotal(rows);
+  const missing = summary.data?.itensSemPreco ?? 0;
+  const total = summary.data?.valorEstimado ?? 0;
   const mutation = useMutation({
     mutationFn: async (action: () => Promise<unknown>) => action(),
     onSuccess: async () => {
-      await client.invalidateQueries({ queryKey });
+      await Promise.all([
+        client.invalidateQueries({ queryKey }),
+        client.invalidateQueries({ queryKey: ["resumo-lista"] }),
+      ]);
     },
     onError: () => toast.error("Não foi possível salvar. Tente novamente."),
   });
@@ -104,14 +110,16 @@ export default function ListaPage() {
           Criar lista
         </Button>
       </form>
-      {query.isPending || productsQuery.isPending || pricesQuery.isPending ? (
+      {query.isPending ||
+      productsQuery.isPending ||
+      (Boolean(selected) && summary.isPending) ? (
         <p role="status">Carregando sua lista...</p>
-      ) : query.isError || productsQuery.isError || pricesQuery.isError ? (
+      ) : query.isError || productsQuery.isError || summary.isError ? (
         <ApiError
           onRetry={() => {
             void query.refetch();
             void productsQuery.refetch();
-            void pricesQuery.refetch();
+            void summary.refetch();
           }}
         />
       ) : !selected ? (
@@ -156,6 +164,7 @@ export default function ListaPage() {
                   </span>
                   <select
                     className="qt-select"
+                    aria-label="Produto"
                     value={productId}
                     onChange={(e) => setProductId(e.target.value)}
                     required
@@ -248,7 +257,7 @@ export default function ListaPage() {
                         </Button>
                         <span className="ml-2 min-w-20 text-right text-sm font-bold">
                           {item.unitPrice !== null
-                            ? formatCurrency(moneyTotal([item]))
+                            ? formatCurrency(item.subtotal!)
                             : "—"}
                         </span>
                         <Button
@@ -295,7 +304,9 @@ export default function ListaPage() {
                   <strong>
                     {
                       new Set(
-                        rows.flatMap((row) => (row.market ? [row.market] : [])),
+                        rows.flatMap((row) =>
+                          row.marketId ? [row.marketId] : [],
+                        ),
                       ).size
                     }
                   </strong>

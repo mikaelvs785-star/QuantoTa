@@ -6,7 +6,9 @@ export function useCreateMarket() {
   return useMutation({
     mutationFn: marketService.criarMercado,
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["catalogo", "permissoes"] });
+      void queryClient.invalidateQueries({
+        queryKey: ["permissoes"],
+      });
       void queryClient.invalidateQueries({ queryKey: ["mercados"] });
       void queryClient.invalidateQueries({ queryKey: ["precos"] });
       void queryClient.invalidateQueries({ queryKey: ["dashboard"] });

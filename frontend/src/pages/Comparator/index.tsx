@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Search, Package, Store, ArrowRight } from "lucide-react";
 import { useProdutos } from "@/hooks/useProdutos";
-import { usePrecos } from "@/hooks/usePrecos";
+import { usePrecosAtuais } from "@/hooks/usePrecos";
 import { ApiError } from "@/components/ui/ApiError";
 import { Input } from "@/components/ui/Input";
 import { SectionTitle } from "@/components/ui/SectionTitle";
@@ -13,7 +13,7 @@ export default function ComparadorPage() {
   const [category, setCategory] = useState("");
   const search = params.get("q") ?? "";
   const productsQuery = useProdutos();
-  const pricesQuery = usePrecos();
+  const pricesQuery = usePrecosAtuais();
   const products = (productsQuery.data?.content ?? []).filter(
     (p) => p.status === "ACTIVE",
   );

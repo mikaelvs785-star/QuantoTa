@@ -19,13 +19,23 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SessaoService sessao;
 
-    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, SessaoService sessao) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
+        this.sessao = sessao;
     }
 
-    public Usuario cadastrar(CadastroUsuarioDTO dto) {
+    public Usuario cadastrar(CadastroUsuarioDTO dto) { return criar(dto, PerfilUsuario.USER); }
+
+    public Usuario cadastrarAdministrativamente(CadastroUsuarioDTO dto) {
+        if (sessao.usuarioAtual().getPerfil() != PerfilUsuario.ADMIN)
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Você não tem permissão para cadastrar usuários.");
+        return criar(dto, dto.getPerfil() == null ? PerfilUsuario.USER : dto.getPerfil());
+    }
+
+    private Usuario criar(CadastroUsuarioDTO dto, PerfilUsuario perfil) {
         String email = dto.getEmail().trim().toLowerCase(Locale.ROOT);
         if (usuarioRepository.existsByEmail(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado");
@@ -35,7 +45,7 @@ public class UsuarioService {
                 .nome(dto.getNome().trim())
                 .email(email)
                 .senha(passwordEncoder.encode(dto.getSenha()))
-                .perfil(PerfilUsuario.USER)
+                .perfil(perfil)
                 .ativo(true)
                 .dataCriacao(LocalDateTime.now())
                 .build();
@@ -53,7 +63,7 @@ public class UsuarioService {
     }
 
     public List<Usuario> listarVendedores() {
-        return usuarioRepository.findByPerfil(PerfilUsuario.VENDEDOR);
+        return usuarioRepository.findByPerfil(PerfilUsuario.VENDEDOR).stream().filter(u -> Boolean.TRUE.equals(u.getAtivo())).toList();
     }
 
     public void deletar(Long id) {
@@ -73,7 +83,7 @@ public class UsuarioService {
 
     private void impedirAlteracaoDeAdministrador(Usuario usuario) {
         if (usuario.getPerfil() == PerfilUsuario.ADMIN) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "A conta administradora Ã© imutÃ¡vel");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "A conta administradora é imutável");
         }
     }
 }

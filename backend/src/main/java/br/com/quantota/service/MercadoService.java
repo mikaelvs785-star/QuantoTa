@@ -12,8 +12,8 @@ public class MercadoService {
 
     private final MercadoRepository mercadoRepository;
 
-    private final CatalogoPermissaoService permissoes;
-    public MercadoService(MercadoRepository mercadoRepository, CatalogoPermissaoService permissoes) {
+    private final PermissaoService permissoes;
+    public MercadoService(MercadoRepository mercadoRepository, PermissaoService permissoes) {
         this.mercadoRepository = mercadoRepository;
         this.permissoes = permissoes;
     }

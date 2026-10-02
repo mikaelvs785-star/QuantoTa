@@ -5,14 +5,15 @@ import toast from "react-hot-toast";
 import { api } from "@/services/api";
 import { marketService } from "@/services/marketService";
 import { useProdutos } from "@/hooks/useProdutos";
-import { usePrecos } from "@/hooks/usePrecos";
+import { usePermissions } from "@/hooks/usePermissions";
+import { usePrecos, usePrecosAtuais } from "@/hooks/usePrecos";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { ApiError } from "@/components/ui/ApiError";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { formatCurrency } from "@/lib/utils";
-import { displayDate, currentOffers } from "@/lib/offers";
+import { displayDate } from "@/lib/offers";
 import type { PriceRecord } from "@/types/dashboard";
 function today() {
   const now = new Date();
@@ -20,6 +21,12 @@ function today() {
 }
 export default function PrecosPage() {
   const prices = usePrecos();
+  const current = usePrecosAtuais();
+  const permissions = usePermissions();
+  const grants = permissions.data;
+  const canManageMarket = (id: string) =>
+    grants?.gerenciarTodosPrecos === true ||
+    grants?.mercadosPrecosEditaveis.includes(Number(id)) === true;
   const products = useProdutos();
   const markets = useQuery({
     queryKey: ["mercados", "precos"],
@@ -33,13 +40,14 @@ export default function PrecosPage() {
   const [value, setValue] = useState("");
   const [date, setDate] = useState(today);
   const [selected, setSelected] = useState<PriceRecord>();
-  const currentIds = new Set(currentOffers(prices.data ?? []).map((p) => p.id));
+  const currentIds = new Set((current.data ?? []).map((p) => p.id));
   const mutation = useMutation({
     mutationFn: async (action: () => Promise<unknown>) => action(),
     onSuccess: async () => {
       await Promise.all([
         client.invalidateQueries({ queryKey: ["precos"] }),
         client.invalidateQueries({ queryKey: ["dashboard"] }),
+        client.invalidateQueries({ queryKey: ["resumo-lista"] }),
       ]);
       toast.success("Preço atualizado.");
     },
@@ -89,24 +97,35 @@ export default function PrecosPage() {
     <div className="mx-auto max-w-6xl">
       <SectionTitle
         title="Preços que fazem sentido."
-        description="Registre valor e data para cada produto e mercado. O registro mais recente de cada par aparece na comparação."
+        description="Consulte valores e datas de coleta. Compare o mesmo produto antes de comprar."
         action={
-          <Button
-            onClick={() => {
-              setEditing(undefined);
-              setOpen(true);
-              setProductId("");
-              setMarketId("");
-              setValue("");
-              setDate(today());
-            }}
-          >
-            <Plus className="size-4" />
-            Registrar preço
-          </Button>
+          grants?.gerenciarPrecos ? (
+            <Button
+              onClick={() => {
+                setEditing(undefined);
+                setOpen(true);
+                setProductId("");
+                setMarketId("");
+                setValue("");
+                setDate(today());
+              }}
+            >
+              <Plus className="size-4" />
+              Registrar preço
+            </Button>
+          ) : undefined
         }
       />
-      {open && (
+      {permissions.isError && (
+        <ApiError onRetry={() => void permissions.refetch()} />
+      )}
+      {grants?.gerenciarPrecos && !grants.gerenciarTodosPrecos && (
+        <p className="qt-muted mb-5">
+          Você pode registrar e atualizar preços dos mercados vinculados à sua
+          conta.
+        </p>
+      )}
+      {open && grants?.gerenciarPrecos && (
         <form onSubmit={save} className="qt-panel mb-6">
           <div className="mb-5 flex items-center justify-between">
             <h2 className="text-xl font-semibold">
@@ -127,6 +146,7 @@ export default function PrecosPage() {
               <span className="mb-2 block text-sm font-semibold">Produto</span>
               <select
                 className="qt-select"
+                aria-label="Produto"
                 required
                 value={productId}
                 onChange={(e) => setProductId(e.target.value)}
@@ -145,13 +165,14 @@ export default function PrecosPage() {
               <span className="mb-2 block text-sm font-semibold">Mercado</span>
               <select
                 className="qt-select"
+                aria-label="Mercado"
                 required
                 value={marketId}
                 onChange={(e) => setMarketId(e.target.value)}
               >
                 <option value="">Selecione</option>
                 {markets.data?.content
-                  .filter((m) => m.status === "ACTIVE")
+                  .filter((m) => m.status === "ACTIVE" && canManageMarket(m.id))
                   .map((m) => (
                     <option key={m.id} value={m.id}>
                       {m.name}
@@ -195,12 +216,19 @@ export default function PrecosPage() {
           </Button>
         </form>
       )}
-      {prices.isPending || products.isPending || markets.isPending ? (
+      {prices.isPending ||
+      current.isPending ||
+      products.isPending ||
+      markets.isPending ? (
         <p role="status">Carregando registros...</p>
-      ) : prices.isError || products.isError || markets.isError ? (
+      ) : prices.isError ||
+        current.isError ||
+        products.isError ||
+        markets.isError ? (
         <ApiError
           onRetry={() => {
             void prices.refetch();
+            void current.refetch();
             void products.refetch();
             void markets.refetch();
           }}
@@ -235,22 +263,26 @@ export default function PrecosPage() {
                     <p className="mr-4 text-xl font-bold">
                       {formatCurrency(price.price)}
                     </p>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label={`Editar preço de ${price.product} em ${price.market}`}
-                      onClick={() => edit(price)}
-                    >
-                      <Pencil className="size-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label={`Excluir preço de ${price.product} em ${price.market}`}
-                      onClick={() => setSelected(price)}
-                    >
-                      <Trash2 className="size-4 text-red-500" />
-                    </Button>
+                    {canManageMarket(price.marketId) && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={`Editar preço de ${price.product} em ${price.market}`}
+                          onClick={() => edit(price)}
+                        >
+                          <Pencil className="size-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={`Excluir preço de ${price.product} em ${price.market}`}
+                          onClick={() => setSelected(price)}
+                        >
+                          <Trash2 className="size-4 text-red-500" />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </article>
               ))}

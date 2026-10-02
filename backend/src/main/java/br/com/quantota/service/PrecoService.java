@@ -1,14 +1,12 @@
 package br.com.quantota.service;
 
 import br.com.quantota.dto.CadastroPrecoDTO;
-import br.com.quantota.enums.PerfilUsuario;
 import br.com.quantota.model.Mercado;
 import br.com.quantota.model.Preco;
 import br.com.quantota.model.Produto;
 import br.com.quantota.model.Usuario;
 import br.com.quantota.repository.PrecoRepository;
 import org.springframework.stereotype.Service;
-import br.com.quantota.exception.BusinessRuleException;
 import br.com.quantota.exception.ResourceNotFoundException;
 
 import java.math.BigDecimal;
@@ -25,23 +23,34 @@ public class PrecoService {
     private final ProdutoService produtoService;
     private final MercadoService mercadoService;
     private final SessaoService sessaoService;
+    private final PermissaoService permissoes;
 
     public PrecoService(PrecoRepository precoRepository,
                         ProdutoService produtoService,
                         MercadoService mercadoService,
-                        SessaoService sessaoService) {
+                        SessaoService sessaoService, PermissaoService permissoes) {
         this.precoRepository = precoRepository;
         this.produtoService = produtoService;
         this.mercadoService = mercadoService;
         this.sessaoService = sessaoService;
+        this.permissoes = permissoes;
     }
 
+    public List<Preco> listarAtuais() { return precoRepository.buscarPrecosAtuais(); }
+
     public List<Preco> listarTodos() {
-        return precoRepository.findAll();
+        return filtrarConsulta(precoRepository.findAll());
     }
 
     public List<Preco> listarPorProduto(Long produtoId) {
-        return precoRepository.findByProdutoIdOrderByValorAsc(produtoId);
+        return filtrarConsulta(precoRepository.findByProdutoIdOrderByValorAsc(produtoId));
+    }
+
+    private List<Preco> filtrarConsulta(List<Preco> registros) {
+        if (permissoes.consultar().gerenciarTodosPrecos()) return registros;
+        return registros.stream().filter(p -> Boolean.TRUE.equals(p.getProduto().getAtivo())
+                && Boolean.TRUE.equals(p.getMercado().getAtivo())
+                && p.getValor() != null && p.getValor().signum() > 0).toList();
     }
 
     public Preco salvar(CadastroPrecoDTO dto) {
@@ -49,7 +58,7 @@ public class PrecoService {
         Mercado mercado = mercadoService.buscarPorId(dto.getMercadoId());
         Usuario usuario = sessaoService.usuarioAtual();
 
-        validarPermissaoCadastro(usuario);
+        permissoes.exigirEdicaoPreco(mercado);
         validarPreco(dto);
 
         Preco preco = Preco.builder()
@@ -71,7 +80,8 @@ public class PrecoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Preço não encontrado."));
 
         Usuario usuario = sessaoService.usuarioAtual();
-        validarPermissaoCadastro(usuario);
+        permissoes.exigirEdicaoPreco(preco.getMercado());
+        permissoes.exigirEdicaoPreco(mercadoService.buscarPorId(dto.getMercadoId()));
         validarPreco(dto);
 
         preco.setValor(dto.getValor());
@@ -86,8 +96,13 @@ public class PrecoService {
     }
 
     public void deletar(Long id) {
-        precoRepository.deleteById(id);
+        Preco preco = precoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Preço não encontrado."));
+        permissoes.exigirEdicaoPreco(preco.getMercado());
+        precoRepository.delete(preco);
     }
+
+    public List<Preco> listarAtuaisPorProduto(Long id) { return precoRepository.buscarPrecosAtuaisPorProduto(id); }
 
     public Optional<BigDecimal> buscarMenorPrecoDisponivel(Long produtoId) {
         return precoRepository.buscarPrecosAtuaisPorProduto(produtoId).stream().map(Preco::getValor).findFirst();
@@ -101,9 +116,4 @@ public class PrecoService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Produto e mercado precisam estar ativos.");
     }
 
-    private void validarPermissaoCadastro(Usuario usuario) {
-        if (usuario.getPerfil() != PerfilUsuario.ADMIN) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Somente administradores podem gerenciar preços.");
-        }
-    }
 }

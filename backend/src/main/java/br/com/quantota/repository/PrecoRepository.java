@@ -26,6 +26,19 @@ public interface PrecoRepository extends JpaRepository<Preco, Long> {
     List<Preco> buscarPrecosAtuaisPorProduto(Long produtoId);
 
     @Query("""
+        select p from Preco p
+        where p.produto.ativo = true and p.mercado.ativo = true
+          and p.valor > 0
+          and not exists (
+            select newer.id from Preco newer
+            where newer.produto.id = p.produto.id and newer.mercado.id = p.mercado.id
+              and (newer.dataColeta > p.dataColeta or (newer.dataColeta = p.dataColeta and newer.id > p.id))
+          )
+        order by p.valor asc
+        """)
+    List<Preco> buscarPrecosAtuais();
+
+    @Query("""
             select p
             from Preco p
             where p.mercado.id = :mercadoId

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useCatalogPermissions } from "@/hooks/useCatalogPermissions";
+import { usePermissions } from "@/hooks/usePermissions";
 import { userService } from "@/services/userService";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,12 +30,12 @@ export function MarketForm({
   submitting?: boolean;
   onSubmit: (input: MarketInput) => void;
 }) {
-  const permissions = useCatalogPermissions();
-  const admin = permissions.data?.gerenciarTodosMercados === true;
+  const permissions = usePermissions();
+  const canAssign = permissions.data?.gerenciarTodosMercados === true;
   const sellers = useQuery({
     queryKey: ["usuarios", "vendedores"],
-    queryFn: userService.listarUsuarios,
-    enabled: admin,
+    queryFn: userService.listarVendedores,
+    enabled: canAssign,
   });
   const {
     register,
@@ -113,7 +113,7 @@ export function MarketForm({
           </label>
         ))}
       </div>
-      {admin && (
+      {canAssign && (
         <label className="block">
           <span className="mb-2 block text-sm font-semibold">
             Vendedor responsável (opcional)
@@ -129,13 +129,11 @@ export function MarketForm({
                 disabled={sellers.isPending || sellers.isError}
               >
                 <option value="">Sem vendedor responsável</option>
-                {sellers.data
-                  ?.filter((u) => u.active && u.role === "VENDEDOR")
-                  .map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.name}
-                    </option>
-                  ))}
+                {sellers.data?.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name}
+                  </option>
+                ))}
               </select>
             )}
           />
@@ -149,7 +147,7 @@ export function MarketForm({
           )}
         </label>
       )}
-      {admin && (
+      {canAssign && (
         <label className="block">
           <span className="mb-2 block text-sm font-semibold">Status</span>
           <select {...register("status")} className="qt-select">
@@ -161,7 +159,7 @@ export function MarketForm({
       <Button
         type="submit"
         disabled={
-          submitting || (admin && (sellers.isPending || sellers.isError))
+          submitting || (canAssign && (sellers.isPending || sellers.isError))
         }
       >
         {submitting ? "Salvando..." : "Salvar mercado"}

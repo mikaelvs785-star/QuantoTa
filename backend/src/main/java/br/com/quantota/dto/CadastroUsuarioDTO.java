@@ -18,6 +18,10 @@ public class CadastroUsuarioDTO {
     @Size(min = 6, max = 72, message = "A senha deve ter entre 6 e 72 caracteres")
     private String senha;
 
+    private br.com.quantota.enums.PerfilUsuario perfil;
+    public br.com.quantota.enums.PerfilUsuario getPerfil() { return perfil; }
+    public void setPerfil(br.com.quantota.enums.PerfilUsuario perfil) { this.perfil = perfil; }
+
     public String getNome() {
         return nome;
     }

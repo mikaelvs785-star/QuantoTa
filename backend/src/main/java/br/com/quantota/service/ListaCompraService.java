@@ -64,12 +64,22 @@ public class ListaCompraService {
         var lista = buscarEntidade(listaId);
         BigDecimal total = BigDecimal.ZERO;
         int semPreco = 0;
+        var estimativas = new java.util.ArrayList<ListaCompraResumoDTO.ItemEstimativa>();
         for (var item : lista.getItens()) {
-            var menor = precos.buscarMenorPrecoDisponivel(item.getProduto().getId());
-            if (menor.isEmpty()) semPreco++;
-            else total = total.add(menor.get().multiply(BigDecimal.valueOf(item.getQuantidade())));
+            var ofertas = precos.listarAtuaisPorProduto(item.getProduto().getId());
+            if (ofertas.isEmpty()) {
+                semPreco++;
+                estimativas.add(new ListaCompraResumoDTO.ItemEstimativa(item.getId(), null, null, null, null));
+            } else {
+                var oferta = ofertas.get(0);
+                var subtotal = oferta.getValor().multiply(BigDecimal.valueOf(item.getQuantidade()));
+                total = total.add(subtotal);
+                estimativas.add(new ListaCompraResumoDTO.ItemEstimativa(item.getId(), oferta.getValor(), subtotal,
+                        oferta.getMercado().getId(), oferta.getMercado().getNome()));
+            }
         }
         var resumo = ListaCompraResumoDTO.fromEntity(lista, total);
+        resumo.setEstimativas(estimativas);
         resumo.setItensSemPreco(semPreco);
         resumo.setEstimativaCompleta(semPreco == 0);
         return resumo;

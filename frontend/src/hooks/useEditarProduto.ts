@@ -7,6 +7,7 @@ export function useEditarProduto() {
     mutationFn: ({ id, input }: { id: string; input: ProductInput }) =>
       produtoService.editarProduto(id, input),
     onSuccess: (_, variables) => {
+      void client.invalidateQueries({ queryKey: ["resumo-lista"] });
       void client.invalidateQueries({ queryKey: ["precos"] });
       void client.invalidateQueries({ queryKey: ["dashboard"] });
       void client.invalidateQueries({ queryKey: ["produtos"] });

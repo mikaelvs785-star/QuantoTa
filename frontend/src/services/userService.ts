@@ -17,6 +17,14 @@ function normalizeUsuario(user: BackendUser): User {
   };
 }
 export const userService = {
+  async me() {
+    return normalizeUsuario((await api.get<BackendUser>("/auth/profile")).data);
+  },
+  async listarVendedores() {
+    return (await api.get<BackendUser[]>("/usuarios/vendedores")).data.map(
+      normalizeUsuario,
+    );
+  },
   async listarUsuarios() {
     const { data } = await api.get<BackendUser[]>("/usuarios");
     return data.map(normalizeUsuario);
@@ -26,6 +34,7 @@ export const userService = {
       nome: input.name,
       email: input.email,
       senha: input.password,
+      perfil: input.role,
     });
     return normalizeUsuario(data);
   },

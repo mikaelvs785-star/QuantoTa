@@ -11,24 +11,33 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @Service
-public class CatalogoPermissaoService {
+public class PermissaoService {
     private final SessaoService sessao;
     private final UsuarioRepository usuarios;
     private final MercadoRepository mercados;
-    public CatalogoPermissaoService(SessaoService sessao, UsuarioRepository usuarios, MercadoRepository mercados) {
+    public PermissaoService(SessaoService sessao, UsuarioRepository usuarios, MercadoRepository mercados) {
         this.sessao = sessao; this.usuarios = usuarios; this.mercados = mercados;
     }
     public record Permissoes(boolean gerenciarProdutos, boolean criarMercado, boolean excluirMercados,
-                             boolean gerenciarTodosMercados, List<Long> mercadosEditaveis) {}
+                             boolean gerenciarTodosMercados, List<Long> mercadosEditaveis,
+                             boolean gerenciarPrecos, boolean gerenciarTodosPrecos, List<Long> mercadosPrecosEditaveis,
+                             boolean gerenciarUsuarios, boolean usarListas, boolean acessarConta) {}
     public Permissoes consultar() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken || !auth.isAuthenticated())
-            return new Permissoes(false, false, false, false, List.of());
+            return new Permissoes(false, false, false, false, List.of(), false, false, List.of(), false, false, false);
         var usuario = sessao.usuarioAtual();
         boolean admin = usuario.getPerfil() == PerfilUsuario.ADMIN;
         boolean vendedor = usuario.getPerfil() == PerfilUsuario.VENDEDOR;
-        var ids = vendedor ? mercados.findByVendedorId(usuario.getId()).stream().map(Mercado::getId).toList() : List.<Long>of();
-        return new Permissoes(admin, admin || vendedor, admin, admin, ids);
+        var ids = vendedor ? mercados.findByVendedorId(usuario.getId()).stream()
+                .filter(m -> Boolean.TRUE.equals(m.getAtivo())).map(Mercado::getId).toList() : List.<Long>of();
+        return new Permissoes(admin, admin || vendedor, admin, admin, ids,
+                admin || vendedor, admin, ids, admin, true, true);
+    }
+    public void exigirEdicaoPreco(Mercado mercado) {
+        exigirEdicaoMercado(mercado);
+        if (sessao.usuarioAtual().getPerfil() != PerfilUsuario.ADMIN && !Boolean.TRUE.equals(mercado.getAtivo()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Mercado inativo: solicite a reativação ao administrador.");
     }
     public void exigirAdmin() {
         if (sessao.usuarioAtual().getPerfil() != PerfilUsuario.ADMIN) negar();

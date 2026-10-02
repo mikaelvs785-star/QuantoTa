@@ -20,7 +20,7 @@ public class UsuarioController {
 
     @PostMapping
     public Usuario cadastrar(@Valid @RequestBody CadastroUsuarioDTO usuario) {
-        return usuarioService.cadastrar(usuario);
+        return usuarioService.cadastrarAdministrativamente(usuario);
     }
 
     @GetMapping

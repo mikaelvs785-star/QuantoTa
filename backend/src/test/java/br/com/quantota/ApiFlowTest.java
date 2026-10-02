@@ -82,6 +82,9 @@ public class ApiFlowTest {
         var summary = request("GET", "/listas/" + listId, null, alice, 200);
         assertEquals(62.50, summary.get("valorEstimado").asDouble());
         assertTrue(summary.get("estimativaCompleta").asBoolean());
+        assertEquals(itemId, summary.get("estimativas").get(0).get("itemId").asLong());
+        assertEquals(12.50, summary.get("estimativas").get(0).get("precoUnitario").asDouble());
+        assertEquals(62.50, summary.get("estimativas").get(0).get("subtotal").asDouble());
         request("PUT", "/listas/" + listId + "/itens/" + itemId, "{\"quantidade\":1.5}", alice, 400);
         request("PUT", "/listas/" + listId + "/itens/" + itemId, "{\"quantidade\":1000}", alice, 400);
         request("PUT", "/listas/" + listId + "/itens/" + itemId, "{\"quantidade\":2}", bob, 404);
@@ -102,6 +105,9 @@ public class ApiFlowTest {
         request("DELETE", "/produtos/" + productId, null, admin, 200);
         assertEquals(1, request("GET", "/produtos", null, null, 200).size());
         assertEquals(2, request("GET", "/produtos", null, admin, 200).size());
+        assertEquals(0, request("GET", "/precos", null, null, 200).size());
+        assertEquals(0, request("GET", "/precos/produto/" + productId, null, alice, 200).size());
+        assertTrue(request("GET", "/precos", null, admin, 200).size() >= 3);
         var repository = context.getBean(UsuarioRepository.class);
         var user = repository.findByEmail("bob@test.local").orElseThrow(); user.setAtivo(false); repository.save(user);
         request("GET", "/listas", null, bob, 403);
@@ -137,6 +143,68 @@ public class ApiFlowTest {
         request("PUT", "/mercados/" + ownId, "{\"nome\":\"Reativação proibida\",\"ativo\":true}", otherSeller, 403);
         assertFalse(repository.findById(ownId).orElseThrow().getAtivo());
     }
+    @Test @Order(7) void sellerPricesAreLimitedToOwnedMarkets() throws Exception {
+        long product = request("POST", "/produtos", "{\"nome\":\"Feijão\",\"ativo\":true}", admin, 200).get("id").asLong();
+        long own = request("POST", "/mercados", "{\"nome\":\"Mercado para preços\",\"ativo\":true}", seller, 200).get("id").asLong();
+        long other = request("POST", "/mercados", "{\"nome\":\"Mercado de outro vendedor\",\"ativo\":true}", otherSeller, 200).get("id").asLong();
+        var permissions = request("GET", "/permissoes", null, seller, 200);
+        assertTrue(permissions.get("gerenciarPrecos").asBoolean());
+        assertFalse(permissions.get("gerenciarTodosPrecos").asBoolean());
+        assertFalse(permissions.get("gerenciarUsuarios").asBoolean());
+        assertTrue(permissions.get("mercadosPrecosEditaveis").toString().contains(String.valueOf(own)));
+        request("POST", "/precos", priceFor(product, own, "4"), alice, 403);
+        request("POST", "/precos", priceFor(product, other, "4"), seller, 403);
+        long price = request("POST", "/precos", priceFor(product, own, "8"), seller, 200).get("id").asLong();
+        request("PUT", "/precos/" + price, priceFor(product, own, "9"), otherSeller, 403);
+        request("PUT", "/precos/" + price, priceFor(product, other, "9"), seller, 403);
+        long otherPrice = request("POST", "/precos", priceFor(product, other, "7"), otherSeller, 200).get("id").asLong();
+        request("PUT", "/precos/" + otherPrice, priceFor(product, own, "9"), seller, 403);
+        request("DELETE", "/precos/" + price, null, otherSeller, 403);
+        request("DELETE", "/precos/" + price, null, alice, 403);
+        request("PUT", "/precos/" + price, priceFor(product, own, "9.50"), seller, 200);
+        var prices = context.getBean(br.com.quantota.repository.PrecoRepository.class);
+        assertEquals("seller@test.local", prices.findById(price).orElseThrow().getUsuarioCadastro().getEmail());
+        request("DELETE", "/precos/" + price, null, seller, 200);
+        request("DELETE", "/precos/" + otherPrice, null, admin, 200);
+        assertFalse(prices.existsById(price));
+    }
+    @Test @Order(8) void transfersAndInactiveMarketsRevokePriceEditingImmediately() throws Exception {
+        long product = request("POST", "/produtos", "{\"nome\":\"Sabão\",\"ativo\":true}", admin, 200).get("id").asLong();
+        long market = request("POST", "/mercados", "{\"nome\":\"Mercado transferível\",\"ativo\":true}", seller, 200).get("id").asLong();
+        long price = request("POST", "/precos", priceFor(product, market, "10"), seller, 200).get("id").asLong();
+        long otherId = context.getBean(UsuarioRepository.class).findByEmail("other-seller@test.local").orElseThrow().getId();
+        request("PUT", "/mercados/" + market, "{\"nome\":\"Transferido\",\"ativo\":true,\"vendedorId\":" + otherId + "}", admin, 200);
+        request("PUT", "/precos/" + price, priceFor(product, market, "11"), seller, 403);
+        request("DELETE", "/precos/" + price, null, seller, 403);
+        request("PUT", "/precos/" + price, priceFor(product, market, "11"), otherSeller, 200);
+        long latest = request("POST", "/precos", priceFor(product, market, "12"), otherSeller, 200).get("id").asLong();
+        var current = request("GET", "/precos/atuais", null, null, 200);
+        assertEquals(1, java.util.stream.StreamSupport.stream(current.spliterator(), false).filter(p -> p.get("produto").get("id").asLong() == product).count());
+        assertTrue(java.util.stream.StreamSupport.stream(current.spliterator(), false).anyMatch(p -> p.get("id").asLong() == latest));
+        request("DELETE", "/mercados/" + market, null, admin, 200);
+        request("PUT", "/precos/" + price, priceFor(product, market, "11"), otherSeller, 403);
+        request("DELETE", "/precos/" + price, null, otherSeller, 403);
+        current = request("GET", "/precos/atuais", null, null, 200);
+        assertFalse(java.util.stream.StreamSupport.stream(current.spliterator(), false).anyMatch(p -> p.get("produto").get("id").asLong() == product));
+        var grants = request("GET", "/permissoes", null, otherSeller, 200).get("mercadosPrecosEditaveis");
+        assertFalse(java.util.stream.StreamSupport.stream(grants.spliterator(), false).anyMatch(id -> id.asLong() == market));
+    }
+    @Test @Order(9) void permissionsAndRegistrationCannotEscalatePrivileges() throws Exception {
+        var publicGrants = request("GET", "/permissoes", null, null, 200);
+        assertFalse(publicGrants.get("gerenciarPrecos").asBoolean());
+        assertFalse(publicGrants.get("usarListas").asBoolean());
+        var grants = request("GET", "/permissoes", null, alice, 200);
+        assertTrue(grants.get("usarListas").asBoolean()); assertTrue(grants.get("acessarConta").asBoolean());
+        assertFalse(grants.get("gerenciarUsuarios").asBoolean());
+        request("GET", "/usuarios", null, alice, 403); request("GET", "/usuarios", null, seller, 403);
+        var consumer = request("POST", "/auth/register", "{\"nome\":\"Tentativa de admin\",\"email\":\"forged@test.local\",\"senha\":\"teste123\",\"perfil\":\"ADMIN\"}", null, 201);
+        assertEquals("USER", consumer.get("perfil").asText());
+        request("POST", "/usuarios", "{\"nome\":\"Invasor\",\"email\":\"invasor@test.local\",\"senha\":\"teste123\",\"perfil\":\"ADMIN\"}", seller, 403);
+        var created = request("POST", "/usuarios", "{\"nome\":\"Novo vendedor\",\"email\":\"new-seller@test.local\",\"senha\":\"teste123\",\"perfil\":\"VENDEDOR\"}", admin, 200);
+        assertEquals("VENDEDOR", created.get("perfil").asText()); assertFalse(created.has("senha"));
+        assertTrue(request("GET", "/permissoes", null, admin, 200).get("gerenciarUsuarios").asBoolean());
+    }
+    static String priceFor(long product, long market, String value) { return "{\"produtoId\":" + product + ",\"mercadoId\":" + market + ",\"valor\":" + value + ",\"dataColeta\":\"" + LocalDate.now() + "\"}"; }
     static String pricePayload(String value, LocalDate date) { return "{\"produtoId\":" + productId + ",\"mercadoId\":" + marketId + ",\"usuarioCadastroId\":999,\"valor\":" + value + ",\"dataColeta\":\"" + date + "\"}"; }
     static String itemPayload(int quantity) { return "{\"produtoId\":" + productId + ",\"quantidade\":" + quantity + "}"; }
     static String login(String email) throws Exception { return request("POST", "/auth/login", "{\"email\":\"" + email + "\",\"senha\":\"teste123\"}", null, 200).get("token").asText(); }

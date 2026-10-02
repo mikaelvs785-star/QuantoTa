@@ -1,5 +1,4 @@
 import { api } from "./api";
-import { currentOffers } from "@/lib/offers";
 import type { DashboardData, PriceRecord } from "@/types/dashboard";
 
 type BackendProduct = {
@@ -18,29 +17,29 @@ type BackendPrice = {
   dataColeta: string;
 };
 
-export async function getPrecos(): Promise<PriceRecord[]> {
-  const { data } = await api.get<BackendPrice[]>("/precos");
-  return data
-    .filter((p) => p.produto?.ativo !== false && p.mercado?.ativo !== false)
-    .map((p) => ({
-      id: String(p.id),
-      productId: String(p.produto.id),
-      marketId: String(p.mercado.id),
-      product: p.produto.nome,
-      market: p.mercado.nome,
-      price: Number(p.valor),
-      date: p.dataColeta,
-    }));
+export async function getPrecos(current = false): Promise<PriceRecord[]> {
+  const { data } = await api.get<BackendPrice[]>(
+    current ? "/precos/atuais" : "/precos",
+  );
+  return data.map((p) => ({
+    id: String(p.id),
+    productId: String(p.produto.id),
+    marketId: String(p.mercado.id),
+    product: p.produto.nome,
+    market: p.mercado.nome,
+    price: Number(p.valor),
+    date: p.dataColeta,
+  }));
 }
 export async function getDashboard(): Promise<DashboardData> {
   const [productsResponse, marketsResponse, prices] = await Promise.all([
     api.get<BackendProduct[]>("/produtos"),
     api.get<BackendMarket[]>("/mercados"),
-    getPrecos(),
+    getPrecos(true),
   ]);
   const products = productsResponse.data.filter((p) => p.ativo !== false);
   const markets = marketsResponse.data.filter((m) => m.ativo !== false);
-  const offers = currentOffers(prices);
+  const offers = prices;
   return {
     metrics: [
       {

@@ -13,7 +13,7 @@ import { NavLink, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { TabBar } from "./TabBar";
-import { useAuth } from "@/hooks/useAuth";
+import { usePermissions } from "@/hooks/usePermissions";
 export function Sidebar({
   collapsed,
   onCollapsedChange,
@@ -21,18 +21,16 @@ export function Sidebar({
   collapsed: boolean;
   onCollapsedChange: () => void;
 }) {
-  const { user } = useAuth();
+  const { data: grants } = usePermissions();
   const items = [
-    { label: "Início", icon: LayoutDashboard, to: "/dashboard" },
+    { label: "Início", icon: LayoutDashboard, to: "/" },
     { label: "Comparar preços", icon: Search, to: "/comparar" },
     { label: "Minha lista", icon: ListChecks, to: "/lista" },
     { label: "Catálogo", icon: Package, to: "/catalogo" },
     { label: "Minha conta", icon: Settings, to: "/conta" },
-    ...(user?.role === "ADMIN"
-      ? [
-          { label: "Preços", icon: Tags, to: "/precos" },
-          { label: "Usuários", icon: Users, to: "/usuarios" },
-        ]
+    { label: "Preços", icon: Tags, to: "/precos" },
+    ...(grants?.gerenciarUsuarios
+      ? [{ label: "Usuários", icon: Users, to: "/usuarios" }]
       : []),
   ];
   return (
@@ -48,6 +46,7 @@ export function Sidebar({
             <NavLink
               key={to}
               to={to}
+              end={to === "/"}
               title={label}
               className={({ isActive }) =>
                 cn("qt-nav-item", isActive && "qt-nav-active")

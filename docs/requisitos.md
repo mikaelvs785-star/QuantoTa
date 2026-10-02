@@ -14,11 +14,12 @@
 - Usar o mesmo catálogo e os mesmos formulários dos demais perfis.
 - Criar mercados vinculados automaticamente à própria conta.
 - Editar dados dos próprios mercados ativos, sem alterar vínculo ou status.
+- Cadastrar, editar e excluir preços nos próprios mercados ativos.
 - Consultar e comparar produtos e manter listas como consumidor.
 
 ## Administração
 
-- Consultar e cadastrar contas de consumidor.
+- Consultar e cadastrar contas de consumidor, vendedor e administrador.
 - Criar, editar, desativar e reativar produtos e mercados.
 - Cadastrar, editar e excluir registros de preços, com valor e data de coleta.
 - Consultar contagens reais do catálogo e preços recentes.
@@ -38,8 +39,10 @@
 10. Falhas de carregamento devem permitir tentar novamente e não aparecer como catálogo vazio.
 11. Cadastro público não cria ADMIN nem VENDEDOR.
 12. A API verifica o vínculo entre vendedor e mercado em cada edição; o cliente não decide o responsável nem libera permissões.
-13. Cadastros desativados ficam fora da consulta do consumidor e permanecem disponíveis ao administrador.
+13. Ao editar um preço, validar acesso ao mercado original e ao destino. Transferências e desativações retiram o acesso do vendedor na API.
+14. Subtotais e total da lista são calculados pela API, sem uma segunda estimativa no frontend.
+15. Cadastros desativados ficam fora da consulta do consumidor e permanecem disponíveis ao administrador.
 
 ## Fora do MVP
 
-Cadastro e aprovação de vendedores, anúncios, checkout, pagamento, localização por GPS, distância, favoritos, notificações e economia efetivamente realizada. A gestão de produtos e preços permanece com ADMIN nesta etapa.
+Cadastro público e aprovação de vendedores, anúncios, checkout, pagamento, localização por GPS, distância, favoritos, notificações e economia efetivamente realizada. Produtos permanecem sob gestão de ADMIN; vendedores mantêm seus mercados e seus preços.

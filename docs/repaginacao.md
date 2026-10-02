@@ -41,3 +41,25 @@ A compilação e os testes com H2 não validam a conexão com o PostgreSQL remot
 - Removidos seis arquivos sem importações, a função de perfil não utilizada e o campo de imagem que não era persistido.
 - Removidos o README genérico do Vite, o modelo SQL apenas comentado e os inserts antigos com sintaxe MySQL e senhas sem hash.
 - Instalação padronizada no lockfile npm do frontend, inclusive no Docker. A raiz mantém apenas scripts, sem dependências duplicadas.
+
+
+## Todas as telas compartilhadas — 02/10/2026
+
+O início, catálogo, comparação, preços, lista, conta, login/cadastro, usuários, formulários de produto/mercado e página de erro usam o mesmo layout. O dashboard separado e a página extra de cadastro de usuário foram removidos. Os endereços antigos continuam redirecionando com parâmetros e fragmentos.
+
+A interface consulta `GET /permissoes` para mostrar ações e proteger a navegação; não decide acesso pelo perfil salvo no navegador. A API valida a sessão e a propriedade em cada alteração. O endpoint anterior `/catalogo/permissoes` é mantido como alias.
+
+| Ação | Público | Consumidor | Vendedor | Administrador |
+|---|---|---|---|---|
+| Consultar catálogo, comparar e ver preços | Sim | Sim | Sim | Sim |
+| Listas e conta própria | Login | Sim | Sim | Sim |
+| Produtos | Consulta | Consulta | Consulta | Cadastro e edição |
+| Mercados | Consulta | Consulta | Cadastro e edição dos próprios ativos | Gestão e atribuição |
+| Preços | Consulta | Consulta | Cadastro, edição e exclusão nos próprios mercados ativos | Gestão completa |
+| Contas de usuários | Não | Não | Não | Consulta e cadastro com perfil |
+
+A edição de preços verifica o mercado original e o destino. Transferir ou desativar um mercado revoga o acesso do vendedor, inclusive com token já emitido. O cadastro público sempre cria consumidores. A estimativa da lista, incluindo subtotais e itens sem preço, é calculada pela API; o cliente apenas apresenta esses valores. Os preços atuais são selecionados no banco pela API, por data e ID.
+
+No celular, quatro atalhos fixos e o menu Mais evitam uma barra com itens demais. Os estilos de tema, cartões e cabeçalhos são comuns a todas as páginas. Capturas atuais: `docs/screenshots/telas-unificadas`, com dados locais de teste.
+
+Validação: build e lint do frontend, quatro testes das regras de preços e nove testes da API real com H2. Verificação de navegação por perfil, permissões fornecidas pela API, cadastro de vendedor pelo administrador, listas após recarregar, transferência de mercado, links antigos, celular e tema escuro.

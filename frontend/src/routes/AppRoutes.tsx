@@ -9,12 +9,11 @@ import {
 } from "react-router-dom";
 import { MainLayout } from "../layouts/MainLayout";
 import { PrivateRoute } from "./PrivateRoute";
-import { CatalogEditorRoute } from "./CatalogEditorRoute";
+import { PermissionRoute } from "./PermissionRoute";
 const Home = lazy(() => import("../pages/Home"));
 const Login = lazy(() => import("../pages/Login"));
 const Catalogo = lazy(() => import("../pages/Catalogo"));
 const Comparador = lazy(() => import("../pages/Comparator"));
-const Dashboard = lazy(() => import("../pages/Dashboard"));
 const Lista = lazy(() => import("../pages/Lista"));
 const Configuracoes = lazy(() => import("../pages/Configuracoes"));
 const Precos = lazy(() => import("../pages/Precos"));
@@ -29,11 +28,6 @@ const MarketEditor = lazy(() =>
     default: m.MarketEditorPage,
   })),
 );
-const UserEditor = lazy(() =>
-  import("../pages/Users/UserEditorPage").then((m) => ({
-    default: m.UserEditorPage,
-  })),
-);
 function RouteRedirect({ to }: { to: string }) {
   const { search, hash } = useLocation();
   const { id = "" } = useParams();
@@ -44,10 +38,12 @@ function RouteRedirect({ to }: { to: string }) {
   return <Navigate to={path + (query ? "?" + query : "") + hash} replace />;
 }
 const aliases: Record<string, string> = {
-  "/cliente": "/dashboard",
-  "/cliente/dashboard": "/dashboard",
-  "/admin": "/dashboard",
-  "/admin/dashboard": "/dashboard",
+  "/dashboard": "/",
+  "/usuarios/novo": "/usuarios?novo=1",
+  "/cliente": "/",
+  "/cliente/dashboard": "/",
+  "/admin": "/",
+  "/admin/dashboard": "/",
   "/cliente/comparador": "/comparar",
   "/cliente/mercados": "/catalogo?aba=mercados",
   "/mercados": "/catalogo?aba=mercados",
@@ -64,7 +60,7 @@ const aliases: Record<string, string> = {
   "/cliente/configuracoes": "/conta",
   "/admin/precos": "/precos",
   "/admin/usuarios": "/usuarios",
-  "/admin/usuarios/novo": "/usuarios/novo",
+  "/admin/usuarios/novo": "/usuarios?novo=1",
 };
 export function AppRoutes() {
   return (
@@ -77,22 +73,21 @@ export function AppRoutes() {
         }
       >
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
           {Object.entries(aliases).map(([path, to]) => (
             <Route key={path} path={path} element={<RouteRedirect to={to} />} />
           ))}
           <Route element={<MainLayout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/catalogo" element={<Catalogo />} />
             <Route path="/comparar" element={<Comparador />} />
             <Route
               path="/produtos/novo"
               element={
                 <PrivateRoute>
-                  <CatalogEditorRoute type="produto" create>
+                  <PermissionRoute action="produto" create>
                     <ProductEditor mode="create" />
-                  </CatalogEditorRoute>
+                  </PermissionRoute>
                 </PrivateRoute>
               }
             />
@@ -100,9 +95,9 @@ export function AppRoutes() {
               path="/produtos/:id/editar"
               element={
                 <PrivateRoute>
-                  <CatalogEditorRoute type="produto">
+                  <PermissionRoute action="produto">
                     <ProductEditor mode="edit" />
-                  </CatalogEditorRoute>
+                  </PermissionRoute>
                 </PrivateRoute>
               }
             />
@@ -110,9 +105,9 @@ export function AppRoutes() {
               path="/mercados/novo"
               element={
                 <PrivateRoute>
-                  <CatalogEditorRoute type="mercado" create>
+                  <PermissionRoute action="mercado" create>
                     <MarketEditor mode="create" />
-                  </CatalogEditorRoute>
+                  </PermissionRoute>
                 </PrivateRoute>
               }
             />
@@ -120,9 +115,9 @@ export function AppRoutes() {
               path="/mercados/:id/editar"
               element={
                 <PrivateRoute>
-                  <CatalogEditorRoute type="mercado">
+                  <PermissionRoute action="mercado">
                     <MarketEditor mode="edit" />
-                  </CatalogEditorRoute>
+                  </PermissionRoute>
                 </PrivateRoute>
               }
             />
@@ -130,7 +125,9 @@ export function AppRoutes() {
               path="/lista"
               element={
                 <PrivateRoute>
-                  <Lista />
+                  <PermissionRoute action="lista">
+                    <Lista />
+                  </PermissionRoute>
                 </PrivateRoute>
               }
             />
@@ -138,49 +135,38 @@ export function AppRoutes() {
               path="/conta"
               element={
                 <PrivateRoute>
-                  <Configuracoes />
+                  <PermissionRoute action="conta">
+                    <Configuracoes />
+                  </PermissionRoute>
                 </PrivateRoute>
               }
             />
-            <Route
-              path="/precos"
-              element={
-                <PrivateRoute allowedRoles={["ADMIN"]}>
-                  <Precos />
-                </PrivateRoute>
-              }
-            />
+            <Route path="/precos" element={<Precos />} />
             <Route
               path="/usuarios"
               element={
-                <PrivateRoute allowedRoles={["ADMIN"]}>
-                  <Users />
+                <PrivateRoute>
+                  <PermissionRoute action="usuarios">
+                    <Users />
+                  </PermissionRoute>
                 </PrivateRoute>
               }
             />
             <Route
-              path="/usuarios/novo"
+              path="*"
               element={
-                <PrivateRoute allowedRoles={["ADMIN"]}>
-                  <UserEditor />
-                </PrivateRoute>
+                <section className="qt-panel mx-auto max-w-6xl">
+                  <h1 className="qt-heading">Página não encontrada.</h1>
+                  <p className="qt-muted mt-4">
+                    Use o menu para continuar sua compra.
+                  </p>
+                  <a href="/" className="qt-action mt-6">
+                    Voltar ao início
+                  </a>
+                </section>
               }
             />
           </Route>
-          <Route
-            path="*"
-            element={
-              <main className="mx-auto max-w-xl px-6 py-24">
-                <h1 className="qt-heading">Página não encontrada.</h1>
-                <p className="qt-muted mt-4">
-                  Use o menu para continuar sua compra.
-                </p>
-                <a href="/" className="qt-action mt-6">
-                  Voltar ao início
-                </a>
-              </main>
-            }
-          />
         </Routes>
       </Suspense>
     </BrowserRouter>

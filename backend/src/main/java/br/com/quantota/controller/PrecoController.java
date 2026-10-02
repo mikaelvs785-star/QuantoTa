@@ -23,6 +23,9 @@ public class PrecoController {
         return precoService.listarTodos();
     }
 
+    @GetMapping("/atuais")
+    public List<Preco> atuais() { return precoService.listarAtuais(); }
+
     @GetMapping("/produto/{id}")
     public List<Preco> listarPorProduto(@PathVariable Long id) {
         return precoService.listarPorProduto(id);

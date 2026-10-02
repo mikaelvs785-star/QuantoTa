@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { Package, Store } from "lucide-react";
 import { useProdutos } from "@/hooks/useProdutos";
 import { useMarkets } from "@/hooks/useMarkets";
-import { useCatalogPermissions } from "@/hooks/useCatalogPermissions";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useExcluirProduto } from "@/hooks/useExcluirProduto";
 import { useDeleteMarket } from "@/hooks/useDeleteMarket";
 import { ApiError } from "@/components/ui/ApiError";
@@ -23,7 +23,7 @@ export default function Catalogo() {
   const search = params.get("busca") ?? params.get("q") ?? "";
   const products = useProdutos();
   const markets = useMarkets();
-  const permissions = useCatalogPermissions();
+  const permissions = usePermissions();
   const removeProduct = useExcluirProduto();
   const removeMarket = useDeleteMarket();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -62,7 +62,7 @@ export default function Catalogo() {
     <div className="mx-auto max-w-6xl">
       <SectionTitle
         title="Catálogo"
-        description="Consulte produtos e mercados. As ações disponíveis são definidas pelas suas permissões."
+        description="Encontre produtos e estabelecimentos para planejar sua compra."
       />
       <nav
         aria-label="Seções do catálogo"

@@ -9,7 +9,11 @@ import type { UserInput } from "@/types/user";
 const schema = z.object({
   name: z.string().min(2, "Informe o nome do usuário"),
   email: z.string().email("Informe um e-mail válido"),
-  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
+  password: z
+    .string()
+    .min(6, "A senha deve ter pelo menos 6 caracteres")
+    .max(72),
+  role: z.enum(["USER", "VENDEDOR", "ADMIN"]),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -26,7 +30,7 @@ export function UserForm({ submitting, onSubmit }: Props) {
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { name: "", email: "", password: "" },
+    defaultValues: { name: "", email: "", password: "", role: "USER" },
   });
 
   function submit(values: FormValues) {
@@ -78,6 +82,14 @@ export function UserForm({ submitting, onSubmit }: Props) {
             {errors.password.message}
           </span>
         )}
+      </label>
+      <label className="block">
+        <span className="mb-2 block text-sm font-bold">Perfil da conta</span>
+        <select {...register("role")} className="qt-select">
+          <option value="USER">Consumidor</option>
+          <option value="VENDEDOR">Vendedor</option>
+          <option value="ADMIN">Administrador</option>
+        </select>
       </label>
       <div className="flex justify-end border-t pt-5">
         <Button type="submit" size="lg" disabled={submitting}>

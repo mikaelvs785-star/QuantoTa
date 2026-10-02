@@ -12,8 +12,8 @@ public class ProdutoService {
 
     private final ProdutoRepository produtoRepository;
 
-    private final CatalogoPermissaoService permissoes;
-    public ProdutoService(ProdutoRepository produtoRepository, CatalogoPermissaoService permissoes) {
+    private final PermissaoService permissoes;
+    public ProdutoService(ProdutoRepository produtoRepository, PermissaoService permissoes) {
         this.produtoRepository = produtoRepository;
         this.permissoes = permissoes;
     }

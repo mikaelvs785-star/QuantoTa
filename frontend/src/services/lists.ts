@@ -15,7 +15,22 @@ export interface ShoppingList {
     quantidade: number;
   }[];
 }
+export interface ListSummary {
+  valorEstimado: number;
+  itensSemPreco: number;
+  estimativaCompleta: boolean;
+  estimativas: {
+    itemId: number;
+    precoUnitario: number | null;
+    subtotal: number | null;
+    mercadoId: number | null;
+    mercado: string | null;
+  }[];
+}
 export const listsService = {
+  async summary(id: number) {
+    return (await api.get<ListSummary>(`/listas/${id}`)).data;
+  },
   async getAll() {
     const { data } = await api.get<ShoppingList[]>("/listas");
     return data;

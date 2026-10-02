@@ -13,9 +13,7 @@ export function Header() {
         <span>q.</span>QuantoTá
       </Link>
       <p className="hidden text-sm text-slate-500 lg:block">
-        {user?.role === "ADMIN"
-          ? "Gestão do catálogo"
-          : "Uma compra bem planejada começa aqui."}
+        Planeje, compare e acompanhe os preços.
       </p>
       <div className="ml-auto flex items-center gap-3">
         <Button

@@ -39,7 +39,7 @@ export function ProductEditorPage({ mode }: { mode: "create" | "edit" }) {
     }
   }
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-6xl">
       <SectionTitle
         title={isEdit ? "Editar produto" : "Novo produto"}
         description={
