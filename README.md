@@ -89,7 +89,7 @@ cd backend
 .\gradlew.bat test
 ```
 
-Os testes de frontend exigem Node 22.13 ou superior. Os nove testes de integração Java iniciam a API real em porta aleatória com H2 e verificam cadastro, permissões, isolamento de listas, persistência, validações, preços atuais e contas desativadas, além de edição por vendedor, bloqueio entre vendedores, atribuição pelo administrador, preços por mercado, bloqueio de transferências indevidas e tentativas de escalada de perfil. Quatro testes de frontend cobrem identidade dos produtos, registros históricos, preços inválidos e cálculo em centavos.
+Os testes de frontend exigem Node 22.13 ou superior. Os nove testes de integração Java iniciam a API real em porta aleatória com H2 e verificam cadastro, permissões, isolamento de listas, persistência, validações, preços atuais e contas desativadas, além de edição por vendedor, bloqueio entre vendedores, atribuição pelo administrador, preços por mercado, bloqueio de transferências indevidas e tentativas de escalada de perfil. Oito testes de frontend cobrem identidade dos produtos, registros históricos, preços inválidos, cálculo em centavos e consistência da sessão, incluindo expiração e limpeza da identidade.
 
 A revisão visual também exercitou a aplicação com uma API local e dados de teste. As capturas atuais em `docs/screenshots/telas-unificadas` usam dados locais de teste, não dados de produção. As capturas anteriores ficam como registro das etapas de revisão.
 

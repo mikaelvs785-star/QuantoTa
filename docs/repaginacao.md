@@ -63,3 +63,13 @@ A edição de preços verifica o mercado original e o destino. Transferir ou des
 No celular, quatro atalhos fixos e o menu Mais evitam uma barra com itens demais. Os estilos de tema, cartões e cabeçalhos são comuns a todas as páginas. Capturas atuais: `docs/screenshots/telas-unificadas`, com dados locais de teste.
 
 Validação: build e lint do frontend, quatro testes das regras de preços e nove testes da API real com H2. Verificação de navegação por perfil, permissões fornecidas pela API, cadastro de vendedor pelo administrador, listas após recarregar, transferência de mercado, links antigos, celular e tema escuro.
+
+## Sessão e seleção de produtos — 02/10/2026
+
+A expiração da sessão mantém catálogo, comparação e preços abertos para consulta pública. Quando a API revoga o acesso, uma consulta pública é refeita sem credenciais. Nas telas privadas, o login preserva caminho, parâmetros e fragmento para retornar ao mesmo destino.
+
+Login, logout e expiração atualizam a identidade e limpam o cache de consultas. A alteração da sessão em outra aba também é sincronizada; a expiração é verificada por temporizador e ao voltar à janela. Uma resposta 401 atrasada de uma sessão anterior não encerra um novo login.
+
+O comparador apresenta um estado de produto não encontrado quando um link aponta para um ID ausente dos resultados. Alterar busca ou categoria limpa a seleção anterior, evitando comparar um produto diferente do selecionado no link.
+
+Validação: build, lint e oito testes de frontend. Verificação no navegador dos fluxos compartilhados, expiração sem navegação, revogação em páginas públicas e privadas, login/logout entre abas, retorno ao destino completo, credenciais inválidas, resposta 401 atrasada e filtros do comparador.

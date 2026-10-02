@@ -25,8 +25,10 @@ export default function ComparadorPage() {
         .toLocaleLowerCase("pt-BR")
         .includes(search.toLocaleLowerCase("pt-BR")),
   );
-  const selected =
-    filtered.find((p) => p.id === params.get("produto")) ?? filtered[0];
+  const requestedProduct = params.get("produto");
+  const selected = requestedProduct
+    ? filtered.find((p) => p.id === requestedProduct)
+    : filtered[0];
   const offers = selected
     ? offersForProduct(pricesQuery.data ?? [], selected.id)
     : [];
@@ -38,12 +40,17 @@ export default function ComparadorPage() {
     setParams(
       (current) => {
         const next = new URLSearchParams(current);
+        if (key === "q") next.delete("produto");
         if (value) next.set(key, value);
         else next.delete(key);
         return next;
       },
       { replace: true },
     );
+  }
+  function selectCategory(value: string) {
+    setCategory(value);
+    updateParam("produto", "");
   }
   return (
     <div className="mx-auto max-w-6xl">
@@ -64,7 +71,7 @@ export default function ComparadorPage() {
         </label>
         <div className="mt-5 flex flex-wrap gap-2">
           <button
-            onClick={() => setCategory("")}
+            onClick={() => selectCategory("")}
             className={`qt-chip ${!category ? "qt-chip-active" : ""}`}
           >
             Todas as categorias
@@ -72,7 +79,7 @@ export default function ComparadorPage() {
           {categories.map((c) => (
             <button
               key={c}
-              onClick={() => setCategory(c)}
+              onClick={() => selectCategory(c)}
               className={`qt-chip ${category === c ? "qt-chip-active" : ""}`}
             >
               {c}
@@ -126,87 +133,102 @@ export default function ComparadorPage() {
               ))}
             </div>
           </section>
-          <section>
-            <div className="qt-panel">
-              <p className="qt-eyebrow">PRODUTO SELECIONADO</p>
-              <h2 className="mt-3 text-2xl font-bold">{selected.name}</h2>
-              <p className="qt-muted mt-2">
-                {[selected.brand, selected.unit, selected.category]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </p>
-              <div className="mt-6 grid gap-5 border-t pt-6 sm:grid-cols-3">
-                <div>
-                  <p className="qt-muted">Menor preço registrado</p>
-                  <p className="mt-2 text-3xl font-bold text-brand-600 dark:text-brand-200">
-                    {offers[0] ? formatCurrency(offers[0].price) : "Sem preço"}
-                  </p>
+          {selected ? (
+            <section>
+              <div className="qt-panel">
+                <p className="qt-eyebrow">PRODUTO SELECIONADO</p>
+                <h2 className="mt-3 text-2xl font-bold">{selected.name}</h2>
+                <p className="qt-muted mt-2">
+                  {[selected.brand, selected.unit, selected.category]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+                <div className="mt-6 grid gap-5 border-t pt-6 sm:grid-cols-3">
+                  <div>
+                    <p className="qt-muted">Menor preço registrado</p>
+                    <p className="mt-2 text-3xl font-bold text-brand-600 dark:text-brand-200">
+                      {offers[0]
+                        ? formatCurrency(offers[0].price)
+                        : "Sem preço"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="qt-muted">Mercados com preço</p>
+                    <p className="mt-2 text-3xl font-bold">{offers.length}</p>
+                  </div>
+                  <div>
+                    <p className="qt-muted">Diferença entre mercados</p>
+                    <p className="mt-2 text-3xl font-bold">
+                      {difference !== null ? formatCurrency(difference) : "—"}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="qt-muted">Mercados com preço</p>
-                  <p className="mt-2 text-3xl font-bold">{offers.length}</p>
-                </div>
-                <div>
-                  <p className="qt-muted">Diferença entre mercados</p>
-                  <p className="mt-2 text-3xl font-bold">
-                    {difference !== null ? formatCurrency(difference) : "—"}
-                  </p>
-                </div>
+                <Link
+                  to={`/lista?produto=${selected.id}`}
+                  className="qt-action mt-6"
+                >
+                  Adicionar à minha lista <ArrowRight className="size-4" />
+                </Link>
               </div>
-              <Link
-                to={`/lista?produto=${selected.id}`}
-                className="qt-action mt-6"
-              >
-                Adicionar à minha lista <ArrowRight className="size-4" />
-              </Link>
-            </div>
-            <div className="mt-6 space-y-3">
-              {offers.length ? (
-                offers.map((offer, index) => (
-                  <article
-                    key={offer.id}
-                    className={`qt-offer ${index === 0 ? "border-brand-500" : ""}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="grid size-11 place-items-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15">
-                        <Store className="size-5" />
-                      </span>
-                      <div>
-                        <h3 className="font-semibold">{offer.market}</h3>
-                        <p className="qt-muted">
-                          Coletado em {displayDate(offer.date)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold">
-                        {formatCurrency(offer.price)}
-                      </p>
-                      {index === 0 && (
-                        <span className="text-xs font-semibold text-brand-600 dark:text-brand-200">
-                          Menor preço registrado
+              <div className="mt-6 space-y-3">
+                {offers.length ? (
+                  offers.map((offer, index) => (
+                    <article
+                      key={offer.id}
+                      className={`qt-offer ${index === 0 ? "border-brand-500" : ""}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="grid size-11 place-items-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15">
+                          <Store className="size-5" />
                         </span>
-                      )}
-                    </div>
-                  </article>
-                ))
-              ) : (
-                <div className="qt-empty">
-                  <p className="font-semibold">
-                    Ainda não há preço para este produto.
-                  </p>
-                  <p className="qt-muted mt-2">
-                    Você pode salvá-lo na lista e conferir novamente depois.
-                  </p>
-                </div>
-              )}
-            </div>
-            <p className="qt-muted mt-5">
-              Valores informados pelos cadastros, sujeitos a alteração no
-              mercado. A diferença exibida é uma comparação, não uma economia já
-              realizada.
-            </p>
-          </section>
+                        <div>
+                          <h3 className="font-semibold">{offer.market}</h3>
+                          <p className="qt-muted">
+                            Coletado em {displayDate(offer.date)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold">
+                          {formatCurrency(offer.price)}
+                        </p>
+                        {index === 0 && (
+                          <span className="text-xs font-semibold text-brand-600 dark:text-brand-200">
+                            Menor preço registrado
+                          </span>
+                        )}
+                      </div>
+                    </article>
+                  ))
+                ) : (
+                  <div className="qt-empty">
+                    <p className="font-semibold">
+                      Ainda não há preço para este produto.
+                    </p>
+                    <p className="qt-muted mt-2">
+                      Você pode salvá-lo na lista e conferir novamente depois.
+                    </p>
+                  </div>
+                )}
+              </div>
+              <p className="qt-muted mt-5">
+                Valores informados pelos cadastros, sujeitos a alteração no
+                mercado. A diferença exibida é uma comparação, não uma economia
+                já realizada.
+              </p>
+            </section>
+          ) : (
+            <section className="qt-empty">
+              <Package className="mx-auto size-9 text-slate-400" />
+              <h2 className="mt-4 text-lg font-semibold">
+                Produto não encontrado
+              </h2>
+              <p className="qt-muted mt-2">
+                O produto deste link não está entre os resultados. Escolha outro
+                produto ou ajuste a busca para comparar.
+              </p>
+            </section>
+          )}
         </div>
       )}
     </div>
