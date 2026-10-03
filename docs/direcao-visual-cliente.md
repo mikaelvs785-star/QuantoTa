@@ -4,7 +4,9 @@ Registro da conversa com Mikael em 03/10/2026.
 
 ## Estado da decisão
 
-A direção visual do cliente foi aprovada: acolhedora, comunicativa, com apelo comercial e fotografias de alimentos. O usuário pediu para preservar essa linha e refinar os ícones para um acabamento mais profissional. As telas apresentadas são conceitos, não capturas do software implementado. Esta documentação não autoriza tratar funcionalidades propostas como já disponíveis.
+Em 03/10/2026, às 13h31 (America/Sao_Paulo), Mikael confirmou: “Telas aprovadas, essas de cliente e as de admin e as de vendedor”. O conjunto passa a ser a referência aprovada para a implementação, incluindo a direção acolhedora e comercial do cliente, os ícones refinados, a gestão administrativa, as ofertas dos vendedores e as regras de comparação descritas abaixo.
+
+A aprovação considera a última divisão de responsabilidades: fotos das ofertas ficam com os vendedores; o administrador mantém a identificação do catálogo e os banners da vitrine. Login e conta seguem a composição aprovada, recebendo a mesma padronização de ícones do restante do conjunto. As telas apresentadas são conceitos, não capturas do software implementado; a aprovação visual não significa que as novas funcionalidades já estejam disponíveis.
 
 ## Experiência do cliente
 
@@ -17,7 +19,7 @@ A direção visual do cliente foi aprovada: acolhedora, comunicativa, com apelo 
 
 ## Imagens e responsabilidades
 
-| Conteúdo | Responsável proposto |
+| Conteúdo | Responsável aprovado |
 |---|---|
 | Identificação do produto: nome, marca, embalagem e categoria | Administrador |
 | Foto da oferta de um produto em determinado mercado | Vendedor responsável pelo mercado |
@@ -29,7 +31,7 @@ A imagem pertence à oferta do par produto/mercado. A alteração por um vendedo
 
 O vendedor seleciona o produto, envia a foto, informa preço e data, confere a prévia e salva. A interface não deve sugerir que atualizar um preço exige reenviar uma imagem que já pertence à oferta.
 
-## Comparações propostas
+## Comparações aprovadas como referência
 
 1. Preço da embalagem em destaque; preço por kg, litro ou unidade como informação secundária.
 2. Comparação entre mercados para o mesmo produto e embalagem. Outras embalagens ficam em uma comparação explícita do mesmo tipo de produto e marca.
@@ -43,7 +45,7 @@ O vendedor seleciona o produto, envia a foto, informa preço e data, confere a p
 
 Exemplo coerente de referência: arroz Camil 5 kg × 1 e leite Italac 1 L × 2. Mercado Central: 35,00 + 2 × 4,99 = 44,98. Boa Compra: 37,00 + 2 × 4,49 = 45,98. Mercado Econômico: arroz 32,00 e leite sem preço, portanto subtotal incompleto. Combinação Econômico + Boa Compra: 32,00 + 8,98 = 40,98; diferença de 4,00 em relação ao melhor total completo, antes de deslocamento.
 
-## Refinamento de ícones solicitado
+## Refinamento de ícones aprovado
 
 Usar uma única família vetorial com curadoria de significado. O projeto já usa Lucide; a proposta é padronizar seu uso, evitando que símbolos imprecisos gerados nas imagens virem especificação de implementação.
 
@@ -58,4 +60,4 @@ Usar uma única família vetorial com curadoria de significado. O projeto já us
 
 ## Pendências para implementação
 
-Uploads e persistência das imagens por oferta/mercado, gestão de banners e coleções, medidas estruturadas e comparação entre embalagens, totais por mercado e nova interface ainda precisam ser implementados e testados. O refinamento da iconografia está em revisão visual. Manter a documentação do estado atual separada desta proposta.
+Uploads e persistência das imagens por oferta/mercado, gestão de banners e coleções, medidas estruturadas e comparação entre embalagens, totais por mercado e nova interface ainda precisam ser implementados e testados. A iconografia aprovada deve ser aplicada de forma consistente às três experiências. Manter a documentação do estado atual separada desta especificação de implementação.
