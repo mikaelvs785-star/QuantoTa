@@ -26,6 +26,7 @@ public class Mercado {
     private String cidade;
     private String estado;
     private String telefone;
+    private java.util.UUID imagemId;
 
     @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
     private Long vendedorId;

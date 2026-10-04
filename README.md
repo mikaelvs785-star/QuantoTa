@@ -79,6 +79,16 @@ O vínculo usa a coluna nullable `mercados.vendedor_id`. Com `ddl-auto=update`, 
 
 O schema em `database/schema.sql` é um exemplo PostgreSQL. Para desenvolvimento, a API continua com `ddl-auto=update`; os testes usam H2 isolado e `create-drop`. Não execute os scripts de exemplo sobre um banco em produção sem revisar as alterações.
 
+## Vitrine e comparação de compras
+
+A experiência de cliente usa as rotas `/`, `/explorar`, `/comparar`, `/lista` e `/conta`. Login é necessário para salvar listas; a consulta de produtos e preços é pública. O administrador publica coleções em `/vitrine` e configura medidas e grupos equivalentes no catálogo. O vendedor envia a foto da oferta em `/precos`, vinculada ao par produto + mercado. Atualizar o preço preserva essa foto e não altera ofertas de outros mercados.
+
+A embalagem mantém seu preço em destaque. Valores por kg/L/un só aparecem com medida estruturada válida. Embalagens diferentes exigem o mesmo grupo, marca e dimensão. A lista compara os mesmos produtos e quantidades: somente mercados com todos os preços concorrem ao menor total; os demais mostram subtotal e itens sem preço. A compra dividida informa mercados envolvidos e diferença de valores, sem incluir entrega ou deslocamento.
+
+Fotos JPG/PNG de até 3 MB são verificadas e reencodificadas no servidor; os arquivos persistem no PostgreSQL (`imagens.conteudo`), sem depender do disco temporário da hospedagem. As URLs são públicas e imutáveis. Cada substituição gera uma nova imagem; imagens antigas são conservadas nesta versão. Não há credencial adicional para upload.
+
+Para bases existentes com `ddl-auto=validate`, revise e aplique `database/migrations-retail.sql` antes da atualização. Com `update`, o Hibernate cria as estruturas aditivas. Produtos antigos continuam comparáveis por embalagem; o administrador deve preencher suas medidas para habilitar kg/L/un. Não são criados preços, imagens de produtos ou coleções fictícias em produção.
+
 ## Validação
 
 ```powershell
@@ -89,7 +99,7 @@ cd backend
 .\gradlew.bat test
 ```
 
-Os testes de frontend exigem Node 22.13 ou superior. Os nove testes de integração Java iniciam a API real em porta aleatória com H2 e verificam cadastro, permissões, isolamento de listas, persistência, validações, preços atuais e contas desativadas, além de edição por vendedor, bloqueio entre vendedores, atribuição pelo administrador, preços por mercado, bloqueio de transferências indevidas e tentativas de escalada de perfil. Oito testes de frontend cobrem identidade dos produtos, registros históricos, preços inválidos, cálculo em centavos e consistência da sessão, incluindo expiração e limpeza da identidade.
+Os testes de frontend exigem Node 22.13 ou superior. Os doze testes de integração Java iniciam a API real em porta aleatória com H2 e verificam cadastro, permissões, isolamento de listas, persistência, validações, preços atuais e contas desativadas, além de edição por vendedor, bloqueio entre vendedores, atribuição pelo administrador, preços por mercado, bloqueio de transferências indevidas e tentativas de escalada de perfil. Oito testes de frontend cobrem identidade dos produtos, registros históricos, preços inválidos, cálculo em centavos e consistência da sessão, incluindo expiração e limpeza da identidade.
 
 A revisão visual também exercitou a aplicação com uma API local e dados de teste. As capturas atuais em `docs/screenshots/telas-unificadas` usam dados locais de teste, não dados de produção. As capturas anteriores ficam como registro das etapas de revisão.
 

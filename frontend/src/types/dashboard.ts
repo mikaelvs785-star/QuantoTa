@@ -1,8 +1,3 @@
-export interface DashboardMetric {
-  key: "products" | "markets" | "prices";
-  label: string;
-  value: number;
-}
 export interface PriceRecord {
   id: string;
   productId: string;
@@ -11,8 +6,11 @@ export interface PriceRecord {
   market: string;
   price: number;
   date: string;
-}
-export interface DashboardData {
-  metrics: DashboardMetric[];
-  latestPrices: PriceRecord[];
+  imageId?: string | null;
+  brand?: string;
+  unit?: string;
+  category?: string;
+  unitPrice?: number | null;
+  baseUnit?: string | null;
+  baseQuantity?: number | null;
 }

@@ -9,6 +9,7 @@ export function useEditarProduto() {
     onSuccess: (_, variables) => {
       void client.invalidateQueries({ queryKey: ["resumo-lista"] });
       void client.invalidateQueries({ queryKey: ["precos"] });
+      void client.invalidateQueries({ queryKey: ["embalagens"] });
       void client.invalidateQueries({ queryKey: ["dashboard"] });
       void client.invalidateQueries({ queryKey: ["produtos"] });
       void client.invalidateQueries({ queryKey: ["produto", variables.id] });

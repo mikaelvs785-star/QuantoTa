@@ -45,7 +45,7 @@ export function TabBar({ items }: { items: Item[] }) {
             className={({ isActive }) =>
               cn(
                 "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl px-1 py-2 text-xs font-semibold",
-                isActive
+                (isActive || (to === "/explorar" && location.pathname === "/comparar"))
                   ? "bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-100"
                   : "text-slate-500 dark:text-slate-400",
               )

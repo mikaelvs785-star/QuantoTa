@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { ImageUpload } from "@/components/storefront/Media";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { usePermissions } from "@/hooks/usePermissions";
 import { userService } from "@/services/userService";
@@ -17,6 +18,7 @@ const schema = z.object({
   phone: z.string(),
   status: z.enum(["ACTIVE", "INACTIVE"]),
   vendedorId: z.string().optional(),
+  imageId: z.string().nullable().optional(),
 });
 type Values = z.infer<typeof schema>;
 export function MarketForm({
@@ -30,6 +32,7 @@ export function MarketForm({
   submitting?: boolean;
   onSubmit: (input: MarketInput) => void;
 }) {
+  const [uploading,setUploading]=useState(false);
   const permissions = usePermissions();
   const canAssign = permissions.data?.gerenciarTodosMercados === true;
   const sellers = useQuery({
@@ -54,12 +57,14 @@ export function MarketForm({
       phone: "",
       status: "ACTIVE",
       vendedorId: "",
+      imageId: null,
     },
   });
   useEffect(() => {
     if (market)
       reset({
         name: market.name,
+        imageId: market.imageId ?? null,
         address: market.address ?? "",
         neighborhood: market.neighborhood ?? "",
         city: market.city,
@@ -76,6 +81,7 @@ export function MarketForm({
       )}
       className="space-y-6"
     >
+      <Controller name="imageId" control={control} render={({field})=><ImageUpload label="Foto do mercado" value={field.value} onChange={field.onChange} onBusy={setUploading}/>}/>
       <div className="grid gap-5 sm:grid-cols-2">
         {[
           { key: "name", label: "Nome", placeholder: "Nome do mercado" },
@@ -159,7 +165,7 @@ export function MarketForm({
       <Button
         type="submit"
         disabled={
-          submitting || (canAssign && (sellers.isPending || sellers.isError))
+          submitting || uploading || (canAssign && (sellers.isPending || sellers.isError))
         }
       >
         {submitting ? "Salvando..." : "Salvar mercado"}

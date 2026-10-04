@@ -15,7 +15,15 @@ public class ListaCompraResumoDTO {
     private String nomeLista;
     private Long usuarioId;
     private List<ItemListaCompra> itens;
-    public record ItemEstimativa(Long itemId, BigDecimal precoUnitario, BigDecimal subtotal, Long mercadoId, String mercado) {}
+    public record ItemEstimativa(Long itemId, BigDecimal precoUnitario, BigDecimal subtotal, Long mercadoId, String mercado,
+        java.util.UUID imagemId, BigDecimal precoPorMedida, String unidadeBase, java.time.LocalDate dataColeta) {}
+    public record ItemMercado(Long itemId, String produto, int quantidade, BigDecimal precoUnitario, BigDecimal subtotal, java.time.LocalDate dataColeta) {}
+    public record TotalMercado(Long mercadoId, String mercado, java.util.UUID imagemId, BigDecimal subtotal, boolean completa,
+        int produtosComPreco, List<String> produtosSemPreco, List<ItemMercado> itens) {}
+    private List<TotalMercado> mercados;
+    private Long mercadoMaisBaratoId;
+    private BigDecimal diferencaCompraDividida;
+    private int quantidadeMercados;
     private List<ItemEstimativa> estimativas;
     private BigDecimal valorEstimado;
     private int itensSemPreco;

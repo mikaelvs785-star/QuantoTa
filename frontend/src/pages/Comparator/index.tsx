@@ -1,235 +1,255 @@
-import { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { Search, Package, Store, ArrowRight } from "lucide-react";
+import { useSearchParams, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, ArrowLeftRight, Store, Info } from "lucide-react";
 import { useProdutos } from "@/hooks/useProdutos";
 import { usePrecosAtuais } from "@/hooks/usePrecos";
+import { api } from "@/services/api";
+import { normalizePrice, type BackendPrice } from "@/services/dashboard";
+import { ProductImage } from "@/components/storefront/Media";
+import { MeasurePrice, ProductCard } from "@/components/storefront/ProductCard";
 import { ApiError } from "@/components/ui/ApiError";
-import { Input } from "@/components/ui/Input";
-import { SectionTitle } from "@/components/ui/SectionTitle";
-import { offersForProduct, displayDate } from "@/lib/offers";
 import { formatCurrency } from "@/lib/utils";
+import { displayDate } from "@/lib/offers";
 export default function ComparadorPage() {
   const [params, setParams] = useSearchParams();
-  const [category, setCategory] = useState("");
-  const search = params.get("q") ?? "";
-  const productsQuery = useProdutos();
-  const pricesQuery = usePrecosAtuais();
-  const products = (productsQuery.data?.content ?? []).filter(
+  const products = useProdutos();
+  const prices = usePrecosAtuais();
+  const all = (products.data?.content ?? []).filter(
     (p) => p.status === "ACTIVE",
   );
-  const categories = [...new Set(products.map((p) => p.category))].sort();
-  const filtered = products.filter(
-    (p) =>
-      (!category || p.category === category) &&
-      `${p.name} ${p.brand ?? ""} ${p.unit ?? ""}`
-        .toLocaleLowerCase("pt-BR")
-        .includes(search.toLocaleLowerCase("pt-BR")),
-  );
-  const requestedProduct = params.get("produto");
-  const selected = requestedProduct
-    ? filtered.find((p) => p.id === requestedProduct)
-    : filtered[0];
-  const offers = selected
-    ? offersForProduct(pricesQuery.data ?? [], selected.id)
-    : [];
-  const difference =
-    offers.length > 1
-      ? offers[offers.length - 1].price - offers[0].price
-      : null;
-  function updateParam(key: string, value: string) {
-    setParams(
-      (current) => {
-        const next = new URLSearchParams(current);
-        if (key === "q") next.delete("produto");
-        if (value) next.set(key, value);
-        else next.delete(key);
-        return next;
-      },
-      { replace: true },
-    );
-  }
-  function selectCategory(value: string) {
-    setCategory(value);
-    updateParam("produto", "");
-  }
+  const id = params.get("produto");
+  const q = params.get("q") ?? "";
+  const product = id
+    ? all.find((p) => p.id === id)
+    : all.find((p) =>
+        `${p.name} ${p.brand}`
+          .toLocaleLowerCase("pt-BR")
+          .includes(q.toLocaleLowerCase("pt-BR")),
+      );
+  const mode = params.get("modo") === "embalagens" ? "embalagens" : "mercados";
+  const packaging = useQuery({
+    queryKey: ["embalagens", product?.id],
+    queryFn: async () =>
+      (
+        await api.get<BackendPrice[]>(`/comparacoes/embalagens/${product!.id}`)
+      ).data.map(normalizePrice),
+    enabled: !!product,
+  });
+  const offers = (prices.data ?? [])
+    .filter((p) => p.productId === product?.id)
+    .sort((a, b) => a.price - b.price);
+  const choices = mode === "embalagens" ? (packaging.data ?? []) : offers;
+  const recommendations = all
+    .filter((p) => p.id !== product?.id && p.category === product?.category)
+    .slice(0, 3);
   return (
-    <div className="mx-auto max-w-6xl">
-      <SectionTitle
-        title="O mesmo produto. Outros preços."
-        description="Compare marca e unidade iguais, veja a data de coleta e escolha onde comprar."
-      />
-      <div className="qt-panel mb-6">
-        <label className="relative block">
-          <span className="sr-only">Buscar produto</span>
-          <Search className="pointer-events-none absolute left-4 top-4 size-5 text-slate-400" />
-          <Input
-            value={search}
-            onChange={(e) => updateParam("q", e.target.value)}
-            className="h-14 pl-12"
-            placeholder="Busque arroz, leite, café..."
-          />
-        </label>
-        <div className="mt-5 flex flex-wrap gap-2">
-          <button
-            onClick={() => selectCategory("")}
-            className={`qt-chip ${!category ? "qt-chip-active" : ""}`}
-          >
-            Todas as categorias
-          </button>
-          {categories.map((c) => (
-            <button
-              key={c}
-              onClick={() => selectCategory(c)}
-              className={`qt-chip ${category === c ? "qt-chip-active" : ""}`}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-      </div>
-      {productsQuery.isPending || pricesQuery.isPending ? (
-        <p role="status" className="qt-panel">
-          Carregando produtos e preços...
-        </p>
-      ) : productsQuery.isError || pricesQuery.isError ? (
+    <div className="mx-auto max-w-5xl">
+      <Link
+        to="/explorar"
+        className="mb-6 inline-flex items-center gap-2 text-sm font-semibold"
+      >
+        <ArrowLeft className="size-4" />
+        Explorar produtos
+      </Link>
+      {products.isPending || prices.isPending ? (
+        <p role="status">Carregando produtos e preços…</p>
+      ) : products.isError || prices.isError ? (
         <ApiError
           onRetry={() => {
-            void productsQuery.refetch();
-            void pricesQuery.refetch();
+            void products.refetch();
+            void prices.refetch();
           }}
         />
-      ) : !filtered.length ? (
+      ) : !product ? (
         <div className="qt-empty">
-          <Package className="mx-auto size-9 text-slate-400" />
-          <h2 className="mt-4 text-lg font-semibold">
-            Nenhum produto encontrado
-          </h2>
-          <p className="qt-muted mt-2">
-            Tente outro nome ou categoria. O catálogo aparece conforme os
-            produtos são cadastrados.
+          <h1 className="qt-heading">Produto não encontrado</h1>
+          <p className="qt-muted mt-3">
+            Esse produto não está no catálogo ativo. Procure outro produto para
+            comparar.
           </p>
+          <Link className="qt-action mt-5" to="/explorar">
+            Explorar produtos
+          </Link>
         </div>
       ) : (
-        <div className="grid items-start gap-6 lg:grid-cols-[300px_1fr]">
-          <section className="qt-panel">
-            <p className="qt-eyebrow mb-4">
-              {filtered.length} PRODUTOS ENCONTRADOS
-            </p>
-            <div className="max-h-[560px] space-y-2 overflow-y-auto">
-              {filtered.map((product) => (
-                <button
-                  key={product.id}
-                  aria-pressed={selected?.id === product.id}
-                  onClick={() => updateParam("produto", product.id)}
-                  className={`w-full rounded-xl border p-4 text-left ${selected?.id === product.id ? "border-brand-500 bg-brand-50 dark:bg-brand-500/10" : "border-transparent hover:bg-slate-50 dark:hover:bg-slate-800"}`}
-                >
-                  <p className="font-semibold">{product.name}</p>
-                  <p className="qt-muted mt-1">
-                    {[product.brand, product.unit, product.category]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </p>
-                </button>
-              ))}
-            </div>
-          </section>
-          {selected ? (
-            <section>
-              <div className="qt-panel">
-                <p className="qt-eyebrow">PRODUTO SELECIONADO</p>
-                <h2 className="mt-3 text-2xl font-bold">{selected.name}</h2>
-                <p className="qt-muted mt-2">
-                  {[selected.brand, selected.unit, selected.category]
-                    .filter(Boolean)
-                    .join(" · ")}
+        <>
+          <div className="grid items-start gap-7 lg:grid-cols-[.8fr_1.2fr]">
+            <section className="qt-panel !p-0 overflow-hidden">
+              <ProductImage
+                id={offers[0]?.imageId}
+                alt={product.name}
+                className="aspect-[4/3] w-full"
+              />
+              <div className="p-6">
+                <p className="qt-eyebrow mb-2">{product.category}</p>
+                <h1 className="qt-heading">{product.name}</h1>
+                <p className="mt-2 text-lg">
+                  {product.brand} · {product.unit}
                 </p>
-                <div className="mt-6 grid gap-5 border-t pt-6 sm:grid-cols-3">
-                  <div>
-                    <p className="qt-muted">Menor preço registrado</p>
-                    <p className="mt-2 text-3xl font-bold text-brand-600 dark:text-brand-200">
-                      {offers[0]
-                        ? formatCurrency(offers[0].price)
-                        : "Sem preço"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="qt-muted">Mercados com preço</p>
-                    <p className="mt-2 text-3xl font-bold">{offers.length}</p>
-                  </div>
-                  <div>
-                    <p className="qt-muted">Diferença entre mercados</p>
-                    <p className="mt-2 text-3xl font-bold">
-                      {difference !== null ? formatCurrency(difference) : "—"}
-                    </p>
-                  </div>
-                </div>
-                <Link
-                  to={`/lista?produto=${selected.id}`}
-                  className="qt-action mt-6"
-                >
-                  Adicionar à minha lista <ArrowRight className="size-4" />
-                </Link>
+                {product.description && (
+                  <p className="qt-muted mt-4">{product.description}</p>
+                )}
+                <p className="qt-muted mt-5">
+                  A foto pertence à oferta do mercado apresentado. Confira marca
+                  e embalagem antes de comprar.
+                </p>
               </div>
-              <div className="mt-6 space-y-3">
-                {offers.length ? (
-                  offers.map((offer, index) => (
+            </section>
+            <section>
+              <h2 className="text-2xl font-bold text-brand-700 dark:text-brand-100">
+                O mesmo produto. Uma escolha melhor.
+              </h2>
+              <div
+                className="my-5 flex gap-2"
+                role="group"
+                aria-label="Tipo de comparação"
+              >
+                {[
+                  ["mercados", "Entre mercados"],
+                  ["embalagens", "Outras embalagens"],
+                ].map(([value, label]) => (
+                  <button
+                    key={value}
+                    className={`qt-chip flex-1 justify-center ${mode === value ? "qt-chip-active" : ""}`}
+                    aria-pressed={mode === value}
+                    onClick={() =>
+                      setParams((old) => {
+                        const next = new URLSearchParams(old);
+                        next.set("produto", product.id);
+                        next.set("modo", value);
+                        return next;
+                      })
+                    }
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {mode === "embalagens" && (
+                <p className="qt-muted mb-4">
+                  Mesmo tipo de produto e marca, em medidas compatíveis.
+                  Ordenado pelo menor preço por medida; a embalagem maior pode
+                  exigir um desembolso maior.
+                </p>
+              )}
+              {mode === "embalagens" && packaging.isPending ? (
+                <p role="status">Comparando embalagens…</p>
+              ) : mode === "embalagens" && packaging.isError ? (
+                <ApiError onRetry={() => void packaging.refetch()} />
+              ) : choices.length ? (
+                <div className="space-y-3">
+                  {choices.map((offer, index) => (
                     <article
                       key={offer.id}
-                      className={`qt-offer ${index === 0 ? "border-brand-500" : ""}`}
+                      className={`qt-offer !flex-nowrap ${index === 0 ? "!border-brand-500" : ""}`}
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="grid size-11 place-items-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15">
-                          <Store className="size-5" />
-                        </span>
-                        <div>
-                          <h3 className="font-semibold">{offer.market}</h3>
-                          <p className="qt-muted">
-                            Coletado em {displayDate(offer.date)}
+                      <ProductImage
+                        id={offer.imageId}
+                        alt={`${offer.product} em ${offer.market}`}
+                        className="hidden size-24 shrink-0 rounded-xl sm:flex"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="flex items-center gap-2 font-semibold">
+                          <Store className="size-4 shrink-0" />
+                          {offer.market}
+                        </p>
+                        {mode === "embalagens" && (
+                          <p className="mt-1 text-sm font-semibold">
+                            {offer.brand} · {offer.unit}
                           </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-bold">
+                        )}
+                        <p className="mt-2 text-3xl font-bold text-brand-700 dark:text-brand-100">
                           {formatCurrency(offer.price)}
                         </p>
+                        <MeasurePrice
+                          price={offer.unitPrice}
+                          unit={offer.baseUnit}
+                        />
+                        <p className="qt-muted text-xs">
+                          Coletado em {displayDate(offer.date)}
+                        </p>
                         {index === 0 && (
-                          <span className="text-xs font-semibold text-brand-600 dark:text-brand-200">
-                            Menor preço registrado
+                          <span className="mt-2 inline-block rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700 dark:bg-brand-700 dark:text-white">
+                            {mode === "embalagens"
+                              ? "Menor preço por medida"
+                              : "Menor preço registrado"}
                           </span>
                         )}
+                        <Link
+                          to={`/lista?produto=${offer.productId}`}
+                          className="qt-action mt-3 w-full text-sm sm:w-auto"
+                        >
+                          Adicionar à lista
+                        </Link>
                       </div>
                     </article>
-                  ))
-                ) : (
-                  <div className="qt-empty">
-                    <p className="font-semibold">
-                      Ainda não há preço para este produto.
-                    </p>
-                    <p className="qt-muted mt-2">
-                      Você pode salvá-lo na lista e conferir novamente depois.
-                    </p>
-                  </div>
-                )}
-              </div>
-              <p className="qt-muted mt-5">
-                Valores informados pelos cadastros, sujeitos a alteração no
-                mercado. A diferença exibida é uma comparação, não uma economia
-                já realizada.
+                  ))}
+                </div>
+              ) : (
+                <div className="qt-empty">
+                  <h3 className="font-semibold">
+                    {mode === "embalagens"
+                      ? "Ainda não há embalagens equivalentes cadastradas."
+                      : "Ainda não há preço para este produto."}
+                  </h3>
+                  <p className="qt-muted mt-3">
+                    {mode === "embalagens"
+                      ? "A comparação precisa de marca, medida e grupo de equivalência conferidos no catálogo."
+                      : "Você pode salvá-lo na lista e conferir novamente depois."}
+                  </p>
+                  {mode === "mercados" && (
+                    <Link
+                      className="qt-action mt-4"
+                      to={`/lista?produto=${product.id}`}
+                    >
+                      Adicionar à minha lista
+                    </Link>
+                  )}
+                </div>
+              )}
+              <p className="qt-muted mt-5 flex gap-2">
+                <Info className="mt-1 size-4 shrink-0" />
+                Preço da embalagem. Confirme o valor no mercado; a comparação
+                não garante estoque.
               </p>
+              {mode === "mercados" && (packaging.data?.length ?? 0) > 1 && (
+                <button
+                  className="qt-secondary mt-5 w-full"
+                  onClick={() =>
+                    setParams({ produto: product.id, modo: "embalagens" })
+                  }
+                >
+                  <ArrowLeftRight className="size-5" />
+                  Qual embalagem rende mais?
+                </button>
+              )}
             </section>
-          ) : (
-            <section className="qt-empty">
-              <Package className="mx-auto size-9 text-slate-400" />
-              <h2 className="mt-4 text-lg font-semibold">
-                Produto não encontrado
+          </div>
+          {recommendations.length > 0 && (
+            <section className="mt-10">
+              <h2 className="qt-section-heading mb-2">
+                Mais opções para sua compra
               </h2>
-              <p className="qt-muted mt-2">
-                O produto deste link não está entre os resultados. Escolha outro
-                produto ou ajuste a busca para comparar.
+              <p className="qt-muted mb-5">
+                Outros produtos de {product.category.toLocaleLowerCase("pt-BR")}
+                , para você escolher.
               </p>
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+                {recommendations.map((p) => (
+                  <ProductCard
+                    key={p.id}
+                    product={p}
+                    offer={
+                      (prices.data ?? [])
+                        .filter((o) => o.productId === p.id)
+                        .sort((a, b) => a.price - b.price)[0]
+                    }
+                  />
+                ))}
+              </div>
             </section>
           )}
-        </div>
+        </>
       )}
     </div>
   );

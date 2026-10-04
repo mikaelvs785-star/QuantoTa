@@ -8,6 +8,11 @@ export interface Product {
   description?: string;
   brand?: string;
   unit?: string;
+  measureQuantity?: number | null;
+  measureType?: string | null;
+  comparisonGroup?: string;
+  baseQuantity?: number | null;
+  baseUnit?: string | null;
   status: ProductStatus;
 }
 
@@ -17,6 +22,11 @@ export interface ProductInput {
   description?: string;
   brand?: string;
   unit?: string;
+  measureQuantity?: number | null;
+  measureType?: string | null;
+  comparisonGroup?: string;
+  baseQuantity?: number | null;
+  baseUnit?: string | null;
   status: ProductStatus;
 }
 

@@ -118,3 +118,84 @@
     scroll-behavior: auto !important;
   }
 }
+@layer base {
+  body {
+    background: #fff9f0;
+  }
+  .dark body {
+    background: #020617;
+  }
+  .lucide {
+    stroke-width: 2;
+  }
+  button:not(:disabled),
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+@layer components {
+  .qt-header {
+    @apply border-stone-200/70 bg-[#fff9f0]/95 dark:border-slate-800 dark:bg-slate-950/95;
+  }
+  .qt-panel {
+    @apply border-stone-200/70 shadow-[0_4px_24px_-18px_#193d2d40] dark:border-slate-800;
+  }
+  .qt-heading {
+    @apply text-brand-700 dark:text-brand-100;
+  }
+  .qt-section-heading {
+    @apply text-2xl font-bold tracking-tight text-brand-700 dark:text-brand-100 sm:text-3xl;
+  }
+  .qt-action {
+    background: #ffaa51;
+    @apply text-[#163d31] hover:brightness-95;
+  }
+  .qt-secondary {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-brand-600 px-5 text-sm font-semibold text-brand-700 dark:border-brand-200 dark:text-brand-100;
+  }
+  .qt-product-card {
+    @apply flex min-w-0 flex-col overflow-hidden rounded-2xl border border-stone-200/70 bg-white shadow-[0_6px_24px_-18px_#193d2d40] dark:border-slate-800 dark:bg-slate-900;
+  }
+  .qt-photo-placeholder {
+    @apply flex flex-col items-center justify-center gap-1 bg-[#f0eee5] p-2 text-center text-xs text-stone-500 dark:bg-slate-800 dark:text-slate-400;
+  }
+  .qt-retail-hero {
+    @apply relative isolate overflow-hidden rounded-3xl bg-[#f9ead5] p-6 sm:p-10 lg:p-12;
+  }
+  .qt-retail-hero > img {
+    @apply absolute inset-0 -z-10 h-full w-full object-cover object-right opacity-25 lg:opacity-100;
+  }
+  .qt-retail-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(
+      90deg,
+      #fff3e4 0%,
+      #fff3e4ec 33%,
+      #fff3e433 68%,
+      transparent 100%
+    );
+  }
+  .qt-collection {
+    @apply relative isolate min-h-64 overflow-hidden rounded-2xl bg-[#f9ead5] p-6 text-brand-700 sm:p-8 dark:bg-slate-900 dark:text-brand-100;
+  }
+  .qt-collection > img {
+    @apply absolute inset-0 -z-10 h-full w-full object-cover opacity-30;
+  }
+  .qt-collection > div {
+    @apply relative max-w-sm;
+  }
+  .qt-success {
+    @apply rounded-2xl border border-brand-200 bg-brand-50 p-5 text-brand-700 dark:border-brand-700 dark:bg-brand-700/20 dark:text-brand-100;
+  }
+}
+@layer components {
+  .dark .qt-retail-hero .qt-secondary {
+    @apply border-brand-700 text-brand-700;
+  }
+}

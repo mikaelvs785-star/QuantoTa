@@ -10,6 +10,7 @@ export function useUpdateMarket() {
     onSuccess: (_, variables) => {
       void queryClient.invalidateQueries({ queryKey: ["resumo-lista"] });
       void queryClient.invalidateQueries({ queryKey: ["precos"] });
+      void queryClient.invalidateQueries({ queryKey: ["embalagens"] });
       void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       void queryClient.invalidateQueries({
         queryKey: ["permissoes"],

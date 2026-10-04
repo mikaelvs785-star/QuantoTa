@@ -1,3 +1,4 @@
+import { ProductImage } from "@/components/storefront/Media";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -131,7 +132,7 @@ export default function Catalogo() {
                   .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
                   .map((market) => (
                     <article key={market.id} className="qt-panel">
-                      <h2 className="text-xl font-semibold">{market.name}</h2>
+                      <ProductImage id={market.imageId} alt={market.name} className="mb-4 h-40 w-full rounded-xl"/><h2 className="text-xl font-semibold">{market.name}</h2>
                       <p className="qt-muted mt-2">
                         {[
                           market.address,

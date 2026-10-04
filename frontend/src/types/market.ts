@@ -4,6 +4,7 @@ export type MarketSort = "newest" | "oldest" | "az" | "za";
 export interface Market {
   id: string;
   name: string;
+  imageId?: string | null;
   phone: string;
   address?: string;
   neighborhood?: string;
@@ -16,6 +17,7 @@ export interface Market {
 export interface MarketInput {
   vendedorId?: string;
   name: string;
+  imageId?: string | null;
   phone: string;
   address?: string;
   neighborhood?: string;

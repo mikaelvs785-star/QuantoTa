@@ -16,6 +16,26 @@ export interface ShoppingList {
   }[];
 }
 export interface ListSummary {
+  mercados: {
+    mercadoId: number;
+    mercado: string;
+    imagemId?: string;
+    subtotal: number;
+    completa: boolean;
+    produtosComPreco: number;
+    produtosSemPreco: string[];
+    itens: {
+      itemId: number;
+      produto: string;
+      quantidade: number;
+      precoUnitario: number | null;
+      subtotal: number | null;
+      dataColeta: string | null;
+    }[];
+  }[];
+  mercadoMaisBaratoId: number | null;
+  diferencaCompraDividida: number | null;
+  quantidadeMercados: number;
   valorEstimado: number;
   itensSemPreco: number;
   estimativaCompleta: boolean;
@@ -25,6 +45,10 @@ export interface ListSummary {
     subtotal: number | null;
     mercadoId: number | null;
     mercado: string | null;
+    imagemId?: string | null;
+    precoPorMedida?: number | null;
+    unidadeBase?: string | null;
+    dataColeta?: string | null;
   }[];
 }
 export const listsService = {

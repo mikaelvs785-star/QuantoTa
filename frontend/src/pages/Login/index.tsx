@@ -3,10 +3,10 @@ import { LoaderCircle, LockKeyhole, Mail, UserRoundPlus } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { Navigate, useNavigate, useLocation } from "react-router-dom";
+import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { z } from "zod";
 import { Button } from "@/components/ui/Button";
-import { SectionTitle } from "@/components/ui/SectionTitle";
+
 import { Input } from "@/components/ui/Input";
 import { useAuth } from "@/hooks/useAuth";
 import { registerUser } from "@/services/auth";
@@ -100,11 +100,8 @@ export default function Login() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      <SectionTitle
-        title="Sua conta"
-        description="Entre para salvar listas e acessar as ações da sua conta."
-      />
-      <section className="qt-panel mx-auto max-w-lg">
+      <div className="grid items-center gap-8 lg:grid-cols-2"><section className="qt-retail-hero min-h-64 lg:min-h-[600px]"><img src="/images/hero-market.png" alt="Alimentos frescos para a próxima compra"/><div className="max-w-sm"><h1 className="text-4xl font-extrabold tracking-tight text-brand-700">Sua lista vai com você.</h1><p className="mt-5 leading-7 text-brand-700">Salve suas compras, compare preços e continue de onde parou.</p></div></section>
+      <section className="qt-panel mx-auto w-full max-w-lg">
         <div className="grid grid-cols-2 rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
           <button
             type="button"
@@ -273,7 +270,8 @@ export default function Login() {
             Entre agora
           </button>
         </p>
-      </section>
+      <Link to="/explorar" className="mt-6 block text-center text-sm underline">Só quer comparar? Continue sem entrar.</Link>
+      </section></div>
     </div>
   );
 }

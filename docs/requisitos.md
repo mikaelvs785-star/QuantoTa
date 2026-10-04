@@ -6,7 +6,8 @@
 - Criar conta com nome, e-mail e senha; entrar por e-mail e senha.
 - Criar listas de compras salvas na conta.
 - Adicionar produtos, acumular quantidades, alterar quantidades e remover itens.
-- Consultar uma estimativa e os produtos sem preço disponível.
+- Comparar preço da embalagem e preço por kg/L/un, quando houver medida válida.
+- Comparar o total da lista em um mercado ou dividindo entre mercados, com itens sem preço explícitos.
 - Escolher tema claro, escuro ou do sistema.
 
 ## Vendedor
@@ -15,6 +16,7 @@
 - Criar mercados vinculados automaticamente à própria conta.
 - Editar dados dos próprios mercados ativos, sem alterar vínculo ou status.
 - Cadastrar, editar e excluir preços nos próprios mercados ativos.
+- Enviar a foto de cada oferta (produto + mercado), preservada nas atualizações de preço.
 - Consultar e comparar produtos e manter listas como consumidor.
 
 ## Administração
@@ -22,7 +24,7 @@
 - Consultar e cadastrar contas de consumidor, vendedor e administrador.
 - Criar, editar, desativar e reativar produtos e mercados.
 - Cadastrar, editar e excluir registros de preços, com valor e data de coleta.
-- Consultar contagens reais do catálogo e preços recentes.
+- Organizar grupos e medidas equivalentes e publicar coleções com banners na vitrine.
 - Atribuir e transferir mercados a vendedores ativos pelo formulário compartilhado.
 
 ## Regras
@@ -42,6 +44,12 @@
 13. Ao editar um preço, validar acesso ao mercado original e ao destino. Transferências e desativações retiram o acesso do vendedor na API.
 14. Subtotais e total da lista são calculados pela API, sem uma segunda estimativa no frontend.
 15. Cadastros desativados ficam fora da consulta do consumidor e permanecem disponíveis ao administrador.
+
+16. Só classificar como menor total os mercados com preço de todos os itens da lista.
+17. A compra dividida informa quantos mercados e exclui frete e deslocamento.
+18. A comparação entre embalagens requer grupo explícito, mesma marca e dimensão compatível; não converter massa em volume.
+19. Produtos sem medida estruturada continuam mostrando preço de embalagem.
+20. Fotos de oferta são isoladas por produto e mercado; banner de coleção pertence à administração.
 
 ## Fora do MVP
 

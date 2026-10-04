@@ -23,7 +23,9 @@ public class ListaCompraService {
     private final SessaoService sessao;
     private final ProdutoService produtos;
     private final PrecoService precos;
-    public ListaCompraService(ListaCompraRepository listas, ItemListaCompraRepository itens, SessaoService sessao, ProdutoService produtos, PrecoService precos) {
+    private final br.com.quantota.repository.MercadoRepository mercados;
+    public ListaCompraService(ListaCompraRepository listas, ItemListaCompraRepository itens, SessaoService sessao, ProdutoService produtos, PrecoService precos, br.com.quantota.repository.MercadoRepository mercados) {
+        this.mercados=mercados;
         this.listas = listas; this.itens = itens; this.sessao = sessao; this.produtos = produtos; this.precos = precos;
     }
     @Transactional(readOnly = true)
@@ -62,24 +64,51 @@ public class ListaCompraService {
     @Transactional(readOnly = true)
     public ListaCompraResumoDTO buscarResumo(Long listaId) {
         var lista = buscarEntidade(listaId);
+        var atuais=precos.listarAtuais();
+        var porProduto=atuais.stream().collect(java.util.stream.Collectors.groupingBy(p -> p.getProduto().getId()));
         BigDecimal total = BigDecimal.ZERO;
         int semPreco = 0;
         var estimativas = new java.util.ArrayList<ListaCompraResumoDTO.ItemEstimativa>();
+        var mercadosUsados=new java.util.HashSet<Long>();
         for (var item : lista.getItens()) {
-            var ofertas = precos.listarAtuaisPorProduto(item.getProduto().getId());
+            var ofertas = porProduto.getOrDefault(item.getProduto().getId(),List.of());
             if (ofertas.isEmpty()) {
                 semPreco++;
-                estimativas.add(new ListaCompraResumoDTO.ItemEstimativa(item.getId(), null, null, null, null));
+                estimativas.add(new ListaCompraResumoDTO.ItemEstimativa(item.getId(), null, null, null, null, null, null, null, null));
             } else {
                 var oferta = ofertas.get(0);
                 var subtotal = oferta.getValor().multiply(BigDecimal.valueOf(item.getQuantidade()));
-                total = total.add(subtotal);
+                total = total.add(subtotal); mercadosUsados.add(oferta.getMercado().getId());
                 estimativas.add(new ListaCompraResumoDTO.ItemEstimativa(item.getId(), oferta.getValor(), subtotal,
-                        oferta.getMercado().getId(), oferta.getMercado().getNome()));
+                        oferta.getMercado().getId(), oferta.getMercado().getNome(), oferta.getImagemId(), oferta.getPrecoPorMedida(), oferta.getUnidadeBase(), oferta.getDataColeta()));
             }
         }
+        var totais=new java.util.ArrayList<ListaCompraResumoDTO.TotalMercado>();
+        if (!lista.getItens().isEmpty()) for (var mercado:mercados.findByAtivoTrue()) {
+            var linhas=new java.util.ArrayList<ListaCompraResumoDTO.ItemMercado>();
+            var faltantes=new java.util.ArrayList<String>();
+            var subtotal=BigDecimal.ZERO;
+            for(var item:lista.getItens()) {
+                var oferta=porProduto.getOrDefault(item.getProduto().getId(),List.of()).stream().filter(p -> p.getMercado().getId().equals(mercado.getId())).findFirst();
+                if(oferta.isEmpty()) {
+                    faltantes.add(item.getProduto().getNome()+" · "+java.util.Objects.toString(item.getProduto().getUnidadeMedida(),""));
+                    linhas.add(new ListaCompraResumoDTO.ItemMercado(item.getId(),item.getProduto().getNome(),item.getQuantidade(),null,null,null));
+                } else {
+                    var p=oferta.get(); var valor=p.getValor().multiply(BigDecimal.valueOf(item.getQuantidade())); subtotal=subtotal.add(valor);
+                    linhas.add(new ListaCompraResumoDTO.ItemMercado(item.getId(),item.getProduto().getNome(),item.getQuantidade(),p.getValor(),valor,p.getDataColeta()));
+                }
+            }
+            totais.add(new ListaCompraResumoDTO.TotalMercado(mercado.getId(),mercado.getNome(),mercado.getImagemId(),subtotal,
+                faltantes.isEmpty(),lista.getItens().size()-faltantes.size(),faltantes,linhas));
+        }
+        totais.sort(java.util.Comparator.comparing(ListaCompraResumoDTO.TotalMercado::completa).reversed()
+            .thenComparing(ListaCompraResumoDTO.TotalMercado::subtotal).thenComparing(ListaCompraResumoDTO.TotalMercado::mercadoId));
+        var melhor=totais.stream().filter(ListaCompraResumoDTO.TotalMercado::completa).findFirst();
         var resumo = ListaCompraResumoDTO.fromEntity(lista, total);
-        resumo.setEstimativas(estimativas);
+        resumo.setEstimativas(estimativas); resumo.setMercados(totais); resumo.setQuantidadeMercados(mercadosUsados.size());
+        resumo.setMercadoMaisBaratoId(melhor.map(ListaCompraResumoDTO.TotalMercado::mercadoId).orElse(null));
+        var combinado=total;
+        resumo.setDiferencaCompraDividida(semPreco==0 ? melhor.map(m -> m.subtotal().subtract(combinado)).orElse(null) : null);
         resumo.setItensSemPreco(semPreco);
         resumo.setEstimativaCompleta(semPreco == 0);
         return resumo;

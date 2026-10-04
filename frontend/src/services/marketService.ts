@@ -3,6 +3,7 @@ import type { Market, MarketInput, MarketListParams } from "@/types/market";
 type BackendMarket = {
   id: number;
   nome: string;
+  imagemId?: string;
   telefone?: string;
   endereco?: string;
   bairro?: string;
@@ -14,6 +15,7 @@ function normalizeMarket(market: BackendMarket): Market {
   return {
     id: String(market.id),
     name: market.nome,
+    imageId: market.imagemId,
     phone: market.telefone ?? "",
     address: market.endereco,
     neighborhood: market.bairro,
@@ -26,6 +28,7 @@ function payload(input: MarketInput) {
   return {
     vendedorId: input.vendedorId ? Number(input.vendedorId) : null,
     nome: input.name,
+    imagemId: input.imageId || null,
     telefone: input.phone,
     endereco: input.address,
     bairro: input.neighborhood,

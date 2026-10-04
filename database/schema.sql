@@ -63,3 +63,5 @@ CREATE TABLE IF NOT EXISTS itens_lista_compra (
     CONSTRAINT fk_item_lista FOREIGN KEY (lista_compra_id) REFERENCES listas_compra(id),
     CONSTRAINT fk_item_produto FOREIGN KEY (produto_id) REFERENCES produtos(id)
 );
+
+-- Para concluir o schema da experiência de compra, aplique também migrations-retail.sql.

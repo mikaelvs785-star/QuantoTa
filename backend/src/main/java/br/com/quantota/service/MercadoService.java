@@ -13,7 +13,9 @@ public class MercadoService {
     private final MercadoRepository mercadoRepository;
 
     private final PermissaoService permissoes;
-    public MercadoService(MercadoRepository mercadoRepository, PermissaoService permissoes) {
+    private final ImagemService imagens;
+    public MercadoService(MercadoRepository mercadoRepository, PermissaoService permissoes, ImagemService imagens) {
+        this.imagens=imagens;
         this.mercadoRepository = mercadoRepository;
         this.permissoes = permissoes;
     }
@@ -33,6 +35,7 @@ public class MercadoService {
 
     public Mercado salvar(Mercado mercado) {
         permissoes.prepararNovoMercado(mercado);
+        imagens.validarVinculo(mercado.getImagemId(),null);
         if (mercado.getAtivo() == null) {
             mercado.setAtivo(true);
         }
@@ -43,6 +46,8 @@ public class MercadoService {
         Mercado mercado = buscarPorId(id);
         permissoes.exigirEdicaoMercado(mercado);
         permissoes.aplicarVendedor(mercado, novoMercado);
+        imagens.validarVinculo(novoMercado.getImagemId(),mercado.getImagemId());
+        mercado.setImagemId(novoMercado.getImagemId());
         mercado.setNome(novoMercado.getNome());
         mercado.setEndereco(novoMercado.getEndereco());
         mercado.setBairro(novoMercado.getBairro());

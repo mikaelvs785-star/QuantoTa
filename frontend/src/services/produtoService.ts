@@ -12,6 +12,11 @@ type BackendProduct = {
   categoria?: string;
   unidadeMedida?: string;
   marca?: string;
+  quantidadeMedida?: number;
+  tipoMedida?: string;
+  grupoComparacao?: string;
+  quantidadeBase?: number;
+  unidadeBase?: string;
   descricao?: string;
   ativo?: boolean;
 };
@@ -24,6 +29,11 @@ function toFrontendProduct(product: BackendProduct): Product {
     category: product.categoria ?? "Sem categoria",
     description: product.descricao,
     brand: product.marca,
+    measureQuantity: product.quantidadeMedida,
+    measureType: product.tipoMedida,
+    comparisonGroup: product.grupoComparacao,
+    baseQuantity: product.quantidadeBase,
+    baseUnit: product.unidadeBase,
     unit: product.unidadeMedida,
     status: product.ativo === false ? "INACTIVE" : "ACTIVE",
   };
@@ -60,6 +70,9 @@ export const produtoService = {
       categoria: input.category,
       descricao: input.description,
       marca: input.brand,
+      quantidadeMedida: input.measureQuantity ?? null,
+      tipoMedida: input.measureType || null,
+      grupoComparacao: input.comparisonGroup || null,
       unidadeMedida: input.unit,
       ativo: input.status === "ACTIVE",
     };
@@ -72,6 +85,9 @@ export const produtoService = {
       categoria: input.category,
       descricao: input.description,
       marca: input.brand,
+      quantidadeMedida: input.measureQuantity ?? null,
+      tipoMedida: input.measureType || null,
+      grupoComparacao: input.comparisonGroup || null,
       unidadeMedida: input.unit,
       ativo: input.status === "ACTIVE",
     };

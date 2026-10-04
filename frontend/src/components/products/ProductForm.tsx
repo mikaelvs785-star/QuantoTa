@@ -5,14 +5,48 @@ import { z } from "zod";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import type { Product, ProductInput } from "@/types/product";
-const schema = z.object({
-  name: z.string().trim().min(2, "Informe o nome"),
-  category: z.string().trim().min(1, "Informe a categoria"),
-  brand: z.string().trim(),
-  unit: z.string().trim().min(1, "Informe a unidade ou embalagem"),
-  description: z.string(),
-  status: z.enum(["ACTIVE", "INACTIVE"]),
-});
+const schema = z
+  .object({
+    name: z.string().trim().min(2, "Informe o nome"),
+    category: z.string().trim().min(1, "Informe a categoria"),
+    brand: z.string().trim(),
+    unit: z.string().trim(),
+    measureQuantity: z
+      .string()
+      .refine(
+        (v) =>
+          !v ||
+          (Number(v.replace(",", ".")) > 0 && /^\d+([.,]\d{1,3})?$/.test(v)),
+        "Informe uma quantidade positiva, com até 3 casas decimais",
+      ),
+    measureType: z.string(),
+    comparisonGroup: z.string().trim(),
+    description: z.string(),
+    status: z.enum(["ACTIVE", "INACTIVE"]),
+  })
+  .superRefine((v, ctx) => {
+    if (!v.unit && !v.measureQuantity)
+      ctx.addIssue({
+        code: "custom",
+        path: ["unit"],
+        message: "Informe a embalagem ou a medida abaixo",
+      });
+    if (Boolean(v.measureQuantity) !== Boolean(v.measureType))
+      ctx.addIssue({
+        code: "custom",
+        path: ["measureQuantity"],
+        message: "Preencha quantidade e unidade juntas",
+      });
+    if (
+      v.measureType === "UN" &&
+      !Number.isInteger(Number(v.measureQuantity.replace(",", ".")))
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["measureQuantity"],
+        message: "Informe um número inteiro de unidades",
+      });
+  });
 type Values = z.infer<typeof schema>;
 export function ProductForm({
   product,
@@ -36,6 +70,9 @@ export function ProductForm({
       brand: "",
       unit: "",
       description: "",
+      measureQuantity: "",
+      measureType: "",
+      comparisonGroup: "",
       status: "ACTIVE",
     },
   });
@@ -47,11 +84,27 @@ export function ProductForm({
         brand: product.brand ?? "",
         unit: product.unit ?? "",
         description: product.description ?? "",
+        measureQuantity: product.measureQuantity
+          ? String(product.measureQuantity)
+          : "",
+        measureType: product.measureType ?? "",
+        comparisonGroup: product.comparisonGroup ?? "",
         status: product.status,
       });
   }, [product, reset]);
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form
+      onSubmit={handleSubmit((v) =>
+        onSubmit({
+          ...v,
+          measureQuantity: v.measureQuantity
+            ? Number(v.measureQuantity.replace(",", "."))
+            : null,
+          measureType: v.measureType || null,
+        }),
+      )}
+      className="space-y-6"
+    >
       <p className="qt-muted">
         Cadastre marca e embalagem para comparar exatamente o mesmo produto.
       </p>
@@ -82,6 +135,50 @@ export function ProductForm({
           </label>
         ))}
       </div>
+      <fieldset className="qt-success space-y-4">
+        <legend className="px-2 font-bold">Comparação por medida</legend>
+        <p className="qt-muted">
+          Preencha quantidade e unidade juntas para mostrar o preço por kg,
+          litro ou unidade. As fotos são enviadas pelos vendedores nas ofertas.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label>
+            Quantidade da embalagem
+            <Input
+              inputMode="decimal"
+              placeholder="Ex.: 500"
+              {...register("measureQuantity")}
+            />
+            {errors.measureQuantity && (
+              <p className="text-sm text-red-600">
+                {errors.measureQuantity.message}
+              </p>
+            )}
+          </label>
+          <label>
+            Unidade da medida
+            <select className="qt-select" {...register("measureType")}>
+              <option value="">Não informada</option>
+              <option value="G">Gramas (g)</option>
+              <option value="KG">Quilos (kg)</option>
+              <option value="ML">Mililitros (ml)</option>
+              <option value="L">Litros (L)</option>
+              <option value="UN">Unidades (un)</option>
+            </select>
+          </label>
+        </div>
+        <label className="block">
+          Grupo de embalagens equivalentes
+          <Input
+            placeholder="Ex.: arroz-branco-tipo-1-camil"
+            {...register("comparisonGroup")}
+          />
+        </label>
+        <p className="qt-muted">
+          Use o mesmo grupo apenas para o mesmo tipo de produto e marca em
+          tamanhos diferentes. Deixe vazio quando não houver equivalência.
+        </p>
+      </fieldset>
       <label className="block">
         <span className="mb-2 block text-sm font-semibold">
           Descrição (opcional)

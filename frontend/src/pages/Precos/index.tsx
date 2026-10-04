@@ -1,3 +1,4 @@
+import { ImageUpload, ProductImage } from "@/components/storefront/Media";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil, Trash2, X } from "lucide-react";
@@ -34,6 +35,8 @@ export default function PrecosPage() {
   });
   const client = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [imageId, setImageId] = useState<string | null | undefined>();
+  const [uploading, setUploading] = useState(false);
   const [editing, setEditing] = useState<string>();
   const [productId, setProductId] = useState("");
   const [marketId, setMarketId] = useState("");
@@ -46,6 +49,7 @@ export default function PrecosPage() {
     onSuccess: async () => {
       await Promise.all([
         client.invalidateQueries({ queryKey: ["precos"] }),
+        client.invalidateQueries({ queryKey: ["embalagens"] }),
         client.invalidateQueries({ queryKey: ["dashboard"] }),
         client.invalidateQueries({ queryKey: ["resumo-lista"] }),
       ]);
@@ -55,6 +59,7 @@ export default function PrecosPage() {
       toast.error("Não foi possível salvar o preço. Confira os campos."),
   });
   function edit(price: PriceRecord) {
+    setImageId(undefined);
     setEditing(price.id);
     setProductId(price.productId);
     setMarketId(price.marketId);
@@ -79,6 +84,8 @@ export default function PrecosPage() {
       mercadoId: Number(marketId),
       valor: amount,
       dataColeta: date,
+      imagemId: imageId ?? null,
+      alterarImagem: imageId !== undefined,
     };
     try {
       await mutation.mutateAsync(() =>
@@ -96,13 +103,19 @@ export default function PrecosPage() {
   return (
     <div className="mx-auto max-w-6xl">
       <SectionTitle
-        title="Preços que fazem sentido."
+        title={
+          grants?.gerenciarPrecos
+            ? "Seu mercado bem apresentado. Seus preços em dia."
+            : "Preços que fazem sentido."
+        }
         description="Consulte valores e datas de coleta. Compare o mesmo produto antes de comprar."
         action={
           grants?.gerenciarPrecos ? (
             <Button
+              disabled={uploading}
               onClick={() => {
                 setEditing(undefined);
+                setImageId(undefined);
                 setOpen(true);
                 setProductId("");
                 setMarketId("");
@@ -136,6 +149,7 @@ export default function PrecosPage() {
               variant="ghost"
               size="icon"
               aria-label="Fechar formulário"
+              disabled={uploading}
               onClick={() => setOpen(false)}
             >
               <X className="size-4" />
@@ -147,9 +161,13 @@ export default function PrecosPage() {
               <select
                 className="qt-select"
                 aria-label="Produto"
+                disabled={uploading}
                 required
                 value={productId}
-                onChange={(e) => setProductId(e.target.value)}
+                onChange={(e) => {
+                  setProductId(e.target.value);
+                  setImageId(undefined);
+                }}
               >
                 <option value="">Selecione</option>
                 {products.data?.content
@@ -166,9 +184,13 @@ export default function PrecosPage() {
               <select
                 className="qt-select"
                 aria-label="Mercado"
+                disabled={uploading}
                 required
                 value={marketId}
-                onChange={(e) => setMarketId(e.target.value)}
+                onChange={(e) => {
+                  setMarketId(e.target.value);
+                  setImageId(undefined);
+                }}
               >
                 <option value="">Selecione</option>
                 {markets.data?.content
@@ -205,11 +227,54 @@ export default function PrecosPage() {
               />
             </label>
           </div>
+          <div className="mt-6 grid gap-6 md:grid-cols-2">
+            <ImageUpload
+              value={
+                imageId === undefined
+                  ? current.data?.find(
+                      (p) =>
+                        p.productId === productId && p.marketId === marketId,
+                    )?.imageId
+                  : imageId
+              }
+              onChange={setImageId}
+              onBusy={setUploading}
+            />
+            <div className="qt-success">
+              <h3 className="text-xl font-bold">
+                Mostre seu produto do seu jeito.
+              </h3>
+              <p className="qt-muted mt-3">
+                A foto pertence à oferta deste produto no mercado selecionado.
+                Você pode atualizar o preço sem enviar a imagem novamente.
+              </p>
+              <p className="qt-muted mt-3">
+                Nome, marca e embalagem vêm do catálogo. A foto deve apresentar
+                o mesmo produto.
+              </p>
+              <h4 className="mt-6 font-bold">Assim o cliente vai ver</h4>
+              <p className="mt-2">
+                {products.data?.content.find((p) => p.id === productId)?.name ??
+                  "Selecione o produto"}
+              </p>
+              <p className="qt-muted">
+                {markets.data?.content.find((m) => m.id === marketId)?.name}
+              </p>
+              <p className="mt-3 text-2xl font-bold">
+                {Number(value.replace(",", ".")) > 0
+                  ? formatCurrency(Number(value.replace(",", ".")))
+                  : "Informe o preço"}
+              </p>
+            </div>
+          </div>
           <Button
             type="submit"
             className="mt-5"
             disabled={
-              mutation.isPending || products.isPending || markets.isPending
+              mutation.isPending ||
+              uploading ||
+              products.isPending ||
+              markets.isPending
             }
           >
             {mutation.isPending ? "Salvando..." : "Salvar registro"}
@@ -246,18 +311,25 @@ export default function PrecosPage() {
                   key={price.id}
                   className="flex flex-wrap items-center justify-between gap-4 py-4"
                 >
-                  <div>
-                    <h2 className="font-semibold">{price.product}</h2>
-                    <p className="qt-muted">
-                      {price.market} · {displayDate(price.date)}
-                    </p>
-                    <span
-                      className={`text-xs font-semibold ${currentIds.has(price.id) ? "text-brand-600 dark:text-brand-200" : "text-slate-400"}`}
-                    >
-                      {currentIds.has(price.id)
-                        ? "Registro atual"
-                        : "Histórico"}
-                    </span>
+                  <div className="flex items-center gap-4">
+                    <ProductImage
+                      id={price.imageId}
+                      alt={price.product}
+                      className="hidden size-20 rounded-xl sm:flex"
+                    />
+                    <div>
+                      <h2 className="font-semibold">{price.product}</h2>
+                      <p className="qt-muted">
+                        {price.market} · {displayDate(price.date)}
+                      </p>
+                      <span
+                        className={`text-xs font-semibold ${currentIds.has(price.id) ? "text-brand-600 dark:text-brand-200" : "text-slate-400"}`}
+                      >
+                        {currentIds.has(price.id)
+                          ? "Registro atual"
+                          : "Histórico"}
+                      </span>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <p className="mr-4 text-xl font-bold">
@@ -269,6 +341,7 @@ export default function PrecosPage() {
                           variant="ghost"
                           size="icon"
                           aria-label={`Editar preço de ${price.product} em ${price.market}`}
+                          disabled={uploading}
                           onClick={() => edit(price)}
                         >
                           <Pencil className="size-4" />

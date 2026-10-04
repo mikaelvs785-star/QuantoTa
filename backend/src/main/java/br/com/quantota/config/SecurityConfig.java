@@ -28,10 +28,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR).permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/produtos/**", "/mercados/**", "/precos/**", "/catalogo/permissoes", "/permissoes").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/produtos/**", "/mercados/**", "/precos/**", "/catalogo/permissoes", "/permissoes", "/imagens/**", "/vitrine", "/comparacoes/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/mercados/**", "/precos/**").hasAnyRole("ADMIN", "VENDEDOR")
                         .requestMatchers(HttpMethod.PUT, "/mercados/**", "/precos/**").hasAnyRole("ADMIN", "VENDEDOR")
                         .requestMatchers(HttpMethod.DELETE, "/precos/**").hasAnyRole("ADMIN", "VENDEDOR")
+                        .requestMatchers(HttpMethod.POST, "/imagens").hasAnyRole("ADMIN", "VENDEDOR")
+                        .requestMatchers("/vitrine/**").hasRole("ADMIN")
                         .requestMatchers("/usuarios/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/produtos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/produtos/**").hasRole("ADMIN")

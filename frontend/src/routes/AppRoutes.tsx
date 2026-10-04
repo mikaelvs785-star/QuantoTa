@@ -10,6 +10,8 @@ import {
 import { MainLayout } from "../layouts/MainLayout";
 import { PrivateRoute } from "./PrivateRoute";
 import { PermissionRoute } from "./PermissionRoute";
+const Explorar = lazy(() => import("../pages/Explorar"));
+const Vitrine = lazy(() => import("../pages/Vitrine"));
 const Home = lazy(() => import("../pages/Home"));
 const Login = lazy(() => import("../pages/Login"));
 const Catalogo = lazy(() => import("../pages/Catalogo"));
@@ -81,6 +83,17 @@ export function AppRoutes() {
             <Route path="/login" element={<Login />} />
             <Route path="/catalogo" element={<Catalogo />} />
             <Route path="/comparar" element={<Comparador />} />
+            <Route path="/explorar" element={<Explorar />} />
+            <Route
+              path="/vitrine"
+              element={
+                <PrivateRoute>
+                  <PermissionRoute action="usuarios">
+                    <Vitrine />
+                  </PermissionRoute>
+                </PrivateRoute>
+              }
+            />
             <Route
               path="/produtos/novo"
               element={

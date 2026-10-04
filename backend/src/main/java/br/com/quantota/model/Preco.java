@@ -43,6 +43,13 @@ public class Preco {
     private LocalDate dataColeta;
 
     private String observacao;
+    @Transient private java.util.UUID imagemId;
+    @Transient public BigDecimal getPrecoPorMedida() {
+        var base=produto == null ? null : produto.getQuantidadeBase();
+        return base == null || valor == null ? null : valor.divide(base, 4, java.math.RoundingMode.HALF_UP);
+    }
+    @Transient public String getUnidadeBase() { return produto == null ? null : produto.getUnidadeBase(); }
+
 
     private LocalDateTime dataCadastro;
     private LocalDateTime dataAtualizacao;

@@ -8,6 +8,7 @@ export function useExcluirProduto() {
       void client.invalidateQueries({ queryKey: ["resumo-lista"] });
       void client.invalidateQueries({ queryKey: ["produtos"] });
       void client.invalidateQueries({ queryKey: ["precos"] });
+      void client.invalidateQueries({ queryKey: ["embalagens"] });
       void client.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });

@@ -204,6 +204,83 @@ public class ApiFlowTest {
         assertEquals("VENDEDOR", created.get("perfil").asText()); assertFalse(created.has("senha"));
         assertTrue(request("GET", "/permissoes", null, admin, 200).get("gerenciarUsuarios").asBoolean());
     }
+    @Test @Order(10) void basketRanksOnlyCompleteMarketsAndNormalizesMeasures() throws Exception {
+        long rice = measuredProduct("Arroz comparação", "5", "KG", "arroz-tipo1");
+        long milk = measuredProduct("Leite comparação", "1000", "ML", "leite-integral");
+        long central = market("Central"), boa = market("Boa"), economico = market("Econômico");
+        request("POST", "/precos", priceFor(rice, central, "35"), admin, 200);
+        request("POST", "/precos", priceFor(rice, boa, "37"), admin, 200);
+        var offer = request("POST", "/precos", priceFor(rice, economico, "32"), admin, 200);
+        assertEquals(6.4, offer.get("precoPorMedida").asDouble());
+        assertEquals("kg", offer.get("unidadeBase").asText());
+        var liquid = request("POST", "/precos", priceFor(milk, central, "4.99"), admin, 200);
+        assertEquals(4.99, liquid.get("precoPorMedida").asDouble());
+        assertEquals("L", liquid.get("unidadeBase").asText());
+        request("POST", "/precos", priceFor(milk, boa, "4.49"), admin, 200);
+        long list = request("POST", "/listas", "{\"nomeLista\":\"Comparação completa\"}", alice, 200).get("id").asLong();
+        request("POST", "/listas/"+list+"/itens", "{\"produtoId\":"+rice+",\"quantidade\":1}", alice, 200);
+        request("POST", "/listas/"+list+"/itens", "{\"produtoId\":"+milk+",\"quantidade\":2}", alice, 200);
+        var summary = request("GET", "/listas/"+list, null, alice, 200);
+        assertEquals(40.98, summary.get("valorEstimado").asDouble());
+        assertEquals(central, summary.get("mercadoMaisBaratoId").asLong());
+        assertEquals(4.0, summary.get("diferencaCompraDividida").asDouble());
+        assertEquals(2, summary.get("quantidadeMercados").asInt());
+        assertEquals(44.98, summary.get("mercados").get(0).get("subtotal").asDouble());
+        for(var m: summary.get("mercados")) if(m.get("mercadoId").asLong()==economico) {
+            assertFalse(m.get("completa").asBoolean()); assertEquals(32, m.get("subtotal").asDouble());
+            assertEquals(1,m.get("produtosSemPreco").size());
+        }
+        long small = measuredProduct("Arroz comparação menor", "1000", "G", "arroz-tipo1");
+        request("POST", "/precos", priceFor(small, central, "7.5"), admin, 200);
+        long incompatible = measuredProduct("Medida incompatível", "1", "L", "arroz-tipo1");
+        request("POST", "/precos", priceFor(incompatible, central, "1"), admin, 200);
+        var packaging = request("GET", "/comparacoes/embalagens/"+rice, null, null, 200);
+        assertEquals(2, packaging.size()); assertEquals(rice, packaging.get(0).get("produto").get("id").asLong());
+        request("POST", "/produtos", "{\"nome\":\"Inválido\",\"quantidadeMedida\":0,\"tipoMedida\":\"KG\"}", admin, 400);
+        request("POST", "/produtos", "{\"nome\":\"Inválido\",\"quantidadeMedida\":1.5,\"tipoMedida\":\"UN\"}", admin, 400);
+    }
+    @Test @Order(11) void offerPhotosAreOwnedAndSurvivePriceUpdates() throws Exception {
+        long product=measuredProduct("Foto isolada", "1", "KG", "foto-teste");
+        long own=request("POST","/mercados","{\"nome\":\"Mercado foto A\"}",seller,200).get("id").asLong();
+        long other=request("POST","/mercados","{\"nome\":\"Mercado foto B\"}",otherSeller,200).get("id").asLong();
+        String image=upload(seller,200), otherImage=upload(otherSeller,200);
+        upload(alice,403);
+        var payload=json.readTree(priceFor(product,own,"10"));
+        ((com.fasterxml.jackson.databind.node.ObjectNode)payload).put("alterarImagem",true).put("imagemId",image);
+        request("POST","/precos",payload.toString(),seller,200);
+        assertEquals(image,request("POST","/precos",priceFor(product,own,"11"),seller,200).get("imagemId").asText());
+        ((com.fasterxml.jackson.databind.node.ObjectNode)payload).put("mercadoId",other);
+        request("POST","/precos",payload.toString(),seller,403);
+        request("POST","/precos",payload.toString(),otherSeller,403);
+        ((com.fasterxml.jackson.databind.node.ObjectNode)payload).put("imagemId",otherImage);
+        request("POST","/precos",payload.toString(),otherSeller,200);
+        var actual=request("GET","/precos/atuais",null,null,200);
+        for(var p:actual) if(p.get("produto").get("id").asLong()==product) assertEquals(p.get("mercado").get("id").asLong()==own?image:otherImage,p.get("imagemId").asText());
+        var bytes=client.send(HttpRequest.newBuilder(URI.create(base+"/imagens/"+image)).GET().build(),HttpResponse.BodyHandlers.ofByteArray());
+        assertEquals(200,bytes.statusCode());assertEquals("image/png",bytes.headers().firstValue("content-type").orElseThrow());
+        assertNotNull(javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(bytes.body())));
+    }
+    @Test @Order(12) void storefrontPublishingIsAdminOnly() throws Exception {
+        request("GET","/vitrine/gestao",null,seller,403);
+        request("POST","/vitrine","{\"titulo\":\"Bloqueada\"}",seller,403);
+        var collection=request("POST","/vitrine","{\"titulo\":\"Café da manhã\",\"ativo\":false}",admin,200);
+        assertEquals(0,request("GET","/vitrine",null,null,200).size());
+        request("PUT","/vitrine/"+collection.get("id").asLong(),"{\"titulo\":\"Café da manhã\",\"ativo\":true}",admin,200);
+        assertEquals(1,request("GET","/vitrine",null,null,200).size());
+    }
+    static long measuredProduct(String name,String quantity,String unit,String group) throws Exception {
+        return request("POST","/produtos","{\"nome\":\""+name+"\",\"marca\":\"Marca teste\",\"categoria\":\"Mercearia\",\"quantidadeMedida\":"+quantity+",\"tipoMedida\":\""+unit+"\",\"grupoComparacao\":\""+group+"\",\"ativo\":true}",admin,200).get("id").asLong();
+    }
+    static long market(String name) throws Exception {return request("POST","/mercados","{\"nome\":\""+name+"\"}",admin,200).get("id").asLong();}
+    static String upload(String token,int status) throws Exception {
+        var image=new java.awt.image.BufferedImage(2,2,java.awt.image.BufferedImage.TYPE_INT_RGB);
+        var png=new java.io.ByteArrayOutputStream();javax.imageio.ImageIO.write(image,"png",png);
+        var body=new java.io.ByteArrayOutputStream();
+        body.write("--test-boundary\r\nContent-Disposition: form-data; name=\"arquivo\"; filename=\"foto.png\"\r\nContent-Type: image/png\r\n\r\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        body.write(png.toByteArray());body.write("\r\n--test-boundary--\r\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        var response=client.send(HttpRequest.newBuilder(URI.create(base+"/imagens")).header("Authorization","Bearer "+token).header("Content-Type","multipart/form-data; boundary=test-boundary").POST(HttpRequest.BodyPublishers.ofByteArray(body.toByteArray())).build(),HttpResponse.BodyHandlers.ofString());
+        assertEquals(status,response.statusCode(),response.body());return status==200?json.readTree(response.body()).get("id").asText():null;
+    }
     static String priceFor(long product, long market, String value) { return "{\"produtoId\":" + product + ",\"mercadoId\":" + market + ",\"valor\":" + value + ",\"dataColeta\":\"" + LocalDate.now() + "\"}"; }
     static String pricePayload(String value, LocalDate date) { return "{\"produtoId\":" + productId + ",\"mercadoId\":" + marketId + ",\"usuarioCadastroId\":999,\"valor\":" + value + ",\"dataColeta\":\"" + date + "\"}"; }
     static String itemPayload(int quantity) { return "{\"produtoId\":" + productId + ",\"quantidade\":" + quantity + "}"; }

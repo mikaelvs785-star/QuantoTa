@@ -1,93 +1,72 @@
 import { useTheme } from "next-themes";
-import { UserRound, Sun, Moon, Monitor } from "lucide-react";
+import {
+  CircleUserRound,
+  Sun,
+  Moon,
+  Monitor,
+  LogOut,
+  ArrowRight,
+} from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { userService } from "@/services/userService";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useAuth } from "@/hooks/useAuth";
 import { ApiError } from "@/components/ui/ApiError";
-import { SectionTitle } from "@/components/ui/SectionTitle";
 export default function ConfiguracoesPage() {
   const profile = useQuery({ queryKey: ["perfil"], queryFn: userService.me });
   const permissions = usePermissions();
-  const user = profile.data;
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   return (
-    <div className="mx-auto max-w-6xl">
-      <SectionTitle
-        title="Minha conta."
-        description="Confira seus dados e escolha como prefere visualizar o QuantoTá."
-      />
+    <div className="mx-auto max-w-3xl">
+      <h1 className="qt-heading">
+        {profile.data
+          ? `Oi, ${profile.data.name.split(" ")[0]}.`
+          : "Minha conta."}
+      </h1>
+      <p className="qt-muted mt-3 mb-7">Tudo pronto para sua próxima compra.</p>
       {profile.isPending ? (
-        <p role="status">Carregando sua conta...</p>
+        <p role="status">Carregando sua conta…</p>
       ) : profile.isError ? (
         <ApiError onRetry={() => void profile.refetch()} />
       ) : (
-        <section className="qt-panel">
-          <UserRound className="size-7 text-brand-600" />
-          <h2 className="mt-4 text-xl font-semibold">Seus dados</h2>
-          <dl className="mt-6 grid gap-6 sm:grid-cols-2">
-            <div>
-              <dt className="qt-muted">Nome</dt>
-              <dd className="mt-1 font-semibold">{user?.name}</dd>
-            </div>
-            <div>
-              <dt className="qt-muted">E-mail</dt>
-              <dd className="mt-1 break-all font-semibold">{user?.email}</dd>
-            </div>
-          </dl>
+        <section className="qt-panel flex items-center gap-5">
+          <CircleUserRound className="size-11 shrink-0 text-brand-600" />
+          <div className="min-w-0">
+            <h2 className="text-xl font-bold">{profile.data?.name}</h2>
+            <p className="qt-muted break-all">{profile.data?.email}</p>
+          </div>
         </section>
       )}
-      <section className="qt-panel mt-6">
-        <h2 className="text-xl font-semibold">Acesso da sua conta</h2>
-        <p className="qt-muted mt-2">Confira o que sua conta permite fazer.</p>
-        {permissions.isPending ? (
-          <p role="status" className="mt-4">
-            Consultando acesso...
+      <section className="qt-collection mt-6">
+        <img src="/images/hero-market.png" alt="" />
+        <div>
+          <h2 className="text-2xl font-bold">Minhas listas</h2>
+          <p className="mt-3 leading-6">
+            Organize o que precisa e descubra novos produtos para a sua casa.
           </p>
-        ) : permissions.isError ? (
-          <ApiError onRetry={() => void permissions.refetch()} />
-        ) : (
-          <ul className="mt-4 space-y-2 text-sm">
-            <li>Consultar produtos, mercados e preços.</li>
-            <li>Organizar suas próprias listas de compras.</li>
-            {permissions.data?.gerenciarProdutos && (
-              <li>Cadastrar e atualizar produtos.</li>
-            )}
-            {permissions.data?.criarMercado && (
-              <li>
-                {permissions.data.gerenciarTodosMercados
-                  ? "Gerenciar todos os mercados e seus responsáveis."
-                  : "Cadastrar e atualizar seus mercados."}
-              </li>
-            )}
-            {permissions.data?.gerenciarPrecos && (
-              <li>
-                {permissions.data.gerenciarTodosPrecos
-                  ? "Gerenciar todos os preços."
-                  : "Gerenciar preços dos seus mercados."}
-              </li>
-            )}
-            {permissions.data?.gerenciarUsuarios && (
-              <li>Cadastrar contas e consultar usuários.</li>
-            )}
-          </ul>
-        )}
+          <Link to="/lista" className="qt-action mt-5">
+            Ver minhas listas
+            <ArrowRight className="size-4" />
+          </Link>
+        </div>
       </section>
       <section className="qt-panel mt-6">
-        <h2 className="text-xl font-semibold">Aparência</h2>
-        <p className="qt-muted mt-2">
-          Sua preferência fica salva neste navegador.
-        </p>
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+        <h2 className="text-xl font-bold">Do seu jeito</h2>
+        <p className="qt-muted mt-2">Escolha o tema que combina com você.</p>
+        <div className="mt-5 grid grid-cols-3 gap-3">
           {[
             { value: "light", label: "Claro", icon: Sun },
             { value: "dark", label: "Escuro", icon: Moon },
-            { value: "system", label: "Usar sistema", icon: Monitor },
+            { value: "system", label: "Sistema", icon: Monitor },
           ].map(({ value, label, icon: Icon }) => (
             <button
               key={value}
               aria-pressed={theme === value}
               onClick={() => setTheme(value)}
-              className={`flex items-center gap-3 rounded-xl border p-4 text-sm font-semibold ${theme === value ? "border-brand-500 bg-brand-50 dark:bg-brand-500/10" : ""}`}
+              className={`flex flex-col items-center gap-2 rounded-xl border py-4 text-sm ${theme === value ? "border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-700/30 dark:text-brand-100" : ""}`}
             >
               <Icon className="size-5" />
               {label}
@@ -95,6 +74,42 @@ export default function ConfiguracoesPage() {
           ))}
         </div>
       </section>
+      {permissions.isError && (
+        <ApiError onRetry={() => void permissions.refetch()} />
+      )}
+      {permissions.data?.gerenciarPrecos && (
+        <section className="qt-panel mt-6">
+          <h2 className="text-xl font-bold">Seu espaço de gestão</h2>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link to="/precos" className="qt-secondary">
+              Ofertas e preços
+            </Link>
+            <Link to="/catalogo?aba=mercados" className="qt-secondary">
+              Mercados
+            </Link>
+            {permissions.data.gerenciarUsuarios && (
+              <>
+                <Link to="/usuarios" className="qt-secondary">
+                  Usuários
+                </Link>
+                <Link to="/vitrine" className="qt-secondary">
+                  Vitrine
+                </Link>
+              </>
+            )}
+          </div>
+        </section>
+      )}
+      <button
+        className="qt-panel mt-6 flex w-full items-center gap-3 !py-5 text-red-600 dark:text-red-300"
+        onClick={() => {
+          logout();
+          navigate("/", { replace: true });
+        }}
+      >
+        <LogOut className="size-5" />
+        Sair da conta
+      </button>
     </div>
   );
 }

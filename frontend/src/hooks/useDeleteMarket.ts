@@ -12,6 +12,7 @@ export function useDeleteMarket() {
       });
       void queryClient.invalidateQueries({ queryKey: ["mercados"] });
       void queryClient.invalidateQueries({ queryKey: ["precos"] });
+      void queryClient.invalidateQueries({ queryKey: ["embalagens"] });
       void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });

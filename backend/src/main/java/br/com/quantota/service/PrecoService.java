@@ -17,7 +17,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
+@org.springframework.transaction.annotation.Transactional
 public class PrecoService {
+    private final br.com.quantota.repository.OfertaImagemRepository fotos;
+    private final ImagemService imagens;
 
     private final PrecoRepository precoRepository;
     private final ProdutoService produtoService;
@@ -28,7 +31,8 @@ public class PrecoService {
     public PrecoService(PrecoRepository precoRepository,
                         ProdutoService produtoService,
                         MercadoService mercadoService,
-                        SessaoService sessaoService, PermissaoService permissoes) {
+                        SessaoService sessaoService, PermissaoService permissoes, br.com.quantota.repository.OfertaImagemRepository fotos, ImagemService imagens) {
+        this.fotos=fotos; this.imagens=imagens;
         this.precoRepository = precoRepository;
         this.produtoService = produtoService;
         this.mercadoService = mercadoService;
@@ -36,14 +40,14 @@ public class PrecoService {
         this.permissoes = permissoes;
     }
 
-    public List<Preco> listarAtuais() { return precoRepository.buscarPrecosAtuais(); }
+    public List<Preco> listarAtuais() { return comImagens(precoRepository.buscarPrecosAtuais()); }
 
     public List<Preco> listarTodos() {
-        return filtrarConsulta(precoRepository.findAll());
+        return comImagens(filtrarConsulta(precoRepository.findAll()));
     }
 
     public List<Preco> listarPorProduto(Long produtoId) {
-        return filtrarConsulta(precoRepository.findByProdutoIdOrderByValorAsc(produtoId));
+        return comImagens(filtrarConsulta(precoRepository.findByProdutoIdOrderByValorAsc(produtoId)));
     }
 
     private List<Preco> filtrarConsulta(List<Preco> registros) {
@@ -72,7 +76,8 @@ public class PrecoService {
                 .dataAtualizacao(LocalDateTime.now())
                 .build();
 
-        return precoRepository.save(preco);
+        atualizarImagem(dto);
+        return comImagens(List.of(precoRepository.save(preco))).get(0);
     }
 
     public Preco atualizar(Long id, CadastroPrecoDTO dto) {
@@ -92,7 +97,8 @@ public class PrecoService {
         preco.setUsuarioCadastro(usuario);
         preco.setDataAtualizacao(LocalDateTime.now());
 
-        return precoRepository.save(preco);
+        atualizarImagem(dto);
+        return comImagens(List.of(precoRepository.save(preco))).get(0);
     }
 
     public void deletar(Long id) {
@@ -102,10 +108,22 @@ public class PrecoService {
         precoRepository.delete(preco);
     }
 
-    public List<Preco> listarAtuaisPorProduto(Long id) { return precoRepository.buscarPrecosAtuaisPorProduto(id); }
+    public List<Preco> listarAtuaisPorProduto(Long id) { return comImagens(precoRepository.buscarPrecosAtuaisPorProduto(id)); }
 
     public Optional<BigDecimal> buscarMenorPrecoDisponivel(Long produtoId) {
         return precoRepository.buscarPrecosAtuaisPorProduto(produtoId).stream().map(Preco::getValor).findFirst();
+    }
+    private List<Preco> comImagens(List<Preco> registros) {
+        var porPar=new java.util.HashMap<String,java.util.UUID>();
+        fotos.findAll().forEach(f -> porPar.put(f.getProdutoId()+":"+f.getMercadoId(),f.getImagemId()));
+        registros.forEach(p -> p.setImagemId(porPar.get(p.getProduto().getId()+":"+p.getMercado().getId())));
+        return registros;
+    }
+    private void atualizarImagem(CadastroPrecoDTO dto) {
+        if (!dto.isAlterarImagem()) return;
+        var foto=fotos.findByProdutoIdAndMercadoId(dto.getProdutoId(),dto.getMercadoId()).orElseGet(br.com.quantota.model.OfertaImagem::new);
+        imagens.validarVinculo(dto.getImagemId(),foto.getImagemId());
+        foto.setProdutoId(dto.getProdutoId()); foto.setMercadoId(dto.getMercadoId()); foto.setImagemId(dto.getImagemId()); fotos.save(foto);
     }
     private void validarPreco(CadastroPrecoDTO dto) {
         if (dto.getValor() == null || dto.getValor().signum() <= 0 || dto.getValor().scale() > 2 || dto.getValor().compareTo(new BigDecimal("99999999.99")) > 0)

@@ -27,7 +27,7 @@ function handleUnauthorized(error: AxiosError) {
     // Consultas públicas continuam funcionando quando a API revoga a sessão.
     if (
       config.method === "get" &&
-      /^\/(?:produtos(?:\/\d+)?|mercados(?:\/\d+)?|precos(?:\/atuais|\/produto\/\d+)?|permissoes|catalogo\/permissoes)$/.test(
+      /^\/(?:produtos(?:\/\d+)?|mercados(?:\/\d+)?|precos(?:\/atuais|\/produto\/\d+)?|vitrine|comparacoes\/embalagens\/\d+|permissoes|catalogo\/permissoes)$/.test(
         config.url?.split("?")[0] ?? "",
       )
     ) {

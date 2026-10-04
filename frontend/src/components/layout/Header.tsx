@@ -1,57 +1,79 @@
-import { LogOut, Moon, Sun, ArrowUpRight } from "lucide-react";
+import { Moon, Sun, CircleUserRound, Leaf } from "lucide-react";
 import { useTheme } from "next-themes";
-import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/Button";
+import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { usePermissions } from "@/hooks/usePermissions";
 export function Header() {
   const { resolvedTheme, setTheme } = useTheme();
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { data: p } = usePermissions();
   return (
     <header className="qt-header">
-      <Link to="/" className="qt-logo lg:hidden">
-        <span>q.</span>QuantoTá
-      </Link>
-      <p className="hidden text-sm text-slate-500 lg:block">
-        Planeje, compare e acompanhe os preços.
-      </p>
-      <div className="ml-auto flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Alternar tema"
-          onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+      <div className="mx-auto flex w-full max-w-[1500px] items-center justify-between gap-3">
+        <Link
+          to="/"
+          className="inline-flex items-center text-2xl font-extrabold tracking-tight text-brand-700 dark:text-brand-100"
         >
-          {resolvedTheme === "dark" ? (
-            <Sun className="size-5" />
-          ) : (
-            <Moon className="size-5" />
-          )}
-        </Button>
-        {user ? (
-          <>
-            <span className="hidden text-sm font-semibold sm:block">
-              {user.name}
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Sair da conta"
-              onClick={() => {
-                logout();
-                navigate("/", { replace: true });
-              }}
+          QuantoTá
+          <Leaf aria-hidden="true" className="ml-1 size-5 text-orange-500" />
+        </Link>
+        <nav
+          aria-label="Navegação principal"
+          className="hidden items-center gap-2 lg:flex"
+        >
+          {[
+            ["/", "Início"],
+            ["/explorar", "Explorar"],
+            ["/lista", "Minha lista"],
+            ["/conta", "Conta"],
+          ].map(([to, label]) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={to === "/"}
+              className={({ isActive }) =>
+                `rounded-xl px-4 py-3 text-sm font-semibold ${isActive ? "bg-brand-50 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100" : ""}`
+              }
             >
-              <LogOut className="size-4" />
-            </Button>
-          </>
-        ) : (
-          <Button asChild>
-            <Link to="/login">
-              Entrar <ArrowUpRight className="size-4" />
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+        <div className="flex items-center gap-2">
+          {p?.gerenciarPrecos && (
+            <Link
+              to="/precos"
+              className="hidden text-sm font-semibold sm:block"
+            >
+              Gestão
             </Link>
-          </Button>
-        )}
+          )}
+          <button
+            className="grid size-11 place-items-center rounded-full hover:bg-brand-50 dark:hover:bg-slate-800"
+            aria-label="Alternar tema"
+            onClick={() =>
+              setTheme(resolvedTheme === "dark" ? "light" : "dark")
+            }
+          >
+            {resolvedTheme === "dark" ? (
+              <Sun className="size-5" />
+            ) : (
+              <Moon className="size-5" />
+            )}
+          </button>
+          <Link
+            to={user ? "/conta" : "/login"}
+            className="flex min-h-11 items-center gap-2 rounded-full border px-3 text-sm font-semibold"
+          >
+            <CircleUserRound className="size-5" />
+            <span className="hidden sm:inline">
+              {user ? user.name.split(" ")[0] : "Entrar"}
+            </span>
+            <span className="sr-only sm:hidden">
+              {user ? "Minha conta" : "Entrar"}
+            </span>
+          </Link>
+        </div>
       </div>
     </header>
   );

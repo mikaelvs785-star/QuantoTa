@@ -7,6 +7,7 @@ export function useCriarProduto() {
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: ["produtos"] });
       void client.invalidateQueries({ queryKey: ["precos"] });
+      void client.invalidateQueries({ queryKey: ["embalagens"] });
       void client.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });

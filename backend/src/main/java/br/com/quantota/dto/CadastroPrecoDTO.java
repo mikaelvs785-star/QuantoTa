@@ -16,6 +16,13 @@ public class CadastroPrecoDTO {
     @NotNull @PastOrPresent
     private LocalDate dataColeta;
     private String observacao;
+    private java.util.UUID imagemId;
+    private boolean alterarImagem;
+    public java.util.UUID getImagemId() { return imagemId; }
+    public void setImagemId(java.util.UUID id) { imagemId=id; }
+    public boolean isAlterarImagem() { return alterarImagem; }
+    public void setAlterarImagem(boolean value) { alterarImagem=value; }
+
 
     public Long getProdutoId() {
         return produtoId;
