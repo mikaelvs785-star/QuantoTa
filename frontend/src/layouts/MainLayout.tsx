@@ -82,9 +82,11 @@ export function MainLayout() {
 
           <main
             className={
-              home
-                ? "w-full px-2 pb-24 pt-3 sm:px-3 sm:pt-4 lg:px-4 lg:pb-8"
-                : "mx-auto max-w-[1320px] p-4 pb-24 sm:p-6 sm:pb-24 lg:px-10 lg:py-9"
+              management
+                ? "mx-auto max-w-[1320px] p-4 pb-24 sm:p-6 sm:pb-24 lg:px-10 lg:py-9"
+                : home
+                  ? "w-full px-2 pb-24 pt-3 sm:px-3 sm:pt-4 lg:px-4 lg:pb-8"
+                  : "w-full px-3 pb-24 pt-5 sm:px-4 sm:pt-6 lg:px-5 lg:py-7"
             }
           >
             <Outlet />

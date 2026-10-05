@@ -22,6 +22,7 @@ import { MeasurePrice, ProductCard } from "@/components/storefront/ProductCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { ApiError } from "@/components/ui/ApiError";
+
 export default function ListaPage() {
   const { user } = useAuth();
   const client = useQueryClient();
@@ -80,56 +81,70 @@ export default function ListaPage() {
         !rows.some((i) => String(i.produto.id) === p.id) &&
         categories.has(p.category),
     )
-    .slice(0, 3);
+    .slice(0, 4);
   const data = summary.data;
   const cheapest = data?.mercados.find(
     (m) => m.mercadoId === data.mercadoMaisBaratoId,
   );
+
   return (
-    <div className="mx-auto max-w-6xl">
-      <div className="mb-6">
-        <h1 className="qt-heading">
-          {mode === "mercados"
-            ? "Onde comprar tudo?"
-            : mode === "dividir"
-              ? "Vale dividir a compra?"
-              : "Sua próxima compra."}
-        </h1>
-        <p className="qt-muted mt-3">
-          Organize sua lista e escolha como fazer a compra mais em conta.
-        </p>
-      </div>
-      <form
-        className="qt-panel mb-6 flex flex-wrap items-end gap-3"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (name.trim())
-            mutate.mutate(async () => {
-              const list = await listsService.create(name.trim());
-              setSelectedId(list.id);
-              setName("");
-            });
-        }}
-      >
-        <label className="min-w-0 flex-1">
-          <span className="mb-2 block text-sm font-semibold">Nova lista</span>
-          <Input
-            value={name}
-            maxLength={100}
-            required
-            placeholder="Ex.: Compras da semana"
-            onChange={(e) => setName(e.target.value)}
-          />
-        </label>
-        <Button type="submit" disabled={busy || !name.trim()}>
-          <Plus className="size-4" />
-          Criar lista
-        </Button>
-      </form>
+    <div className="w-full">
+      <section className="mb-5 rounded-[30px] bg-[#f2eadc] px-5 py-6 dark:bg-slate-900 sm:px-7 lg:px-9 lg:py-8">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-[.18em] text-orange-500">
+              PLANEJE A COMPRA
+            </p>
+            <h1 className="mt-2 text-3xl font-black leading-none tracking-[-.04em] text-brand-700 dark:text-brand-100 sm:text-4xl lg:text-5xl">
+              {mode === "mercados"
+                ? "Onde comprar tudo?"
+                : mode === "dividir"
+                  ? "Vale dividir a compra?"
+                  : "Sua próxima compra."}
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300 sm:text-base">
+              Organize sua lista e escolha como fazer a compra mais em conta.
+            </p>
+          </div>
+
+          <form
+            className="flex w-full max-w-2xl flex-col gap-3 rounded-[24px] bg-white p-3 shadow-[0_14px_36px_-28px_rgba(15,83,69,.4)] dark:bg-slate-950 sm:flex-row sm:items-end"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (name.trim())
+                mutate.mutate(async () => {
+                  const list = await listsService.create(name.trim());
+                  setSelectedId(list.id);
+                  setName("");
+                });
+            }}
+          >
+            <label className="min-w-0 flex-1">
+              <span className="mb-2 block text-xs font-extrabold text-slate-500 dark:text-slate-400">
+                Nova lista
+              </span>
+              <Input
+                value={name}
+                maxLength={100}
+                required
+                placeholder="Ex.: Compras da semana"
+                onChange={(e) => setName(e.target.value)}
+              />
+            </label>
+            <Button type="submit" disabled={busy || !name.trim()}>
+              <Plus className="size-4" />
+              Criar lista
+            </Button>
+          </form>
+        </div>
+      </section>
+
       {query.isPending ||
       products.isPending ||
       (selected && summary.isPending) ? (
-        <p role="status">Carregando sua lista…</p>
+        <p role="status" className="py-10 text-center text-sm text-slate-500">
+          Carregando sua lista…
+        </p>
       ) : query.isError || products.isError || summary.isError ? (
         <ApiError
           onRetry={() => {
@@ -139,23 +154,23 @@ export default function ListaPage() {
           }}
         />
       ) : !selected ? (
-        <div className="qt-empty">
+        <div className="rounded-[30px] bg-white px-6 py-14 text-center shadow-[0_14px_36px_-28px_rgba(15,83,69,.4)] dark:bg-slate-900">
           <ListChecks className="mx-auto size-10 text-brand-600" />
-          <h2 className="mt-4 text-xl font-bold">
+          <h2 className="mt-4 text-xl font-black text-brand-700 dark:text-brand-100">
             Comece pela sua primeira lista.
           </h2>
-          <p className="qt-muted mt-3">
+          <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
             Dê um nome acima e escolha os produtos que precisa comprar.
           </p>
         </div>
       ) : (
         <>
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="mb-5 flex flex-col gap-3 rounded-[24px] bg-white p-3 shadow-[0_10px_30px_-26px_rgba(15,83,69,.35)] dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
             <label className="min-w-0 flex-1">
               <span className="sr-only">Selecionar lista</span>
               <select
                 aria-label="Selecionar lista"
-                className="qt-select max-w-sm"
+                className="min-h-11 w-full max-w-sm rounded-xl bg-[#f8f6f0] px-3 text-sm font-bold outline-none dark:bg-slate-800"
                 value={selected.id}
                 onChange={(e) => setSelectedId(Number(e.target.value))}
               >
@@ -166,7 +181,7 @@ export default function ListaPage() {
                 ))}
               </select>
             </label>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex gap-2 overflow-x-auto">
               {[
                 ["lista", "Minha lista"],
                 ["mercados", "Um mercado"],
@@ -174,7 +189,11 @@ export default function ListaPage() {
               ].map(([value, label]) => (
                 <button
                   key={value}
-                  className={`qt-chip ${mode === value ? "qt-chip-active" : ""}`}
+                  className={`shrink-0 rounded-xl px-4 py-2.5 text-sm font-extrabold transition ${
+                    mode === value
+                      ? "bg-brand-700 text-white"
+                      : "bg-[#f8f6f0] text-brand-700 hover:bg-brand-50 dark:bg-slate-800 dark:text-brand-100"
+                  }`}
                   aria-pressed={mode === value}
                   onClick={() => changeMode(value)}
                 >
@@ -183,11 +202,12 @@ export default function ListaPage() {
               ))}
             </div>
           </div>
+
           {mode === "lista" && (
-            <div className="grid items-start gap-6 lg:grid-cols-[1fr_300px]">
-              <section className="qt-panel">
+            <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+              <section className="rounded-[30px] bg-white p-4 shadow-[0_14px_36px_-28px_rgba(15,83,69,.4)] dark:bg-slate-900 sm:p-5">
                 <form
-                  className="mb-6 grid items-end gap-3 sm:grid-cols-[1fr_80px_auto]"
+                  className="mb-4 grid items-end gap-3 rounded-[22px] bg-[#f8f6f0] p-4 dark:bg-slate-800 sm:grid-cols-[1fr_90px_auto]"
                   onSubmit={(e) => {
                     e.preventDefault();
                     if (
@@ -202,7 +222,7 @@ export default function ListaPage() {
                   }}
                 >
                   <label>
-                    <span className="mb-2 block text-sm font-semibold">
+                    <span className="mb-2 block text-xs font-extrabold text-slate-500 dark:text-slate-400">
                       Produto
                     </span>
                     <select
@@ -221,7 +241,7 @@ export default function ListaPage() {
                     </select>
                   </label>
                   <label>
-                    <span className="mb-2 block text-sm font-semibold">
+                    <span className="mb-2 block text-xs font-extrabold text-slate-500 dark:text-slate-400">
                       Qtd.
                     </span>
                     <Input
@@ -238,152 +258,165 @@ export default function ListaPage() {
                     Adicionar
                   </Button>
                 </form>
+
                 {rows.length ? (
-                  rows.map((item) => (
-                    <article
-                      key={item.id}
-                      className="flex flex-wrap items-center gap-4 border-t py-5"
-                    >
-                      <ProductImage
-                        id={item.estimate?.imagemId}
-                        alt={item.produto.nome}
-                        className="size-20 shrink-0 rounded-xl"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <h2 className="font-bold">{item.produto.nome}</h2>
-                        <p className="qt-muted">
-                          {item.produto.marca} · {item.produto.unidadeMedida}
-                        </p>
-                        <p className="qt-muted">
-                          {item.estimate?.mercado ?? "Sem preço registrado"}
-                        </p>
-                        {item.estimate?.precoUnitario != null && (
-                          <p className="text-sm font-semibold">
-                            {formatCurrency(item.estimate.precoUnitario)} por
-                            embalagem
-                          </p>
-                        )}
-                        <MeasurePrice
-                          price={item.estimate?.precoPorMedida}
-                          unit={item.estimate?.unidadeBase}
+                  <div className="divide-y divide-stone-200/70 dark:divide-slate-800">
+                    {rows.map((item) => (
+                      <article
+                        key={item.id}
+                        className="flex flex-wrap items-center gap-4 py-5 first:pt-2 last:pb-2"
+                      >
+                        <ProductImage
+                          id={item.estimate?.imagemId}
+                          alt={item.produto.nome}
+                          className="size-20 shrink-0 rounded-[18px] bg-[#f2eadc]"
                         />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            aria-label={`Diminuir quantidade de ${item.produto.nome}`}
-                            disabled={busy || item.quantidade <= 1}
-                            onClick={() =>
-                              mutate.mutate(() =>
-                                listsService.update(
-                                  selected.id,
-                                  item.id,
-                                  item.quantidade - 1,
-                                ),
-                              )
-                            }
-                          >
-                            <Minus className="size-4" />
-                          </Button>
-                          <span className="w-6 text-center">
-                            {item.quantidade}
-                          </span>
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            aria-label={`Aumentar quantidade de ${item.produto.nome}`}
-                            disabled={busy || item.quantidade >= 999}
-                            onClick={() =>
-                              mutate.mutate(() =>
-                                listsService.update(
-                                  selected.id,
-                                  item.id,
-                                  item.quantidade + 1,
-                                ),
-                              )
-                            }
-                          >
-                            <Plus className="size-4" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            aria-label={`Remover ${item.produto.nome}`}
-                            disabled={busy}
-                            onClick={() =>
-                              mutate.mutate(() =>
-                                listsService.remove(selected.id, item.id),
-                              )
-                            }
-                          >
-                            <Trash2 className="size-4 text-red-500" />
-                          </Button>
+                        <div className="min-w-0 flex-1">
+                          <h2 className="font-extrabold text-brand-700 dark:text-brand-100">
+                            {item.produto.nome}
+                          </h2>
+                          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                            {item.produto.marca} · {item.produto.unidadeMedida}
+                          </p>
+                          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                            {item.estimate?.mercado ?? "Sem preço registrado"}
+                          </p>
+                          {item.estimate?.precoUnitario != null && (
+                            <p className="mt-1 text-sm font-semibold">
+                              {formatCurrency(item.estimate.precoUnitario)} por
+                              embalagem
+                            </p>
+                          )}
+                          <MeasurePrice
+                            price={item.estimate?.precoPorMedida}
+                            unit={item.estimate?.unidadeBase}
+                          />
                         </div>
-                        <p className="mt-2 text-right text-lg font-bold">
-                          {item.estimate?.subtotal != null
-                            ? formatCurrency(item.estimate.subtotal)
-                            : "Sem preço"}
-                        </p>
-                      </div>
-                    </article>
-                  ))
+                        <div className="ml-auto">
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              aria-label={`Diminuir quantidade de ${item.produto.nome}`}
+                              disabled={busy || item.quantidade <= 1}
+                              onClick={() =>
+                                mutate.mutate(() =>
+                                  listsService.update(
+                                    selected.id,
+                                    item.id,
+                                    item.quantidade - 1,
+                                  ),
+                                )
+                              }
+                            >
+                              <Minus className="size-4" />
+                            </Button>
+                            <span className="w-6 text-center font-bold">
+                              {item.quantidade}
+                            </span>
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              aria-label={`Aumentar quantidade de ${item.produto.nome}`}
+                              disabled={busy || item.quantidade >= 999}
+                              onClick={() =>
+                                mutate.mutate(() =>
+                                  listsService.update(
+                                    selected.id,
+                                    item.id,
+                                    item.quantidade + 1,
+                                  ),
+                                )
+                              }
+                            >
+                              <Plus className="size-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              aria-label={`Remover ${item.produto.nome}`}
+                              disabled={busy}
+                              onClick={() =>
+                                mutate.mutate(() =>
+                                  listsService.remove(selected.id, item.id),
+                                )
+                              }
+                            >
+                              <Trash2 className="size-4 text-red-500" />
+                            </Button>
+                          </div>
+                          <p className="mt-2 text-right text-lg font-black text-brand-700 dark:text-brand-100">
+                            {item.estimate?.subtotal != null
+                              ? formatCurrency(item.estimate.subtotal)
+                              : "Sem preço"}
+                          </p>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
                 ) : (
-                  <div className="qt-empty">
-                    <p>Sua lista está vazia. Escolha um produto acima.</p>
+                  <div className="rounded-[22px] bg-[#f8f6f0] px-5 py-10 text-center text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                    Sua lista está vazia. Escolha um produto acima.
                   </div>
                 )}
               </section>
-              <aside className="qt-panel">
-                <p className="qt-eyebrow">
+
+              <aside className="sticky top-20 rounded-[30px] bg-brand-700 p-6 text-white shadow-[0_14px_36px_-28px_rgba(15,83,69,.5)]">
+                <p className="text-[11px] font-black uppercase tracking-[.18em] text-brand-100/75">
                   {data?.itensSemPreco
                     ? "SUBTOTAL CONHECIDO"
                     : "MENORES PREÇOS COMBINADOS"}
                 </p>
-                <p className="mt-3 text-3xl font-bold text-brand-700 dark:text-brand-100">
+                <p className="mt-3 text-4xl font-black tracking-tight">
                   {rows.length ? formatCurrency(data?.valorEstimado ?? 0) : "—"}
                 </p>
-                <p className="qt-muted mt-3">
+                <p className="mt-3 text-sm text-brand-100/80">
                   Preços de {data?.quantidadeMercados ?? 0} mercado(s).
                 </p>
                 {!!data?.itensSemPreco && (
                   <p
                     role="status"
-                    className="mt-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-900/30 dark:text-amber-100"
+                    className="mt-4 rounded-2xl bg-amber-50 p-3 text-sm font-semibold text-amber-900"
                   >
                     Estimativa incompleta: {data.itensSemPreco} produto(s) sem
                     preço disponível.
                   </p>
                 )}
-                <p className="qt-muted mt-4">
+                <p className="mt-4 text-xs leading-5 text-brand-100/70">
                   Deslocamento e entrega não incluídos. Valores registrados,
                   sujeitos a alteração no mercado.
                 </p>
                 <button
-                  className="qt-action mt-5 w-full"
+                  className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#ff982e] px-4 text-sm font-extrabold text-white disabled:opacity-50"
                   disabled={!rows.length}
                   onClick={() => changeMode("mercados")}
                 >
                   <ArrowLeftRight className="size-4" />
                   Comparar por mercado
                 </button>
-                <Link className="qt-secondary mt-3 w-full" to="/explorar">
+                <Link
+                  className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-white/10 px-4 text-sm font-extrabold text-white transition hover:bg-white/15"
+                  to="/explorar"
+                >
                   Continuar explorando
                 </Link>
               </aside>
             </div>
           )}
+
           {mode === "mercados" && (
-            <section className="space-y-4">
+            <section className="space-y-3">
               {!rows.length ? (
-                <div className="qt-empty">
+                <div className="rounded-[30px] bg-[#f2eadc] px-6 py-12 text-center text-sm text-slate-600 dark:bg-slate-900 dark:text-slate-300">
                   Adicione produtos para comparar sua lista.
                 </div>
               ) : (
                 <>
                   {!cheapest && (
-                    <p role="status" className="qt-panel">
+                    <p
+                      role="status"
+                      className="rounded-[22px] bg-amber-50 p-4 text-sm font-semibold text-amber-900 dark:bg-amber-900/20 dark:text-amber-100"
+                    >
                       Nenhum mercado tem preço registrado para todos os itens
                       desta lista.
                     </p>
@@ -391,7 +424,13 @@ export default function ListaPage() {
                   {data?.mercados.map((m) => (
                     <article
                       key={m.mercadoId}
-                      className={`qt-panel ${m.mercadoId === data.mercadoMaisBaratoId ? "!border-brand-500" : !m.completa ? "!border-amber-300" : ""}`}
+                      className={`rounded-[28px] p-5 shadow-[0_12px_32px_-28px_rgba(15,83,69,.35)] sm:p-6 ${
+                        m.mercadoId === data.mercadoMaisBaratoId
+                          ? "bg-[#e6f2e8] ring-2 ring-brand-400 dark:bg-brand-700/20"
+                          : !m.completa
+                            ? "bg-amber-50 ring-1 ring-amber-200 dark:bg-amber-900/15"
+                            : "bg-white dark:bg-slate-900"
+                      }`}
                     >
                       <div className="flex flex-wrap items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
@@ -399,17 +438,23 @@ export default function ListaPage() {
                             <ProductImage
                               id={m.imagemId}
                               alt={m.mercado}
-                              className="size-20 rounded-xl"
+                              className="size-20 rounded-[18px] bg-white"
                             />
                           )}
                           <div>
-                            <h2 className="text-xl font-bold">{m.mercado}</h2>
-                            <p className="qt-muted">
+                            <h2 className="text-xl font-black text-brand-700 dark:text-brand-100">
+                              {m.mercado}
+                            </h2>
+                            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                               {m.produtosComPreco} de {rows.length} produtos com
                               preço
                             </p>
                             <span
-                              className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-semibold ${m.completa ? "bg-brand-50 text-brand-700" : "bg-amber-50 text-amber-900"}`}
+                              className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-bold ${
+                                m.completa
+                                  ? "bg-brand-700 text-white"
+                                  : "bg-amber-100 text-amber-900"
+                              }`}
                             >
                               {m.mercadoId === data.mercadoMaisBaratoId
                                 ? "Mais barato com a lista completa"
@@ -419,19 +464,20 @@ export default function ListaPage() {
                             </span>
                           </div>
                         </div>
-                        <div>
-                          <p className="qt-muted">
+                        <div className="text-right">
+                          <p className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                             {m.completa
                               ? "Total da lista"
                               : "Subtotal conhecido"}
                           </p>
-                          <p className="text-3xl font-bold">
+                          <p className="mt-1 text-3xl font-black tracking-tight text-brand-700 dark:text-brand-100">
                             {formatCurrency(m.subtotal)}
                           </p>
                         </div>
                       </div>
+
                       {!m.completa && (
-                        <div className="mt-4 rounded-xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-900/20 dark:text-amber-100">
+                        <div className="mt-4 rounded-2xl bg-white/70 p-4 text-sm text-amber-900 dark:bg-slate-900/50 dark:text-amber-100">
                           <p className="flex items-center gap-2 font-semibold">
                             <TriangleAlert className="size-4" />
                             Sem preço para: {m.produtosSemPreco.join(", ")}
@@ -442,11 +488,12 @@ export default function ListaPage() {
                           </p>
                         </div>
                       )}
-                      <details className="mt-4">
-                        <summary className="cursor-pointer py-2 font-semibold">
+
+                      <details className="mt-4 rounded-2xl bg-white/60 px-4 py-2 dark:bg-slate-950/30">
+                        <summary className="cursor-pointer py-2 font-extrabold text-brand-700 dark:text-brand-100">
                           Ver itens por mercado
                         </summary>
-                        <div className="mt-2 divide-y">
+                        <div className="mt-1 divide-y divide-stone-200/70 dark:divide-slate-800">
                           {m.itens.map((i) => (
                             <div
                               key={i.itemId}
@@ -475,100 +522,116 @@ export default function ListaPage() {
               )}
             </section>
           )}
+
           {mode === "dividir" && (
-            <section className="mx-auto max-w-3xl space-y-4">
+            <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
               {!rows.length ? (
-                <div className="qt-empty">
+                <div className="rounded-[30px] bg-[#f2eadc] px-6 py-12 text-center text-sm text-slate-600 dark:bg-slate-900 dark:text-slate-300 xl:col-span-2">
                   Adicione produtos à lista para comparar.
                 </div>
               ) : (
                 <>
-                  {rows.map((i) => (
-                    <article className="qt-offer" key={i.id}>
-                      <div className="flex items-center gap-4">
-                        <ProductImage
-                          id={i.estimate?.imagemId}
-                          alt={i.produto.nome}
-                          className="size-20 rounded-xl"
-                        />
-                        <div>
-                          <h2 className="font-bold">{i.produto.nome}</h2>
-                          <p className="qt-muted">
-                            {i.produto.marca} · {i.produto.unidadeMedida} ·{" "}
-                            {i.quantidade} embalagem(ns)
-                          </p>
-                          <p className="text-sm font-semibold">
-                            {i.estimate?.mercado ?? "Sem preço registrado"}
-                          </p>
-                          {i.estimate?.dataColeta && (
-                            <p className="qt-muted text-xs">
-                              Coletado em {displayDate(i.estimate.dataColeta)}
+                  <div className="space-y-3">
+                    {rows.map((i) => (
+                      <article
+                        className="flex flex-wrap items-center justify-between gap-4 rounded-[24px] bg-white p-4 shadow-[0_10px_30px_-26px_rgba(15,83,69,.35)] dark:bg-slate-900"
+                        key={i.id}
+                      >
+                        <div className="flex items-center gap-4">
+                          <ProductImage
+                            id={i.estimate?.imagemId}
+                            alt={i.produto.nome}
+                            className="size-20 rounded-[18px] bg-[#f2eadc]"
+                          />
+                          <div>
+                            <h2 className="font-extrabold text-brand-700 dark:text-brand-100">
+                              {i.produto.nome}
+                            </h2>
+                            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                              {i.produto.marca} · {i.produto.unidadeMedida} ·{" "}
+                              {i.quantidade} embalagem(ns)
                             </p>
-                          )}
+                            <p className="mt-1 text-sm font-semibold">
+                              {i.estimate?.mercado ?? "Sem preço registrado"}
+                            </p>
+                            {i.estimate?.dataColeta && (
+                              <p className="mt-1 text-xs text-slate-400">
+                                Coletado em {displayDate(i.estimate.dataColeta)}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                      <strong className="text-xl">
-                        {i.estimate?.subtotal != null
-                          ? formatCurrency(i.estimate.subtotal)
-                          : "Sem preço"}
-                      </strong>
-                    </article>
-                  ))}
-                  <div className="qt-success">
-                    <p className="font-semibold">
-                      {data?.estimativaCompleta
-                        ? "Total combinado"
-                        : "Subtotal conhecido — lista incompleta"}
-                    </p>
-                    <p className="mt-2 text-4xl font-bold">
-                      {formatCurrency(data?.valorEstimado ?? 0)}
-                    </p>
-                    <p className="mt-2">
-                      {data?.quantidadeMercados} mercado(s)
-                    </p>
-                  </div>
-                  {cheapest && data?.diferencaCompraDividida != null ? (
-                    <div className="qt-panel">
-                      <p>
-                        Tudo no {cheapest.mercado}:{" "}
-                        <strong>{formatCurrency(cheapest.subtotal)}</strong>
-                      </p>
-                      <p className="mt-3">
-                        Diferença nos produtos:{" "}
-                        <strong>
-                          {formatCurrency(data.diferencaCompraDividida)}
+                        <strong className="text-xl font-black text-brand-700 dark:text-brand-100">
+                          {i.estimate?.subtotal != null
+                            ? formatCurrency(i.estimate.subtotal)
+                            : "Sem preço"}
                         </strong>
+                      </article>
+                    ))}
+                  </div>
+
+                  <aside className="space-y-3">
+                    <div className="rounded-[30px] bg-brand-700 p-6 text-white">
+                      <p className="text-xs font-black uppercase tracking-[.16em] text-brand-100/75">
+                        {data?.estimativaCompleta
+                          ? "Total combinado"
+                          : "Subtotal conhecido — lista incompleta"}
+                      </p>
+                      <p className="mt-3 text-4xl font-black tracking-tight">
+                        {formatCurrency(data?.valorEstimado ?? 0)}
+                      </p>
+                      <p className="mt-2 text-sm text-brand-100/80">
+                        {data?.quantidadeMercados} mercado(s)
                       </p>
                     </div>
-                  ) : (
-                    <p className="qt-panel">
-                      Não há uma lista completa em um único mercado para
-                      calcular a diferença.
+
+                    {cheapest && data?.diferencaCompraDividida != null ? (
+                      <div className="rounded-[24px] bg-[#e6f2e8] p-5 text-brand-700 dark:bg-brand-700/20 dark:text-brand-100">
+                        <p>
+                          Tudo no {cheapest.mercado}:{" "}
+                          <strong>{formatCurrency(cheapest.subtotal)}</strong>
+                        </p>
+                        <p className="mt-3">
+                          Diferença nos produtos:{" "}
+                          <strong>
+                            {formatCurrency(data.diferencaCompraDividida)}
+                          </strong>
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="rounded-[24px] bg-[#f2eadc] p-5 text-sm text-slate-600 dark:bg-slate-900 dark:text-slate-300">
+                        Não há uma lista completa em um único mercado para
+                        calcular a diferença.
+                      </p>
+                    )}
+
+                    <p className="flex gap-2 rounded-[20px] bg-white p-4 text-xs leading-5 text-slate-500 shadow-sm dark:bg-slate-900 dark:text-slate-400">
+                      <Info className="mt-0.5 size-4 shrink-0" />
+                      Deslocamento e entrega não estão incluídos. Confira os
+                      preços no mercado.
                     </p>
-                  )}
-                  <p className="qt-muted flex gap-2">
-                    <Info className="mt-1 size-4 shrink-0" />
-                    Deslocamento e entrega não estão incluídos. Confira os
-                    preços no mercado.
-                  </p>
-                  <button
-                    className="qt-action w-full"
-                    onClick={() => changeMode("mercados")}
-                  >
-                    Comparar em um só mercado
-                  </button>
+                    <button
+                      className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#ff982e] px-4 text-sm font-extrabold text-white"
+                      onClick={() => changeMode("mercados")}
+                    >
+                      Comparar em um só mercado
+                    </button>
+                  </aside>
                 </>
               )}
             </section>
           )}
+
           {mode === "lista" && suggestions.length > 0 && !prices.isError && (
-            <section className="mt-9">
-              <h2 className="qt-section-heading">Quer completar sua lista?</h2>
-              <p className="qt-muted mb-5 mt-2">
+            <section className="mt-7 rounded-[30px] bg-[#f2eadc] p-5 dark:bg-slate-900 sm:p-7">
+              <h2 className="text-2xl font-black tracking-tight text-brand-700 dark:text-brand-100">
+                Quer completar sua lista?
+              </h2>
+              <p className="mb-5 mt-2 text-sm text-slate-500 dark:text-slate-400">
                 Mais opções nas categorias da sua compra. Você escolhe o que
                 adicionar.
               </p>
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
                 {suggestions.map((p) => (
                   <ProductCard
                     key={p.id}
