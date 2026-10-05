@@ -3,7 +3,7 @@ import { Link, NavLink } from "react-router-dom";
 export function Header() {
   return (
     <header className="qt-header">
-      <div className="qt-header-inner">
+      <div className="qt-header-inner !max-w-none">
         <Link to="/" className="qt-brand" aria-label="QuantoTá - início">
           <span>QuantoTá</span>
           <i className="qt-brand-accent" aria-hidden="true" />
