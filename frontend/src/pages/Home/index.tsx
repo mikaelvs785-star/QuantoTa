@@ -118,7 +118,7 @@ export default function HomePage() {
   );
 
   const bestOfferByProduct = useMemo(() => {
-    const result = new Map<number, PriceRecord>();
+    const result = new Map<string, PriceRecord>();
     for (const offer of prices.data ?? []) {
       const current = result.get(offer.productId);
       if (!current || offer.price < current.price) {
