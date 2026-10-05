@@ -15,12 +15,14 @@ import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { TabBar } from "@/components/layout/TabBar";
 import { usePermissions } from "@/hooks/usePermissions";
+
 const customerLinks = [
   { label: "Início", icon: House, to: "/" },
   { label: "Explorar", icon: Search, to: "/explorar" },
   { label: "Lista", icon: ListChecks, to: "/lista" },
   { label: "Conta", icon: CircleUserRound, to: "/conta" },
 ];
+
 export function MainLayout() {
   const { pathname } = useLocation();
   const { data: p } = usePermissions();
@@ -29,6 +31,7 @@ export function MainLayout() {
     /^\/(catalogo|precos|produtos|mercados|usuarios|vitrine)(\/|$)/.test(
       pathname,
     );
+  const home = pathname === "/";
   const links = [
     { label: "Catálogo", icon: Package, to: "/catalogo?aba=produtos" },
     { label: "Meus mercados", icon: Store, to: "/catalogo?aba=mercados" },
@@ -40,6 +43,7 @@ export function MainLayout() {
         ]
       : []),
   ];
+
   return (
     <div className="min-h-screen">
       <Header />
@@ -61,6 +65,7 @@ export function MainLayout() {
             </Link>
           </aside>
         )}
+
         <div className="min-w-0 flex-1">
           {management && (
             <nav
@@ -74,7 +79,14 @@ export function MainLayout() {
               ))}
             </nav>
           )}
-          <main className="mx-auto max-w-[1320px] p-4 pb-24 sm:p-6 sm:pb-24 lg:px-10 lg:py-9">
+
+          <main
+            className={
+              home
+                ? "mx-auto max-w-[1460px] px-3 pb-24 pt-3 sm:px-5 sm:pt-4 lg:px-6 lg:pb-8"
+                : "mx-auto max-w-[1320px] p-4 pb-24 sm:p-6 sm:pb-24 lg:px-10 lg:py-9"
+            }
+          >
             <Outlet />
           </main>
           <Footer />
