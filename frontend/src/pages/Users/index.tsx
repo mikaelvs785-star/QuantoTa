@@ -1,10 +1,13 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { userService } from "@/services/userService";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useSearchParams } from "react-router-dom";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useCreateUser } from "@/hooks/useCreateUser";
 import { UserForm } from "@/components/users/UserForm";
 import { Input } from "@/components/ui/Input";
-import type { UserInput } from "@/types/user";
+import type { User, UserInput } from "@/types/user";
 import { PlusCircle } from "lucide-react";
 import { ApiError } from "@/components/ui/ApiError";
 import { Badge } from "@/components/ui/Badge";
@@ -15,6 +18,18 @@ import { useUsers } from "@/hooks/useUsers";
 
 export default function Users() {
   const usersQuery = useUsers();
+  const client = useQueryClient();
+  const [selected, setSelected] = useState<User>();
+  const deletion = useMutation({
+    mutationFn: (id: string) => userService.excluirUsuario(id),
+    onSuccess: async () => {
+      setSelected(undefined);
+      await Promise.all(["usuarios", "users", "vendedores", "mercados", "precos", "permissoes"].map(key => client.invalidateQueries({ queryKey: [key] })));
+      await usersQuery.refetch();
+      toast.success("Usuário excluído permanentemente.");
+    },
+    onError: () => toast.error("Não foi possível excluir. Contas de administrador são protegidas."),
+  });
   const createUser = useCreateUser();
   const [params, setParams] = useSearchParams();
   const [search, setSearch] = useState("");
@@ -56,6 +71,11 @@ export default function Users() {
 
   return (
     <div className="mx-auto max-w-6xl">
+      <ConfirmDialog open={Boolean(selected)} title="Excluir usuário permanentemente?"
+        message={`A conta de ${selected?.name ?? "este usuário"} (${selected?.email ?? ""}) e suas listas serão apagadas. Seus mercados ficarão inativos e sem vendedor; preços e imagens serão preservados. Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir permanentemente" loading={deletion.isPending}
+        onClose={() => { if (!deletion.isPending) setSelected(undefined); }}
+        onConfirm={() => { if (selected) deletion.mutate(selected.id); }} />
       <SectionTitle
         title="Usuários"
         description="Consulte as contas e cadastre consumidores, vendedores ou administradores."
@@ -106,6 +126,7 @@ export default function Users() {
                   {roleLabels[user.role ?? "USER"] ?? user.role} ·{" "}
                   {user.active === false ? "Inativo" : "Ativo"}
                 </p>
+                {user.role !== "ADMIN" && <Button variant="outline" size="sm" className="mt-4 text-red-600" onClick={() => setSelected(user)}>Excluir permanentemente</Button>}
               </article>
             ))}
           </div>
@@ -116,7 +137,7 @@ export default function Users() {
                   <th className="px-4 py-3">Nome</th>
                   <th className="px-4 py-3">E-mail</th>
                   <th className="px-4 py-3">Perfil</th>
-                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Status</th><th className="px-4 py-3">Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -134,6 +155,7 @@ export default function Users() {
                         {user.active === false ? "Inativo" : "Ativo"}
                       </Badge>
                     </td>
+                    <td className="px-4 py-4">{user.role === "ADMIN" ? <span className="text-xs text-slate-500">Conta protegida</span> : <Button variant="outline" size="sm" className="text-red-600" onClick={() => setSelected(user)}>Excluir permanentemente</Button>}</td>
                   </tr>
                 ))}
               </tbody>

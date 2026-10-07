@@ -17,6 +17,7 @@ function normalizeUsuario(user: BackendUser): User {
   };
 }
 export const userService = {
+  async excluirUsuario(id: string) { await api.delete(`/usuarios/${id}`); },
   async me() {
     return normalizeUsuario((await api.get<BackendUser>("/auth/profile")).data);
   },

@@ -23,6 +23,10 @@ public class UsuarioController {
         return usuarioService.cadastrarAdministrativamente(usuario);
     }
 
+    @DeleteMapping("/{id}")
+    @ResponseStatus(org.springframework.http.HttpStatus.NO_CONTENT)
+    public void excluir(@PathVariable Long id) { usuarioService.deletar(id); }
+
     @GetMapping
     public List<Usuario> listarTodos() {
         return usuarioService.listarTodos();
