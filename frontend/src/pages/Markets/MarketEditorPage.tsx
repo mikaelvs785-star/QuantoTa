@@ -62,7 +62,7 @@ export function MarketEditorPage({ mode }: { mode: "create" | "edit" }) {
   }
 
   return (
-    <div className="mx-auto max-w-6xl">
+    <div className="mx-auto max-w-5xl">
       <SectionTitle
         title={mode === "edit" ? "Editar mercado" : "Novo mercado"}
         description={

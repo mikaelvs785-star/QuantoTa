@@ -79,9 +79,10 @@ export function MarketForm({
       onSubmit={handleSubmit((values) =>
         onSubmit({ ...values, state: values.state.toUpperCase() }),
       )}
-      className="space-y-6"
+      className="grid items-start gap-6 lg:grid-cols-[240px_minmax(0,1fr)]"
     >
-      <Controller name="imageId" control={control} render={({field})=><ImageUpload label="Foto do mercado" value={field.value} onChange={field.onChange} onBusy={setUploading}/>}/>
+      <Controller name="imageId" control={control} render={({field})=><ImageUpload label="Foto do mercado" value={field.value} onChange={field.onChange} onBusy={setUploading} previewClassName="w-full max-w-60"/>}/>
+      <div className="min-w-0 space-y-5">
       <div className="grid gap-5 sm:grid-cols-2">
         {[
           { key: "name", label: "Nome", placeholder: "Nome do mercado" },
@@ -170,6 +171,7 @@ export function MarketForm({
       >
         {submitting ? "Salvando..." : "Salvar mercado"}
       </Button>
+      </div>
     </form>
   );
 }

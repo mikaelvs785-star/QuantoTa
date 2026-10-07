@@ -37,12 +37,14 @@ export function ImageUpload({
   label = "Foto da oferta",
   onBusy,
   aspect = 1,
+  previewClassName = "",
 }: {
   value?: string | null;
   onChange: (id: string | null) => void;
   label?: string;
   onBusy?: (busy: boolean) => void;
   aspect?: number;
+  previewClassName?: string;
 }) {
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState<Blob>();
@@ -58,7 +60,7 @@ export function ImageUpload({
   return (
     <div className="space-y-3">
       <p className="font-semibold">{label}</p>
-      {editing ? <ImageCropEditor file={editing} aspect={aspect} onConfirm={upload} onCancel={finish} /> : <div style={{ aspectRatio: aspect }}><ProductImage
+      {editing ? <ImageCropEditor file={editing} aspect={aspect} onConfirm={upload} onCancel={finish} /> : <div className={previewClassName} style={{ aspectRatio: aspect }}><ProductImage
         id={value}
         alt={label}
         className="h-full w-full rounded-2xl"
