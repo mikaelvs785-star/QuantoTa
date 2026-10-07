@@ -115,14 +115,9 @@ export default function Catalogo() {
           <Store className="size-4" /> Mercados <span className="ml-1 opacity-70">{markets.data?.total ?? "—"}</span>
         </Button>
       </nav>
-      {seller && !marketsTab && <section className="mb-5 rounded-2xl border bg-white p-4 dark:bg-slate-900">
-        <label className="block"><span className="mb-2 flex items-center gap-2 font-semibold"><Store className="size-4" />Mercado que você está gerenciando</span>
-          <select className="qt-select" value={ownMarketId} disabled={markets.isPending} onChange={e => change({ mercado: e.target.value, pagina: "1" })}>
-            {!markets.data?.content.length && <option value="">Nenhum mercado vinculado</option>}
-            {markets.data?.content.map(m => <option key={m.id} value={m.id}>{m.name}{m.status === "INACTIVE" ? " (inativo)" : ""}</option>)}
-          </select>
-        </label><p className="qt-muted mt-2 text-sm">Produtos e fotos das ofertas deste mercado, organizados por categoria.</p>
-      </section>}
+      {seller && !marketsTab && (markets.data?.content.length ?? 0) > 1 && <nav aria-label="Escolher meu mercado" className="mb-5 flex flex-wrap gap-2">
+        {markets.data?.content.map(market => <Button key={market.id} variant={ownMarketId === market.id ? "primary" : "outline"} aria-pressed={ownMarketId === market.id} onClick={() => change({ mercado: market.id, pagina: "1" })}><Store className="size-4" />{market.name}</Button>)}
+      </nav>}
       <div className="mb-5 grid gap-4 rounded-2xl border bg-white p-4 dark:bg-slate-900 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_180px_150px]">
         <label className="min-w-0 sm:col-span-2 lg:col-span-1">
           <span className="mb-2 block text-sm font-semibold">Buscar {marketsTab ? "mercado" : "produto"}</span>
