@@ -1,3 +1,4 @@
+import { HomeEditor } from "@/components/storefront/HomeEditor";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -59,6 +60,7 @@ export default function Vitrine() {
           Nova coleção
         </Button>
       </div>
+      <HomeEditor />
       {open && (
         <form
           className="qt-panel mb-7 grid gap-6 md:grid-cols-2"

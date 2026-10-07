@@ -13,6 +13,8 @@ import { usePrecosAtuais } from "@/hooks/usePrecos";
 import { MeasurePrice } from "@/components/storefront/ProductCard";
 import { ProductImage } from "@/components/storefront/Media";
 import { imageUrl } from "@/services/images";
+import { getHomeContent } from "@/services/inicio";
+import { usePermissions } from "@/hooks/usePermissions";
 import { getCollections } from "@/services/vitrine";
 import { formatCurrency } from "@/lib/utils";
 import { displayDate } from "@/lib/offers";
@@ -141,25 +143,22 @@ export default function HomePage() {
   }, [prices.data]);
 
   const promo = collections.data?.[0];
+  const home = useQuery({ queryKey: ["inicio"], queryFn: getHomeContent });
+  const permissions = usePermissions();
+  const shortcuts = home.data?.categorias ?? categoryShortcuts.map((category) => ({ ...category, imagemId: null }));
 
   return (
     <div className="qt-home-page">
+      {permissions.data?.gerenciarProdutos && <Link to="/vitrine" className="qt-secondary mb-3 inline-flex">Editar banner e categorias</Link>}
       <section className="qt-home-hero">
         <img
-          src="/images/hero-market.png"
+          src={home.data?.imagemId ? imageUrl(home.data.imagemId) : "/images/hero-market.png"}
           alt="Sacola de compras com alimentos para abastecer a casa"
         />
 
         <div className="qt-home-hero-content">
-          <h1>
-            Compre melhor.
-            <br />
-            Cuide do seu dinheiro.
-          </h1>
-          <p>
-            Compare o preço da embalagem, confira quanto rende
-            <br className="hidden sm:block" /> e planeje sua compra.
-          </p>
+          <h1 className="whitespace-pre-line">{home.data?.titulo ?? "Compre melhor.\nCuide do seu dinheiro."}</h1>
+          <p>{home.data?.descricao ?? "Compare o preço da embalagem, confira quanto rende e planeje sua compra."}</p>
 
           <form
             className="qt-home-search"
@@ -194,17 +193,17 @@ export default function HomePage() {
       </section>
 
       <nav aria-label="Categorias em destaque" className="qt-home-categories">
-        {categoryShortcuts.map((category) => (
+        {shortcuts.map((category, index) => (
           <Link
-            key={category.label}
+            key={index}
             to={`/explorar?q=${encodeURIComponent(category.query)}`}
             className="qt-category-card"
           >
             <img
-              src="/images/hero-market.png"
+              src={category.imagemId ? imageUrl(category.imagemId) : "/images/hero-market.png"}
               alt=""
               aria-hidden="true"
-              style={{ objectPosition: category.position }}
+              style={{ objectPosition: categoryShortcuts[index]?.position ?? "center" }}
             />
             <span>
               {category.label}
