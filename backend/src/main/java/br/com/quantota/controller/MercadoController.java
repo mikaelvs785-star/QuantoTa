@@ -18,6 +18,9 @@ public class MercadoController {
         this.mercadoService = mercadoService;
     }
 
+    @GetMapping("/gestao")
+    public List<Mercado> gestao() { return mercadoService.listarGestao(); }
+
     @GetMapping
     public List<Mercado> listar(Authentication auth) {
         boolean admin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));

@@ -39,6 +39,12 @@ public class PermissaoService {
         if (sessao.usuarioAtual().getPerfil() != PerfilUsuario.ADMIN && !Boolean.TRUE.equals(mercado.getAtivo()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Mercado inativo: solicite a reativação ao administrador.");
     }
+    public Long vendedorAtualId() {
+        var usuario = sessao.usuarioAtual();
+        if (usuario.getPerfil() == PerfilUsuario.ADMIN) return null;
+        if (usuario.getPerfil() != PerfilUsuario.VENDEDOR) negar();
+        return usuario.getId();
+    }
     public void exigirAdmin() {
         if (sessao.usuarioAtual().getPerfil() != PerfilUsuario.ADMIN) negar();
     }

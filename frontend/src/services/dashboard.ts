@@ -23,9 +23,9 @@ export type BackendPrice = {
   unidadeBase?: string;
 };
 
-export async function getPrecos(current = false): Promise<PriceRecord[]> {
+export async function getPrecos(current = false, gestao = false): Promise<PriceRecord[]> {
   const { data } = await api.get<BackendPrice[]>(
-    current ? "/precos/atuais" : "/precos",
+    gestao ? "/precos/gestao" : current ? "/precos/atuais" : "/precos",
   );
   return data.map(normalizePrice);
 }

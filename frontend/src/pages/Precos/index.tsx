@@ -1,4 +1,5 @@
 import { ImageUpload, ProductImage } from "@/components/storefront/Media";
+import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil, Trash2, X } from "lucide-react";
@@ -21,7 +22,9 @@ function today() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 }
 export default function PrecosPage() {
-  const prices = usePrecos();
+  const { user } = useAuth();
+  const seller = user?.role === "VENDEDOR";
+  const prices = usePrecos(seller);
   const current = usePrecosAtuais();
   const permissions = usePermissions();
   const grants = permissions.data;
@@ -30,8 +33,8 @@ export default function PrecosPage() {
     grants?.mercadosPrecosEditaveis.includes(Number(id)) === true;
   const products = useProdutos();
   const markets = useQuery({
-    queryKey: ["mercados", "precos"],
-    queryFn: () => marketService.listarMercados(),
+    queryKey: ["mercados", "precos", user?.id ?? "publico", seller],
+    queryFn: () => marketService.listarMercados({}, seller),
   });
   const client = useQueryClient();
   const [open, setOpen] = useState(false);

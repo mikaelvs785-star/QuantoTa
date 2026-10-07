@@ -18,6 +18,9 @@ public class PrecoController {
         this.precoService = precoService;
     }
 
+    @GetMapping("/gestao")
+    public List<Preco> gestao() { return precoService.listarGestao(); }
+
     @GetMapping
     public List<Preco> listar() {
         return precoService.listarTodos();

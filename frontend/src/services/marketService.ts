@@ -38,8 +38,8 @@ function payload(input: MarketInput) {
   };
 }
 export const marketService = {
-  async listarMercados(params: MarketListParams = {}) {
-    const { data } = await api.get<BackendMarket[]>("/mercados", { params });
+  async listarMercados(params: MarketListParams = {}, gestao = false) {
+    const { data } = await api.get<BackendMarket[]>(gestao ? "/mercados/gestao" : "/mercados", { params });
     return { content: data.map(normalizeMarket), total: data.length };
   },
   async buscarMercado(id: string) {

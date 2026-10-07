@@ -18,6 +18,11 @@ public class ProdutoService {
         this.permissoes = permissoes;
     }
 
+    public List<Produto> listarGestao() {
+        Long vendedorId = permissoes.vendedorAtualId();
+        return vendedorId == null ? produtoRepository.findAll() : produtoRepository.findOfertadosPorVendedor(vendedorId);
+    }
+
     public List<Produto> listarTodos() { return produtoRepository.findAll(); }
 
     public List<Produto> listarAtivos() {

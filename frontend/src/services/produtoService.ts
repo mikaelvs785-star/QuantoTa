@@ -53,9 +53,9 @@ function toListResult(
 }
 
 export const produtoService = {
-  async listarProdutos(params: ProductListParams = {}) {
+  async listarProdutos(params: ProductListParams = {}, gestao = false) {
     const { data } = await api.get<BackendProduct[] | PageableResponse>(
-      "/produtos",
+      gestao ? "/produtos/gestao" : "/produtos",
       { params },
     );
     return toListResult(data);

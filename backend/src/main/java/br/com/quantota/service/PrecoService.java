@@ -42,6 +42,11 @@ public class PrecoService {
 
     public List<Preco> listarAtuais() { return comImagens(precoRepository.buscarPrecosAtuais()); }
 
+    public List<Preco> listarGestao() {
+        Long vendedorId = permissoes.vendedorAtualId();
+        return comImagens(vendedorId == null ? precoRepository.findAll() : precoRepository.findByMercadoVendedorId(vendedorId));
+    }
+
     public List<Preco> listarTodos() {
         return comImagens(filtrarConsulta(precoRepository.findAll()));
     }

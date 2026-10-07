@@ -28,6 +28,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR).permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/produtos/gestao", "/mercados/gestao", "/precos/gestao").hasAnyRole("ADMIN", "VENDEDOR")
                         .requestMatchers(HttpMethod.GET, "/produtos/**", "/mercados/**", "/precos/**", "/catalogo/permissoes", "/permissoes", "/imagens/**", "/vitrine", "/vitrine/inicio", "/comparacoes/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/mercados/**", "/precos/**").hasAnyRole("ADMIN", "VENDEDOR")
                         .requestMatchers(HttpMethod.PUT, "/mercados/**", "/precos/**").hasAnyRole("ADMIN", "VENDEDOR")

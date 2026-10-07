@@ -18,6 +18,9 @@ public class ProdutoController {
         this.produtoService = produtoService;
     }
 
+    @GetMapping("/gestao")
+    public List<Produto> gestao() { return produtoService.listarGestao(); }
+
     @GetMapping
     public List<Produto> listar(Authentication auth) {
         boolean admin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));

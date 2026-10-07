@@ -1,4 +1,5 @@
 import { ProductImage } from "@/components/storefront/Media";
+import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -22,8 +23,10 @@ export default function Catalogo() {
   const [params, setParams] = useSearchParams();
   const marketsTab = params.get("aba") === "mercados";
   const search = params.get("busca") ?? params.get("q") ?? "";
-  const products = useProdutos();
-  const markets = useMarkets();
+  const { user } = useAuth();
+  const seller = user?.role === "VENDEDOR";
+  const products = useProdutos({}, seller);
+  const markets = useMarkets({}, seller);
   const permissions = usePermissions();
   const removeProduct = useExcluirProduto();
   const removeMarket = useDeleteMarket();
@@ -62,7 +65,7 @@ export default function Catalogo() {
   return (
     <div className="mx-auto max-w-6xl">
       <SectionTitle
-        title="Catálogo"
+        title={seller ? "Meu mercado e meus produtos" : "Catálogo"}
         description="Encontre produtos e estabelecimentos para planejar sua compra."
       />
       <nav

@@ -22,6 +22,11 @@ public class MercadoService {
 
     public void exigirAdmin() { permissoes.exigirAdmin(); }
 
+    public List<Mercado> listarGestao() {
+        Long vendedorId = permissoes.vendedorAtualId();
+        return vendedorId == null ? mercadoRepository.findAll() : mercadoRepository.findByVendedorId(vendedorId);
+    }
+
     public List<Mercado> listarTodos() { return mercadoRepository.findAll(); }
 
     public List<Mercado> listarAtivos() {
