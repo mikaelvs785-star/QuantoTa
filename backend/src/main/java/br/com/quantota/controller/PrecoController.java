@@ -44,6 +44,12 @@ public class PrecoController {
         return precoService.atualizar(id, dto);
     }
 
+    @DeleteMapping("/mercado/{mercadoId}/produto/{produtoId}")
+    @ResponseStatus(org.springframework.http.HttpStatus.NO_CONTENT)
+    public void removerProdutoDoMercado(@PathVariable Long mercadoId, @PathVariable Long produtoId) {
+        precoService.removerProdutoDoMercado(mercadoId, produtoId);
+    }
+
     @DeleteMapping("/{id}")
     public void deletar(@PathVariable Long id) {
         precoService.deletar(id);

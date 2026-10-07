@@ -106,6 +106,14 @@ public class PrecoService {
         return comImagens(List.of(precoRepository.save(preco))).get(0);
     }
 
+    public void removerProdutoDoMercado(Long mercadoId, Long produtoId) {
+        Mercado mercado = mercadoService.buscarPorId(mercadoId);
+        permissoes.exigirEdicaoMercado(mercado);
+        produtoService.buscarPorId(produtoId);
+        precoRepository.deleteByProdutoIdAndMercadoId(produtoId, mercadoId);
+        fotos.findByProdutoIdAndMercadoId(produtoId, mercadoId).ifPresent(fotos::delete);
+    }
+
     public void deletar(Long id) {
         Preco preco = precoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Preço não encontrado."));

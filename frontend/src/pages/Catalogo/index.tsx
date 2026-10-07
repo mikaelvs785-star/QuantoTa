@@ -1,3 +1,6 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/services/api";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ProductImage } from "@/components/storefront/Media";
 import { useAuth } from "@/hooks/useAuth";
 import { Fragment, useState } from "react";
@@ -35,6 +38,17 @@ export default function Catalogo() {
   const photos = new Map<string, string>();
   [...marketOffers].sort((a, b) => b.date.localeCompare(a.date) || Number(b.id) - Number(a.id)).forEach(offer => {
     if (offer.imageId && !photos.has(offer.productId)) photos.set(offer.productId, offer.imageId);
+  });
+  const client = useQueryClient();
+  const [removal, setRemoval] = useState<{ product: Product; marketId: string; market: string }>();
+  const removeOffer = useMutation({
+    mutationFn: (selection: NonNullable<typeof removal>) => api.delete(`/precos/mercado/${selection.marketId}/produto/${selection.product.id}`),
+    onSuccess: async () => {
+      setRemoval(undefined);
+      await Promise.all(["produtos", "precos", "embalagens", "resumo-lista", "dashboard"].map(key => client.invalidateQueries({ queryKey: [key] })));
+      toast.success("Produto removido deste mercado.");
+    },
+    onError: () => toast.error("Não foi possível remover o produto. Tente novamente."),
   });
   const permissions = usePermissions();
   const removeProduct = useExcluirProduto();
@@ -220,6 +234,7 @@ export default function Catalogo() {
                             Comparar preços
                           </Link>
                         </Button>
+                        {seller && ownMarketId && <Button variant="outline" size="sm" className="text-red-600" disabled={removeOffer.isPending} onClick={() => setRemoval({ product, marketId: ownMarketId, market: markets.data?.content.find(m => m.id === ownMarketId)?.name ?? "seu mercado" })}>Remover do mercado</Button>}
                         {grants?.gerenciarProdutos && (
                           <>
                             <Button asChild variant="outline" size="sm">
@@ -272,6 +287,11 @@ export default function Catalogo() {
           </div>
         </>
       )}
+      <ConfirmDialog open={Boolean(removal)} title="Remover produto definitivamente?"
+        message={`Todos os preços, histórico e a foto da oferta de ${removal?.product.name ?? "este produto"} em ${removal?.market ?? "este mercado"} serão removidos. Esta ação não pode ser desfeita e não afeta outros mercados.`}
+        confirmLabel="Remover definitivamente" loading={removeOffer.isPending}
+        onClose={() => { if (!removeOffer.isPending) setRemoval(undefined); }}
+        onConfirm={() => { if (removal) removeOffer.mutate(removal); }} />
       <DeleteProductDialog
         product={selectedProduct}
         loading={removeProduct.isPending}
