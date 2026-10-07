@@ -29,6 +29,8 @@ export default function ListaPage() {
   const [params, setParams] = useSearchParams();
   const [selectedId, setSelectedId] = useState<number>();
   const [productId, setProductId] = useState(params.get("produto") ?? "");
+  const [productSearch, setProductSearch] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [quantity, setQuantity] = useState("1");
   const [name, setName] = useState("");
   const queryKey = ["listas", user?.id];
@@ -109,6 +111,14 @@ export default function ListaPage() {
   const active = (products.data?.content ?? []).filter(
     (p) => p.status === "ACTIVE",
   );
+  const normalizeSearch = (value: string) =>
+    value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR");
+  const searchTerms = normalizeSearch(productSearch).trim().split(/\s+/).filter(Boolean);
+  const matchingProducts = searchTerms.length ? active.filter((product) => {
+    const text = normalizeSearch([product.name, product.brand, product.unit].filter(Boolean).join(" "));
+    return searchTerms.every((term) => text.includes(term));
+  }) : [];
+  const chosenProduct = active.find((product) => product.id === productId);
   const categories = new Set(
     active
       .filter((p) => rows.some((i) => String(i.produto.id) === p.id))
@@ -271,25 +281,56 @@ export default function ListaPage() {
                       );
                   }}
                 >
-                  <label>
-                    <span className="mb-2 block text-xs font-extrabold text-slate-500 dark:text-slate-400">
-                      Produto
-                    </span>
-                    <select
-                      aria-label="Produto"
-                      className="qt-select"
-                      required
-                      value={productId}
-                      onChange={(e) => setProductId(e.target.value)}
-                    >
-                      <option value="">Selecione um produto</option>
-                      {active.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.name} · {p.brand} · {p.unit}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  <div className="min-w-0">
+                    <label htmlFor="list-product-search" className="mb-2 block text-xs font-extrabold text-slate-500 dark:text-slate-400">
+                      Buscar produto pelo nome
+                    </label>
+                    <Input
+                      id="list-product-search"
+                      type="search"
+                      autoComplete="off"
+                      placeholder="Ex.: arroz, leite, café"
+                      value={productSearch}
+                      onFocus={() => setSearchOpen(true)}
+                      onChange={(e) => {
+                        setProductSearch(e.target.value);
+                        setProductId("");
+                        setSearchOpen(true);
+                      }}
+                    />
+                    {searchOpen && searchTerms.length > 0 && (
+                      <div className="mt-2 max-h-64 overflow-y-auto rounded-xl border border-stone-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+                        <p role="status" className="px-3 py-2 text-xs text-slate-500">
+                          {matchingProducts.length ? `${matchingProducts.length} produto(s). Escolha a embalagem:` : "Nenhum produto encontrado. Tente outro nome."}
+                        </p>
+                        <ul aria-label="Produtos encontrados" className="divide-y divide-stone-100 dark:divide-slate-800">
+                          {matchingProducts.map((product) => (
+                            <li key={product.id}>
+                              <button
+                                type="button"
+                                className="min-h-12 w-full px-3 py-3 text-left hover:bg-brand-50 focus-visible:bg-brand-50 dark:hover:bg-slate-800 dark:focus-visible:bg-slate-800"
+                                onClick={() => {
+                                  setProductId(product.id);
+                                  setProductSearch(product.name);
+                                  setSearchOpen(false);
+                                }}
+                              >
+                                <span className="block text-sm font-bold">{product.name}</span>
+                                <span className="mt-1 block text-xs text-slate-500 dark:text-slate-400">
+                                  {[product.brand, product.unit].filter(Boolean).join(" · ")}
+                                </span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {chosenProduct && (
+                      <p role="status" className="mt-2 text-sm font-semibold text-brand-700 dark:text-brand-100">
+                        Selecionado: {[chosenProduct.name, chosenProduct.brand, chosenProduct.unit].filter(Boolean).join(" · ")}
+                      </p>
+                    )}
+                  </div>
                   <label>
                     <span className="mb-2 block text-xs font-extrabold text-slate-500 dark:text-slate-400">
                       Embalagens
