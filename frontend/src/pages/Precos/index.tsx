@@ -1,6 +1,6 @@
 import { ImageUpload, ProductImage } from "@/components/storefront/Media";
 import { useAuth } from "@/hooks/useAuth";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil, Trash2, X } from "lucide-react";
 import toast from "react-hot-toast";
@@ -46,6 +46,7 @@ export default function PrecosPage() {
   const [value, setValue] = useState("");
   const [date, setDate] = useState(today);
   const [selected, setSelected] = useState<PriceRecord>();
+  const orderedPrices = [...(prices.data ?? [])].sort((a, b) => a.market.localeCompare(b.market, "pt-BR") || Number(a.marketId) - Number(b.marketId) || b.date.localeCompare(a.date) || Number(b.id) - Number(a.id));
   const currentIds = new Set((current.data ?? []).map((p) => p.id));
   const mutation = useMutation({
     mutationFn: async (action: () => Promise<unknown>) => action(),
@@ -304,12 +305,9 @@ export default function PrecosPage() {
       ) : prices.data?.length ? (
         <section className="qt-panel">
           <div className="divide-y">
-            {[...prices.data]
-              .sort(
-                (a, b) =>
-                  b.date.localeCompare(a.date) || Number(b.id) - Number(a.id),
-              )
-              .map((price) => (
+            {orderedPrices.map((price, index) => (
+                <Fragment key={price.id}>
+                {(index === 0 || orderedPrices[index - 1].marketId !== price.marketId) && <header className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-brand-50 px-4 py-3 mt-5 first:mt-0 dark:bg-brand-700/20"><h2 className="text-lg font-bold text-brand-700 dark:text-brand-100">{price.market}</h2><span className="text-xs text-slate-500">{orderedPrices.filter(p => p.marketId === price.marketId).length} registros</span></header>}
                 <article
                   key={price.id}
                   className="flex flex-wrap items-center justify-between gap-4 py-4"
@@ -361,6 +359,7 @@ export default function PrecosPage() {
                     )}
                   </div>
                 </article>
+                </Fragment>
               ))}
           </div>
         </section>

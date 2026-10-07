@@ -1,6 +1,6 @@
 import { ProductImage } from "@/components/storefront/Media";
 import { useAuth } from "@/hooks/useAuth";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Package, Store, Plus, Search, Pencil } from "lucide-react";
@@ -27,12 +27,15 @@ export default function Catalogo() {
   const { user } = useAuth();
   const seller = user?.role === "VENDEDOR";
   const offers = usePrecos(seller);
-  const photos = new Map<string, string>();
-  [...(offers.data ?? [])].sort((a, b) => b.date.localeCompare(a.date) || Number(b.id) - Number(a.id)).forEach(offer => {
-    if (offer.imageId && !photos.has(offer.productId)) photos.set(offer.productId, offer.imageId);
-  });
   const products = useProdutos({}, seller);
   const markets = useMarkets({}, seller);
+  const ownMarketId = seller ? ((markets.data?.content ?? []).find(m => m.id === params.get("mercado"))?.id ?? markets.data?.content[0]?.id ?? "") : "";
+  const marketOffers = (offers.data ?? []).filter(offer => !seller || offer.marketId === ownMarketId);
+  const productIds = new Set(marketOffers.map(offer => offer.productId));
+  const photos = new Map<string, string>();
+  [...marketOffers].sort((a, b) => b.date.localeCompare(a.date) || Number(b.id) - Number(a.id)).forEach(offer => {
+    if (offer.imageId && !photos.has(offer.productId)) photos.set(offer.productId, offer.imageId);
+  });
   const permissions = usePermissions();
   const removeProduct = useExcluirProduto();
   const removeMarket = useDeleteMarket();
@@ -46,8 +49,8 @@ export default function Catalogo() {
   const status = params.get("situacao") ?? "";
   const categories = [...new Set((products.data?.content ?? []).map(p => p.category))].sort();
   const shownProducts = (products.data?.content ?? []).filter((p) =>
-    matches(`${p.name} ${p.brand ?? ""} ${p.category} ${p.unit ?? ""}`) && (!category || p.category === category) && (!status || p.status === status),
-  );
+    matches(`${p.name} ${p.brand ?? ""} ${p.category} ${p.unit ?? ""}`) && (!category || p.category === category) && (!status || p.status === status) && (!seller || productIds.has(p.id)),
+  ).sort((a, b) => a.category.localeCompare(b.category, "pt-BR") || a.name.localeCompare(b.name, "pt-BR"));
   const shownMarkets = (markets.data?.content ?? []).filter((m) =>
     matches(`${m.name} ${m.city} ${m.neighborhood ?? ""}`) && (!status || m.status === status),
   );
@@ -71,6 +74,7 @@ export default function Catalogo() {
     }
   }
   const query = marketsTab ? markets : products;
+  const visibleProducts = shownProducts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   return (
     <div className="mx-auto max-w-6xl">
       <SectionTitle
@@ -97,6 +101,14 @@ export default function Catalogo() {
           <Store className="size-4" /> Mercados <span className="ml-1 opacity-70">{markets.data?.total ?? "—"}</span>
         </Button>
       </nav>
+      {seller && !marketsTab && <section className="mb-5 rounded-2xl border bg-white p-4 dark:bg-slate-900">
+        <label className="block"><span className="mb-2 flex items-center gap-2 font-semibold"><Store className="size-4" />Mercado que você está gerenciando</span>
+          <select className="qt-select" value={ownMarketId} disabled={markets.isPending} onChange={e => change({ mercado: e.target.value, pagina: "1" })}>
+            {!markets.data?.content.length && <option value="">Nenhum mercado vinculado</option>}
+            {markets.data?.content.map(m => <option key={m.id} value={m.id}>{m.name}{m.status === "INACTIVE" ? " (inativo)" : ""}</option>)}
+          </select>
+        </label><p className="qt-muted mt-2 text-sm">Produtos e fotos das ofertas deste mercado, organizados por categoria.</p>
+      </section>}
       <div className="mb-5 grid gap-4 rounded-2xl border bg-white p-4 dark:bg-slate-900 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_180px_150px]">
         <label className="min-w-0 sm:col-span-2 lg:col-span-1">
           <span className="mb-2 block text-sm font-semibold">Buscar {marketsTab ? "mercado" : "produto"}</span>
@@ -127,10 +139,10 @@ export default function Catalogo() {
           </button>
         </p>
       )}
-      {query.isPending ? (
+      {query.isPending || (seller && !marketsTab && (offers.isPending || markets.isPending)) ? (
         <p role="status">Carregando catálogo...</p>
-      ) : query.isError ? (
-        <ApiError onRetry={() => void query.refetch()} />
+      ) : query.isError || (seller && !marketsTab && (offers.isError || markets.isError)) ? (
+        <ApiError onRetry={() => { void query.refetch(); void offers.refetch(); void markets.refetch(); }} />
       ) : !count ? (
         <p className="qt-empty">
           Nenhum {marketsTab ? "mercado" : "produto"} encontrado.
@@ -184,9 +196,9 @@ export default function Catalogo() {
                       </div>
                     </article>
                   ))
-              : shownProducts
-                  .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-                  .map((product) => (
+              : visibleProducts.map((product, index) => (
+                    <Fragment key={product.id}>
+                    {(index === 0 || visibleProducts[index - 1].category !== product.category) && <div className="flex items-center gap-3 pb-2 pt-5 first:pt-0"><h2 className="text-lg font-bold text-brand-700 dark:text-brand-100">{product.category}</h2><span className="rounded-full bg-brand-50 px-2 py-1 text-xs text-brand-700 dark:bg-brand-700/20 dark:text-brand-100">{shownProducts.filter(p => p.category === product.category).length}</span><div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" /></div>}
                     <article key={product.id} className="flex flex-col gap-4 rounded-2xl border bg-white p-4 dark:bg-slate-900 xl:flex-row xl:items-center xl:justify-between sm:px-5">
                       <div className="flex min-w-0 items-start gap-4">
                         <div className="size-16 shrink-0 overflow-hidden rounded-xl bg-slate-50 dark:bg-slate-800">
@@ -229,6 +241,7 @@ export default function Catalogo() {
                         )}
                       </div>
                     </article>
+                    </Fragment>
                   ))}
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
