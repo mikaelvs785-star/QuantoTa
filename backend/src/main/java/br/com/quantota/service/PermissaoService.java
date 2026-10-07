@@ -31,7 +31,7 @@ public class PermissaoService {
         boolean vendedor = usuario.getPerfil() == PerfilUsuario.VENDEDOR;
         var ids = vendedor ? mercados.findByVendedorId(usuario.getId()).stream()
                 .filter(m -> Boolean.TRUE.equals(m.getAtivo())).map(Mercado::getId).toList() : List.<Long>of();
-        return new Permissoes(admin, admin || vendedor, admin, admin, ids,
+        return new Permissoes(admin, admin || vendedor, admin || vendedor, admin, ids,
                 admin || vendedor, admin, ids, admin, true, true);
     }
     public void exigirEdicaoPreco(Mercado mercado) {

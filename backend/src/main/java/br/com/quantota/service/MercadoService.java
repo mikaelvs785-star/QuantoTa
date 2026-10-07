@@ -63,8 +63,8 @@ public class MercadoService {
     }
 
     public void deletar(Long id) {
-        permissoes.exigirAdmin();
         Mercado mercado = buscarPorId(id);
+        permissoes.exigirEdicaoMercado(mercado);
         mercado.setAtivo(false);
         mercadoRepository.save(mercado);
     }

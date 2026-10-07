@@ -163,6 +163,7 @@ export default function Catalogo() {
                           </Button>
                         )}
                         {grants?.excluirMercados &&
+                          (grants.gerenciarTodosMercados || editableMarkets.has(market.id)) &&
                           market.status === "ACTIVE" && (
                             <Button
                               variant="outline"
