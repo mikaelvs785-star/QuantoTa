@@ -26,14 +26,17 @@ export function HomeEditor() {
   if (query.isPending) return <p role="status">Carregando página inicial…</p>;
   if (query.isError || !content) return <ApiError onRetry={() => void query.refetch()} />;
   const updateCategory = (index: number, change: Partial<HomeContent["categorias"][number]>) =>
-    setDraft({ ...content, categorias: content.categorias.map((category, i) => i === index ? { ...category, ...change } : category) });
+    setDraft((current) => {
+      const latest = current ?? content;
+      return { ...latest, categorias: latest.categorias.map((category, i) => i === index ? { ...category, ...change } : category) };
+    });
   return (
     <form className="qt-panel mb-8 space-y-5" onSubmit={(event) => { event.preventDefault(); save.mutate(); }}>
       <div><h2 className="text-2xl font-bold">Banner principal e categorias</h2>
         <p className="qt-muted mt-2">Personalize a primeira área que o cliente vê ao entrar.</p></div>
       <fieldset disabled={save.isPending} className="space-y-5">
         <ImageUpload label="Imagem do banner principal" value={content.imagemId}
-          onChange={(imagemId) => setDraft({ ...content, imagemId })}
+          onChange={(imagemId) => setDraft((current) => ({ ...(current ?? content), imagemId }))}
           onBusy={(busy) => setUploads((old) => ({ ...old, banner: busy }))} />
         <label className="block">Título do banner
           <textarea className="qt-select !h-24 py-3" required maxLength={150} value={content.titulo}
