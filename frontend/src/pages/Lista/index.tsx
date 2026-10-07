@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams, Link } from "react-router-dom";
 import {
@@ -62,7 +62,46 @@ export default function ListaPage() {
         "Não foi possível salvar. Confira a quantidade e tente novamente.",
       ),
   });
-  const busy = mutate.isPending;
+  const requestedProduct = params.get("produto");
+  const handledProduct = useRef<string | null>(null);
+  const incoming = useMutation({
+    mutationFn: async (id: string) => {
+      const list = selected ?? await listsService.create("Minha lista de compras");
+      // Preserve a newly created list if saving the item fails, so retry reuses it.
+      client.setQueryData(queryKey, (old: typeof query.data) =>
+        old?.some((entry) => entry.id === list.id) ? old : [...(old ?? []), list],
+      );
+      setSelectedId(list.id);
+      await listsService.add(list.id, id, 1);
+      return list;
+    },
+    onSuccess: async (list) => {
+      setSelectedId(list.id);
+      setProductId("");
+      setParams((old) => {
+        const next = new URLSearchParams(old);
+        next.delete("produto");
+        next.set("visao", "lista");
+        return next;
+      }, { replace: true });
+      toast.success(`Produto adicionado a ${list.nomeLista}.`);
+      await Promise.all([
+        client.invalidateQueries({ queryKey }),
+        client.invalidateQueries({ queryKey: ["resumo-lista"] }),
+      ]);
+    },
+  });
+  const busy = mutate.isPending || incoming.isPending;
+  const addIncoming = incoming.mutate;
+  useEffect(() => {
+    if (!requestedProduct) {
+      handledProduct.current = null;
+      return;
+    }
+    if (!query.isSuccess || handledProduct.current === requestedProduct) return;
+    handledProduct.current = requestedProduct;
+    addIncoming(requestedProduct);
+  }, [requestedProduct, query.isSuccess, addIncoming]);
   const rows = (selected?.itens ?? []).map((i) => ({
     ...i,
     estimate: summary.data?.estimativas.find((e) => e.itemId === i.id),
@@ -89,6 +128,17 @@ export default function ListaPage() {
 
   return (
     <div className="w-full">
+      {incoming.isPending && (
+        <p role="status" className="qt-panel mb-4">Adicionando produto à sua lista…</p>
+      )}
+      {incoming.isError && requestedProduct && (
+        <div role="alert" className="qt-panel mb-4">
+          <p>Não foi possível adicionar o produto à lista.</p>
+          <Button onClick={() => incoming.mutate(requestedProduct)}>
+            Tentar novamente
+          </Button>
+        </div>
+      )}
       <section className="mb-5 rounded-[30px] bg-[#f2eadc] px-5 py-6 dark:bg-slate-900 sm:px-7 lg:px-9 lg:py-8">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div>
