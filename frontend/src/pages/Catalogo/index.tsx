@@ -5,6 +5,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Package, Store, Plus, Search, Pencil } from "lucide-react";
 import { useProdutos } from "@/hooks/useProdutos";
+import { usePrecos } from "@/hooks/usePrecos";
 import { useMarkets } from "@/hooks/useMarkets";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useExcluirProduto } from "@/hooks/useExcluirProduto";
@@ -25,6 +26,11 @@ export default function Catalogo() {
   const search = params.get("busca") ?? params.get("q") ?? "";
   const { user } = useAuth();
   const seller = user?.role === "VENDEDOR";
+  const offers = usePrecos(seller);
+  const photos = new Map<string, string>();
+  [...(offers.data ?? [])].sort((a, b) => b.date.localeCompare(a.date) || Number(b.id) - Number(a.id)).forEach(offer => {
+    if (offer.imageId && !photos.has(offer.productId)) photos.set(offer.productId, offer.imageId);
+  });
   const products = useProdutos({}, seller);
   const markets = useMarkets({}, seller);
   const permissions = usePermissions();
@@ -183,7 +189,9 @@ export default function Catalogo() {
                   .map((product) => (
                     <article key={product.id} className="flex flex-col gap-4 rounded-2xl border bg-white p-4 dark:bg-slate-900 xl:flex-row xl:items-center xl:justify-between sm:px-5">
                       <div className="flex min-w-0 items-start gap-4">
-                        <div className="hidden size-12 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-700/20 dark:text-brand-100 sm:flex"><Package className="size-5" aria-hidden="true" /></div>
+                        <div className="size-16 shrink-0 overflow-hidden rounded-xl bg-slate-50 dark:bg-slate-800">
+                          {photos.get(product.id) ? <ProductImage id={photos.get(product.id)} alt={product.name} className="h-full w-full" /> : <span className="flex h-full items-center justify-center px-1 text-center text-[10px] text-slate-500">{offers.isPending ? "Carregando…" : offers.isError ? "Foto indisponível" : "Sem foto"}</span>}
+                        </div>
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2"><h2 className="font-bold">{product.name}</h2>
                             <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-bold dark:bg-slate-800">{product.unit || "Embalagem não informada"}</span>
