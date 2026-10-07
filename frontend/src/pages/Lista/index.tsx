@@ -29,7 +29,7 @@ export default function ListaPage() {
   const [params, setParams] = useSearchParams();
   const [selectedId, setSelectedId] = useState<number>();
   const [productId, setProductId] = useState(params.get("produto") ?? "");
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState("1");
   const [name, setName] = useState("");
   const queryKey = ["listas", user?.id];
   const query = useQuery({ queryKey, queryFn: listsService.getAll });
@@ -262,12 +262,12 @@ export default function ListaPage() {
                     e.preventDefault();
                     if (
                       productId &&
-                      Number.isInteger(quantity) &&
-                      quantity > 0 &&
-                      quantity <= 999
+                      Number.isInteger(Number(quantity)) &&
+                      Number(quantity) > 0 &&
+                      Number(quantity) <= 999
                     )
                       mutate.mutate(() =>
-                        listsService.add(selected.id, productId, quantity),
+                        listsService.add(selected.id, productId, Number(quantity)),
                       );
                   }}
                 >
@@ -292,19 +292,23 @@ export default function ListaPage() {
                   </label>
                   <label>
                     <span className="mb-2 block text-xs font-extrabold text-slate-500 dark:text-slate-400">
-                      Qtd.
+                      Embalagens
                     </span>
                     <Input
-                      type="number"
-                      min={1}
-                      max={999}
-                      step={1}
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]{1,3}"
+                      maxLength={3}
                       required
                       value={quantity}
-                      onChange={(e) => setQuantity(Number(e.target.value))}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d{0,3}$/.test(value))
+                          setQuantity(value.replace(/^0+(?=\d)/, ""));
+                      }}
                     />
                   </label>
-                  <Button type="submit" disabled={busy || !productId}>
+                  <Button type="submit" disabled={busy || !productId || !quantity || Number(quantity) < 1}>
                     Adicionar
                   </Button>
                 </form>
@@ -314,19 +318,22 @@ export default function ListaPage() {
                     {rows.map((item) => (
                       <article
                         key={item.id}
-                        className="flex flex-wrap items-center gap-4 py-5 first:pt-2 last:pb-2"
+                        className="grid grid-cols-[64px_minmax(0,1fr)] items-start gap-3 py-5 first:pt-2 last:pb-2 sm:grid-cols-[80px_minmax(0,1fr)_auto] sm:gap-4"
                       >
                         <ProductImage
                           id={item.estimate?.imagemId}
                           alt={item.produto.nome}
-                          className="size-20 shrink-0 rounded-[18px] bg-[#f2eadc]"
+                          className="size-16 shrink-0 rounded-[18px] bg-[#f2eadc] sm:size-20"
                         />
                         <div className="min-w-0 flex-1">
                           <h2 className="font-extrabold text-brand-700 dark:text-brand-100">
                             {item.produto.nome}
                           </h2>
                           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                            {item.produto.marca} · {item.produto.unidadeMedida}
+                            {item.produto.marca}
+                          </p>
+                          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                            Embalagem: {item.produto.unidadeMedida || "Não informada"}
                           </p>
                           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                             {item.estimate?.mercado ?? "Sem preço registrado"}
@@ -342,7 +349,7 @@ export default function ListaPage() {
                             unit={item.estimate?.unidadeBase}
                           />
                         </div>
-                        <div className="ml-auto">
+                        <div className="col-span-2 flex flex-wrap items-end justify-between gap-3 border-t border-stone-100 pt-3 dark:border-slate-800 sm:col-span-1 sm:block sm:border-0 sm:pt-0">
                           <div className="flex items-center gap-2">
                             <Button
                               size="icon"
@@ -395,11 +402,18 @@ export default function ListaPage() {
                               <Trash2 className="size-4 text-red-500" />
                             </Button>
                           </div>
-                          <p className="mt-2 text-right text-lg font-black text-brand-700 dark:text-brand-100">
+                          <div className="text-right">
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              {item.quantidade} {item.quantidade === 1 ? "embalagem" : "embalagens"}
+                              {item.estimate?.precoUnitario != null && ` × ${formatCurrency(item.estimate.precoUnitario)}`}
+                            </p>
+                            <p className="mt-1 text-lg font-black text-brand-700 dark:text-brand-100">
+                              <span className="mr-2 text-xs font-semibold">Subtotal</span>
                             {item.estimate?.subtotal != null
                               ? formatCurrency(item.estimate.subtotal)
                               : "Sem preço"}
-                          </p>
+                            </p>
+                          </div>
                         </div>
                       </article>
                     ))}
