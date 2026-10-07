@@ -197,13 +197,13 @@ export default function HomePage() {
           <Link
             key={index}
             to={`/explorar?q=${encodeURIComponent(category.query)}`}
-            className="qt-category-card"
+            className={`qt-category-card ${category.imagemId ? "qt-category-custom" : ""}`}
           >
             <img
               src={category.imagemId ? imageUrl(category.imagemId) : "/images/hero-market.png"}
               alt=""
               aria-hidden="true"
-              style={{ objectPosition: categoryShortcuts[index]?.position ?? "center" }}
+              style={{ objectPosition: category.imagemId ? "center" : categoryShortcuts[index]?.position ?? "center" }}
             />
             <span>
               {category.label}

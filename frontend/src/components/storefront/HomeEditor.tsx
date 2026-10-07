@@ -35,7 +35,7 @@ export function HomeEditor() {
       <div><h2 className="text-2xl font-bold">Banner principal e categorias</h2>
         <p className="qt-muted mt-2">Personalize a primeira área que o cliente vê ao entrar.</p></div>
       <fieldset disabled={save.isPending} className="space-y-5">
-        <ImageUpload label="Imagem do banner principal" value={content.imagemId}
+        <ImageUpload aspect={4 / 3} label="Imagem do banner principal" value={content.imagemId}
           onChange={(imagemId) => setDraft((current) => ({ ...(current ?? content), imagemId }))}
           onBusy={(busy) => setUploads((old) => ({ ...old, banner: busy }))} />
         <label className="block">Título do banner
@@ -56,7 +56,7 @@ export function HomeEditor() {
               <label className="block">Busca ao clicar
                 <Input required maxLength={100} value={category.query} onChange={(event) => updateCategory(index, { query: event.target.value })} />
               </label>
-              <ImageUpload label="Imagem da categoria" value={category.imagemId}
+              <ImageUpload aspect={3} label="Imagem da categoria" value={category.imagemId}
                 onChange={(imagemId) => updateCategory(index, { imagemId })}
                 onBusy={(busy) => setUploads((old) => ({ ...old, [index]: busy }))} />
             </fieldset>

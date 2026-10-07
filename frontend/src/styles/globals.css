@@ -789,3 +789,7 @@
     scroll-behavior: auto !important;
   }
 }
+
+.qt-category-card.qt-category-custom { aspect-ratio: 3 / 1; min-height: 0; }
+.qt-category-card.qt-category-custom img,
+.qt-category-card.qt-category-custom:hover img { transform: none; }
