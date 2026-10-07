@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Fragment, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Package, Store, Plus, Search, Pencil } from "lucide-react";
+import { Package, Store, Plus, Search, Pencil, ArrowLeft, ArrowRight } from "lucide-react";
 import { useProdutos } from "@/hooks/useProdutos";
 import { usePrecos } from "@/hooks/usePrecos";
 import { useMarkets } from "@/hooks/useMarkets";
@@ -32,8 +32,9 @@ export default function Catalogo() {
   const offers = usePrecos(seller);
   const products = useProdutos({}, seller);
   const markets = useMarkets({}, seller);
-  const ownMarketId = seller ? ((markets.data?.content ?? []).find(m => m.id === params.get("mercado"))?.id ?? markets.data?.content[0]?.id ?? "") : "";
-  const marketOffers = (offers.data ?? []).filter(offer => !seller || offer.marketId === ownMarketId);
+  const ownMarketId = seller ? ((markets.data?.content ?? []).find(m => m.id === params.get("mercado"))?.id ?? markets.data?.content[0]?.id ?? "") : params.get("mercado") ?? "";
+  const marketScoped = seller || Boolean(ownMarketId);
+  const marketOffers = (offers.data ?? []).filter(offer => !marketScoped || offer.marketId === ownMarketId);
   const productIds = new Set(marketOffers.map(offer => offer.productId));
   const photos = new Map<string, string>();
   [...marketOffers].sort((a, b) => b.date.localeCompare(a.date) || Number(b.id) - Number(a.id)).forEach(offer => {
@@ -61,12 +62,12 @@ export default function Catalogo() {
     text.toLocaleLowerCase("pt-BR").includes(search.toLocaleLowerCase("pt-BR"));
   const category = params.get("categoria") ?? "";
   const status = params.get("situacao") ?? "";
-  const scopedProducts = (products.data?.content ?? []).filter(p => !seller || productIds.has(p.id));
+  const scopedProducts = (products.data?.content ?? []).filter(p => !marketScoped || productIds.has(p.id));
   const currentMarket = markets.data?.content.find(m => m.id === ownMarketId);
   const hasFilters = Boolean(search || (!marketsTab && category) || status);
   const categories = [...new Set(scopedProducts.map(p => p.category))].sort();
   const shownProducts = (products.data?.content ?? []).filter((p) =>
-    matches(`${p.name} ${p.brand ?? ""} ${p.category} ${p.unit ?? ""}`) && (!category || p.category === category) && (!status || p.status === status) && (!seller || productIds.has(p.id)),
+    matches(`${p.name} ${p.brand ?? ""} ${p.category} ${p.unit ?? ""}`) && (!category || p.category === category) && (!status || p.status === status) && (!marketScoped || productIds.has(p.id)),
   ).sort((a, b) => a.category.localeCompare(b.category, "pt-BR") || a.name.localeCompare(b.name, "pt-BR"));
   const shownMarkets = (markets.data?.content ?? []).filter((m) =>
     matches(`${m.name} ${m.city} ${m.neighborhood ?? ""}`) && (!status || m.status === status),
@@ -94,9 +95,10 @@ export default function Catalogo() {
   const visibleProducts = shownProducts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   return (
     <div className="mx-auto max-w-6xl">
+      {!marketsTab && currentMarket && <Button asChild variant="ghost" className="mb-4"><Link to="/catalogo?aba=mercados"><ArrowLeft aria-hidden="true" className="size-4" />Voltar aos mercados</Link></Button>}
       <SectionTitle
-        title={seller ? (marketsTab ? "Meus mercados" : "Meus produtos") : "Catálogo"}
-        description={seller ? (marketsTab ? "Veja seus estabelecimentos e atualize seus dados." : "Escolha um mercado para consultar os produtos e gerenciar suas ofertas.") : "Organize o catálogo e mantenha os cadastros em dia."}
+        title={!marketsTab && currentMarket ? `Produtos de ${currentMarket.name}` : seller ? (marketsTab ? "Meus mercados" : "Meus produtos") : "Catálogo"}
+        description={!marketsTab && currentMarket ? "Pesquise os produtos e as ofertas deste estabelecimento." : seller ? (marketsTab ? "Abra um mercado para pesquisar seus produtos ou atualizar seus dados." : "Escolha um mercado para consultar os produtos e gerenciar suas ofertas.") : marketsTab ? "Escolha um mercado para ver os produtos disponíveis." : "Encontre produtos e compare preços."}
         action={seller && !marketsTab ? <Button asChild size="lg"><Link to="/precos"><Plus className="size-5" />Cadastrar oferta</Link></Button> : (marketsTab ? grants?.criarMercado : grants?.gerenciarProdutos) ? <Button asChild><Link to={marketsTab ? "/mercados/novo" : "/produtos/novo"}><Plus className="size-4" />Novo {marketsTab ? "mercado" : "produto"}</Link></Button> : undefined}
       />
       <nav
@@ -109,18 +111,18 @@ export default function Catalogo() {
           aria-current={!marketsTab ? "page" : undefined}
           onClick={() => change({ aba: "produtos", busca: "", q: "", categoria: "", situacao: "", pagina: "1" })}
         >
-          <Package className="size-4" /> Produtos <span className="ml-1 opacity-70">{seller ? scopedProducts.length : products.data?.total ?? "—"}</span>
+          <Package className="size-4" /> Produtos <span className="ml-1 opacity-70">{marketScoped ? scopedProducts.length : products.data?.total ?? "—"}</span>
         </Button>
         <Button
           variant={marketsTab ? "primary" : "outline"}
           size="lg"
           aria-current={marketsTab ? "page" : undefined}
-          onClick={() => change({ aba: "mercados", busca: "", q: "", categoria: "", situacao: "", pagina: "1" })}
+          onClick={() => change({ aba: "mercados", mercado: "", busca: "", q: "", categoria: "", situacao: "", pagina: "1" })}
         >
           <Store className="size-4" /> Mercados <span className="ml-1 opacity-70">{markets.data?.total ?? "—"}</span>
         </Button>
       </nav>
-      {seller && !marketsTab && currentMarket && <section aria-label="Mercado atual" className="mb-6 rounded-2xl border bg-white p-5 dark:bg-slate-900">
+      {!marketsTab && currentMarket && <section aria-label="Mercado atual" className="mb-6 rounded-2xl border bg-white p-5 dark:bg-slate-900">
         <p className="mb-1 text-sm font-semibold text-slate-600 dark:text-slate-300">Produtos do mercado</p>
         <h2 className="flex items-center gap-2 text-xl font-bold"><Store aria-hidden="true" className="size-5" />{currentMarket.name}</h2>
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{scopedProducts.length} produtos cadastrados neste mercado</p>
@@ -132,7 +134,7 @@ export default function Catalogo() {
         <label className="min-w-0 sm:col-span-2 lg:col-span-1">
           <span className="mb-2 block text-sm font-semibold">Buscar {marketsTab ? "mercado" : "produto"}</span>
           <div className="relative"><Search className="absolute left-3 top-4 size-4 text-slate-400" aria-hidden="true" />
-            <Input type="search" className="h-12 pl-10" placeholder={marketsTab ? "Nome, cidade ou bairro" : "Nome, marca ou embalagem"} value={search} onChange={e => change({ busca: e.target.value, pagina: "1" })} />
+            <Input type="search" className="h-12 pl-10" placeholder={marketsTab ? "Nome, cidade ou bairro" : currentMarket ? `Buscar em ${currentMarket.name}` : "Nome, marca ou embalagem"} value={search} onChange={e => change({ busca: e.target.value, pagina: "1" })} />
           </div>
         </label>
         {!marketsTab && <label><span className="mb-2 block text-sm font-semibold">Categoria</span>
@@ -158,17 +160,18 @@ export default function Catalogo() {
           </button>
         </p>
       )}
-      {query.isPending || (seller && !marketsTab && (offers.isPending || markets.isPending)) ? (
+      {query.isPending || (marketScoped && !marketsTab && (offers.isPending || markets.isPending)) ? (
         <p role="status">Carregando catálogo...</p>
-      ) : query.isError || (seller && !marketsTab && (offers.isError || markets.isError)) ? (
+      ) : query.isError || (marketScoped && !marketsTab && (offers.isError || markets.isError)) ? (
         <ApiError onRetry={() => { void query.refetch(); void offers.refetch(); void markets.refetch(); }} />
       ) : !count ? (
         <section className="rounded-2xl border bg-white px-6 py-12 text-center dark:bg-slate-900" aria-live="polite">
           <Package aria-hidden="true" className="mx-auto mb-4 size-10 text-slate-500" />
-          <h2 className="text-xl font-bold">{hasFilters ? "Nenhum resultado para esta busca" : marketsTab ? "Nenhum mercado cadastrado" : seller ? "Este mercado ainda não tem produtos" : "Nenhum produto cadastrado"}</h2>
-          <p className="mx-auto mt-3 max-w-md text-slate-600 dark:text-slate-300">{hasFilters ? "Tente outro nome ou limpe os filtros para ver todos os registros." : marketsTab ? "Cadastre seu estabelecimento para começar a publicar ofertas." : seller ? "Cadastre uma oferta para que o produto apareça aqui." : "Cadastre um produto para começar seu catálogo."}</p>
+          <h2 className="text-xl font-bold">{hasFilters ? "Nenhum resultado para esta busca" : marketsTab ? "Nenhum mercado cadastrado" : marketScoped ? "Este mercado ainda não tem produtos" : "Nenhum produto cadastrado"}</h2>
+          <p className="mx-auto mt-3 max-w-md text-slate-600 dark:text-slate-300">{hasFilters ? "Tente outro nome ou limpe os filtros para ver todos os registros." : marketsTab ? "Cadastre seu estabelecimento para começar a publicar ofertas." : seller ? "Cadastre uma oferta para que o produto apareça aqui." : marketScoped ? "Nenhuma oferta foi cadastrada neste mercado. Você pode consultar outro estabelecimento." : "Cadastre um produto para começar seu catálogo."}</p>
           <div className="mt-6 flex justify-center">
             {hasFilters ? <Button size="lg" variant="outline" onClick={() => change({ busca: "", q: "", categoria: "", situacao: "", pagina: "1" })}>Limpar filtros</Button> : seller && <Button asChild size="lg"><Link to={marketsTab ? "/mercados/novo" : "/precos"}><Plus aria-hidden="true" className="size-5" />{marketsTab ? "Cadastrar mercado" : "Cadastrar oferta"}</Link></Button>}
+            {!hasFilters && !seller && marketScoped && <Button asChild size="lg" variant="outline"><Link to="/catalogo?aba=mercados">Escolher outro mercado</Link></Button>}
           </div>
         </section>
       ) : (
@@ -179,7 +182,10 @@ export default function Catalogo() {
                   .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
                   .map((market) => (
                     <article key={market.id} className="qt-panel">
-                      <ProductImage id={market.imageId} alt={market.name} className="mb-4 h-40 w-full rounded-xl"/><h2 className="text-xl font-semibold">{market.name}</h2>
+                      <Link to={`/catalogo?aba=produtos&mercado=${encodeURIComponent(market.id)}`} className="block rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-500">
+                        <ProductImage id={market.imageId} alt={market.name} className="mb-4 h-40 w-full rounded-xl"/>
+                        <h2 className="text-xl font-semibold hover:underline">{market.name}</h2>
+                      </Link>
                       <p className="qt-muted mt-2">
                         {[
                           market.address,
@@ -197,6 +203,7 @@ export default function Catalogo() {
                         <p className="mt-2 text-sm">Inativo</p>
                       )}
                       <div className="mt-4 flex flex-wrap gap-2">
+                        <Button asChild size="lg"><Link to={`/catalogo?aba=produtos&mercado=${encodeURIComponent(market.id)}`} aria-label={`Ver produtos de ${market.name}`}>Ver produtos<ArrowRight aria-hidden="true" className="size-4" /></Link></Button>
                         {(grants?.gerenciarTodosMercados ||
                           (editableMarkets.has(market.id) &&
                             market.status === "ACTIVE")) && (
