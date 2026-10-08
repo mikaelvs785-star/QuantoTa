@@ -396,7 +396,8 @@
 
 .qt-category-card {
   position: relative;
-  min-height: 82px;
+  aspect-ratio: 3 / 1;
+  min-height: 0;
   overflow: hidden;
   border-radius: 9px;
   background: #dcd6ca;
@@ -430,6 +431,7 @@
 .qt-category-card span {
   position: absolute;
   left: 18px;
+  right: 12px;
   bottom: 14px;
   display: inline-flex;
   align-items: center;
@@ -745,10 +747,8 @@
   .qt-home-categories {
     gap: 7px;
   }
-  .qt-category-card {
-    min-height: 72px;
-  }
   .qt-category-card span {
+    right: 10px;
     left: 12px;
     bottom: 11px;
     font-size: 12px;
@@ -790,6 +790,5 @@
   }
 }
 
-.qt-category-card.qt-category-custom { aspect-ratio: 3 / 1; min-height: 0; }
 .qt-category-card.qt-category-custom img,
 .qt-category-card.qt-category-custom:hover img { transform: none; }
