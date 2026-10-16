@@ -18,14 +18,19 @@ export default function ComparadorPage() {
   const all = (products.data?.content ?? []).filter(
     (p) => p.status === "ACTIVE",
   );
+  const normalizeSearch = (value: string) =>
+    value
+      .normalize("NFD")
+      .replace(/[\\u0300-\\u036f]/g, "")
+      .toLocaleLowerCase("pt-BR");
+
   const id = params.get("produto");
   const q = params.get("q") ?? "";
+  const normalizedQuery = normalizeSearch(q);
   const product = id
     ? all.find((p) => p.id === id)
     : all.find((p) =>
-        `${p.name} ${p.brand}`
-          .toLocaleLowerCase("pt-BR")
-          .includes(q.toLocaleLowerCase("pt-BR")),
+        normalizeSearch(`${p.name} ${p.brand}`).includes(normalizedQuery),
       );
   const mode =
     params.get("modo") === "embalagens" ? "embalagens" : "mercados";
