@@ -21,7 +21,7 @@ export default function ComparadorPage() {
   const normalizeSearch = (value: string) =>
     value
       .normalize("NFD")
-      .replace(/[\\u0300-\\u036f]/g, "")
+      .replace(/[\u0300-\u036f]/g, "")
       .toLocaleLowerCase("pt-BR");
 
   const id = params.get("produto");
