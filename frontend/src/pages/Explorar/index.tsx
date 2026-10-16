@@ -41,14 +41,19 @@ export default function Explorar() {
     if (!offers.has(o.productId)) offers.set(o.productId, o);
   }
 
+  const normalizeSearch = (value: string) =>
+    value
+      .normalize("NFD")
+      .replace(/[\\u0300-\\u036f]/g, "")
+      .toLocaleLowerCase("pt-BR");
+  const normalizedQuery = normalizeSearch(q).trim();
+
   const filtered = all
     .filter(
       (p) =>
         (!category || p.category === category) &&
         (!collection || group?.produtoIds.includes(Number(p.id))) &&
-        `${p.name} ${p.brand} ${p.unit}`
-          .toLocaleLowerCase("pt-BR")
-          .includes(q.toLocaleLowerCase("pt-BR")),
+        normalizeSearch(`${p.name} ${p.brand} ${p.unit}`).includes(normalizedQuery),
     )
     .sort((a, b) =>
       order === "preco"
