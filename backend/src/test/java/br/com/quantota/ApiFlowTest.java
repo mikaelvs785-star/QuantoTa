@@ -116,6 +116,8 @@ public class ApiFlowTest {
         assertFalse(request("GET", "/catalogo/permissoes", null, null, 200).get("gerenciarProdutos").asBoolean());
         assertFalse(request("GET", "/catalogo/permissoes", null, alice, 200).get("criarMercado").asBoolean());
         assertTrue(request("GET", "/catalogo/permissoes", null, admin, 200).get("gerenciarProdutos").asBoolean());
+        assertFalse(request("GET", "/catalogo/permissoes", null, seller, 200).get("excluirMercados").asBoolean());
+        assertTrue(request("GET", "/catalogo/permissoes", null, admin, 200).get("excluirMercados").asBoolean());
         request("POST", "/mercados", "{\"nome\":\"Mercado bloqueado\"}", alice, 403);
         request("POST", "/produtos", "{\"nome\":\"Produto bloqueado\"}", seller, 403);
         long sellerId = context.getBean(UsuarioRepository.class).findByEmail("seller@test.local").orElseThrow().getId();
