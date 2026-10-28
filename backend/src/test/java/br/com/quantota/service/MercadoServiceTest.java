@@ -22,11 +22,11 @@ class MercadoServiceTest {
         when(repository.findById(1L)).thenReturn(Optional.of(mercado));
         return mercado;
     }
-    @Test void vendedorDesativaProprioMercadoPreservandoHistorico() {
+    @Test void vendedorNaoDesativaProprioMercado() {
         Mercado mercado = preparar(PerfilUsuario.VENDEDOR, 10L);
-        service.deletar(1L);
-        assertFalse(mercado.getAtivo());
-        verify(repository).save(mercado);
+        assertEquals(403, assertThrows(ResponseStatusException.class, () -> service.deletar(1L)).getStatusCode().value());
+        assertTrue(mercado.getAtivo());
+        verify(repository, never()).save(any());
         verify(repository, never()).delete(any());
     }
     @Test void vendedorNaoDesativaMercadoDeOutro() {
