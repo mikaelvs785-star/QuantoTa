@@ -5,7 +5,9 @@ import br.com.quantota.repository.ProdutoRepository;
 import org.springframework.stereotype.Service;
 import br.com.quantota.exception.ResourceNotFoundException;
 
+import java.text.Normalizer;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class ProdutoService {
@@ -35,7 +37,17 @@ public class ProdutoService {
     }
 
     public List<Produto> buscarPorNome(String nome) {
-        return produtoRepository.findByAtivoTrueAndNomeContainingIgnoreCase(nome);
+        String termo = normalizarPesquisa(nome);
+        return produtoRepository.findByAtivoTrue().stream()
+                .filter(produto -> normalizarPesquisa(produto.getNome()).contains(termo))
+                .toList();
+    }
+
+    private static String normalizarPesquisa(String texto) {
+        if (texto == null) return "";
+        String semAcentos = Normalizer.normalize(texto, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "");
+        return semAcentos.toLowerCase(Locale.ROOT);
     }
 
     public Produto salvar(Produto produto) {
