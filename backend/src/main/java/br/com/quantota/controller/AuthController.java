@@ -7,6 +7,7 @@ import br.com.quantota.model.Usuario;
 import br.com.quantota.service.UsuarioService;
 import br.com.quantota.service.SessaoService;
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
 import br.com.quantota.service.AuthService;
 
 import org.springframework.http.ResponseEntity;
@@ -29,8 +30,8 @@ public class AuthController {
 
     // 🔐 LOGIN
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO request, HttpServletRequest httpRequest) {
+        return ResponseEntity.ok(authService.login(request, httpRequest));
     }
 
     @PostMapping("/register")
