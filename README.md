@@ -1,118 +1,207 @@
-# QuantoTá
+# QuantoTá 🛒
 
-Compare preços do mesmo produto em diferentes mercados e organize sua lista de compras.
+**Compare preços de produtos entre mercados, encontre ofertas e organize suas compras.**
 
-O QuantoTá é um projeto acadêmico do SENAC com frontend em **React + TypeScript + Vite**, API em **Java 17 + Spring Boot**, autenticação JWT e banco **PostgreSQL**. A conexão existente com Supabase continua sendo feita pelo backend via JDBC.
+O **QuantoTá** é um projeto acadêmico desenvolvido no **SENAC**. A plataforma permite consultar produtos e preços de diferentes mercados, comparar ofertas e montar listas de compras com estimativas de custo. O acesso às funcionalidades de gestão depende das permissões do usuário.
 
-## Experiência
+> **Estado do projeto:** aplicação full stack em desenvolvimento. A infraestrutura de publicação é descrita abaixo como configuração existente ou opção de hospedagem; a presença de arquivos de configuração não comprova um deploy ativo.
 
-1. Busque um produto no início ou em `/comparar`, sem precisar entrar.
-2. Selecione o produto e compare os preços registrados em cada mercado.
-3. Entre ou crie uma conta para salvar listas e ajustar quantidades.
-4. Consulte a estimativa e os itens que ainda não têm preço.
+## Tecnologias
 
-Todas as telas compartilham o mesmo layout e a mesma navegação. A API define as ações de cada conta; produtos, mercados e preços são consultados nas mesmas páginas, sem painéis separados por perfil. Há tema claro, escuro e preferência do sistema, além de navegação para celular.
+| Camada | Tecnologias | Finalidade |
+| --- | --- | --- |
+| Frontend | **React 19**, **TypeScript 6**, **Vite 8** | Interface web, tipagem e ambiente de desenvolvimento/build |
+| Estilização | **Tailwind CSS 4**, **Radix UI**, **Lucide React**, **next-themes** | Estilos responsivos, componentes, ícones e temas |
+| Navegação e dados | **React Router 7**, **TanStack React Query 5**, **Axios** | Rotas, cache/consultas e comunicação HTTP |
+| Formulários | **React Hook Form**, **Zod**, **@hookform/resolvers** | Formulários e validação |
+| Backend | **Java 17**, **Spring Boot 3.3.5**, **Spring Web**, **Spring Data JPA**, **Hibernate** | API REST, regras de negócio e persistência |
+| Segurança | **Spring Security**, **JWT (JJWT 0.12.6)** | Autenticação e autorização por perfil |
+| Banco de dados | **PostgreSQL**, **JDBC** | Armazenamento de usuários, produtos, mercados, preços, listas e imagens |
+| Build e dependências | **Gradle** (backend), **npm** (frontend) | Compilação, dependências e execução |
+| Qualidade | **JUnit 5**, **Mockito**, **Spring Boot Test**, **H2**, **ESLint**, testes Node | Testes e análise estática |
+| Contêineres | **Docker**, **Docker Compose** | Execução e empacotamento dos serviços |
 
-## Regras implementadas
+As versões acima refletem os arquivos `frontend/package.json` e `backend/build.gradle` consultados na branch `main`.
 
-- Produtos são relacionados a preços por **ID**, nunca pelo nome. Marca e unidade/embalagem ajudam a identificar o que está sendo comparado.
-- Para cada produto e mercado, vale a maior **data de coleta**; empates usam o maior ID do registro. Um preço antigo mais baixo não substitui o atual.
-- A diferença entre preços é uma **possibilidade de economia**, não dinheiro já economizado. Não há gráficos, distâncias, favoritos ou notificações simulados.
-- Uma lista pertence ao usuário autenticado. O cliente não escolhe o dono no corpo da requisição.
-- Adicionar o mesmo produto novamente soma a quantidade. Quantidades são inteiras, de 1 a 999.
-- Produtos sem preço deixam a estimativa incompleta. O valor conhecido é um subtotal, não um total definitivo.
-- A estimativa combina os menores preços de cada item, que podem estar em mercados diferentes. Deslocamento e compras realizadas não fazem parte desse cálculo.
-- Desativar produto ou mercado preserva os registros anteriores. O administrador pode consultar e reativar os cadastros.
-- Cadastro público cria apenas consumidores, mesmo se a requisição tentar enviar outro perfil. Produtos, desativação de mercados e gestão de usuários exigem ADMIN. O administrador cadastra consumidores, vendedores e administradores na mesma tela de usuários.
-- Contas VENDEDOR podem criar mercados e editar apenas os seus próprios mercados ativos. O backend atribui o vínculo ao criar, ignora tentativas de alterar responsável ou status pelo vendedor e bloqueia a edição entre contas.
-- Vendedores cadastram, editam e excluem preços apenas dos seus mercados ativos. A API verifica tanto o mercado original quanto o destino ao editar um preço. Transferências e desativações revogam esse acesso imediatamente.
-- O administrador pode atribuir ou transferir um mercado a um vendedor ativo pelo formulário compartilhado. Mercados existentes ficam sem vendedor até essa atribuição.
-- A lista exibe a estimativa e os subtotais por item calculados na API. A comparação e o início usam `GET /precos/atuais`, que seleciona os registros atuais no banco.
+## Hospedagem e infraestrutura
 
-## Rotas e navegação
+A arquitetura de hospedagem prevista separa interface, API e banco de dados:
 
-- Públicas: `/` (início único), `/login`, `/comparar`, `/catalogo` e `/precos`.
-- `/catalogo?aba=produtos` e `/catalogo?aba=mercados` são seções da mesma tela, disponíveis para todos os perfis.
-- Conta autenticada: `/lista` e `/conta`.
-- Formulários compartilhados: `/produtos/novo`, `/produtos/:id/editar`, `/mercados/novo` e `/mercados/:id/editar`. A interface consulta `GET /permissoes`; os serviços também validam cada alteração no backend.
-- `/precos` é compartilhada: consulta pública, edição dos mercados próprios para vendedores e gestão completa para administradores.
-- `/usuarios` exige a permissão administrativa retornada pela API. O cadastro abre nessa mesma tela com `?novo=1`.
-- `/dashboard` redireciona ao início. `/usuarios/novo` abre o formulário integrado; não há telas extras para esses endereços.
-- Endereços antigos com `/admin` e `/cliente`, além de `/produtos` e `/mercados`, redirecionam às rotas atuais, mantendo parâmetros e fragmentos. Eles não possuem telas próprias.
-- Ao salvar ou cancelar um formulário, o usuário retorna à seção correspondente do catálogo.
+```text
+Navegador
+   |
+   v
+Frontend React / Vite  --->  API Java / Spring Boot  --->  PostgreSQL
+       Vercel                    Render                    Supabase
+```
 
-O projeto usa npm. O único lockfile é `frontend/package-lock.json`; a raiz oferece scripts de conveniência e não instala dependências próprias. O Docker do frontend também usa `npm ci`.
+| Serviço | Papel no QuantoTá | Situação identificada |
+| --- | --- | --- |
+| **Vercel** | Hospedagem do frontend estático React/Vite | O repositório contém `vercel.json` e `frontend/vercel.json` com rewrite para rotas SPA. Não foi verificado um deploy ativo. |
+| **Render** | Opção de hospedagem da API Spring Boot, por exemplo via Docker | Plataforma prevista para o backend; não foi encontrado `render.yaml` na raiz da branch `main`. Configuração e publicação precisam ser confirmadas no painel. |
+| **Supabase** | PostgreSQL gerenciado para os dados da aplicação | O backend possui configuração JDBC com host do pooler Supabase. A disponibilidade do projeto e o acesso ao banco não foram confirmados. |
+| **Docker / Docker Compose** | Alternativa para execução conjunta do frontend e backend | Há `docker-compose.yml` e Dockerfiles para os serviços. |
 
-## Executar no Windows / PowerShell
+**Importante:** Vercel, Render e Supabase são serviços independentes. Os endereços públicos e o estado de publicação dependem da configuração nas respectivas contas; não estão presumidos aqui.
 
-Na raiz:
+### Variáveis de ambiente
+
+| Variável | Serviço | Descrição |
+| --- | --- | --- |
+| `VITE_API_URL` | Frontend | URL pública da API acessada pelo navegador |
+| `SPRING_DATASOURCE_URL` | Backend | URL JDBC do PostgreSQL |
+| `SPRING_DATASOURCE_USERNAME` | Backend | Usuário do banco |
+| `SPRING_DATASOURCE_PASSWORD` | Backend | Senha do banco |
+| `JWT_SECRET` | Backend | Chave privada para assinatura dos tokens JWT |
+| `SERVER_PORT` | Backend | Porta HTTP da API (padrão: `8080`) |
+| `SPRING_JPA_HIBERNATE_DDL_AUTO` | Backend | Estratégia de gerenciamento do esquema JPA |
+| `SUPABASE_DB_PASSWORD` | Docker Compose | Senha repassada ao backend pelo Compose |
+
+Nunca publique credenciais no GitHub ou em variáveis `VITE_*`: elas são incorporadas ao frontend. Em produção, configure os segredos no provedor de hospedagem. Não execute atualizações automáticas do esquema em banco de produção sem avaliar migrações e backups.
+
+## Funcionalidades
+
+### Consumidor
+- Consultar produtos, mercados e ofertas sem autenticação.
+- Comparar preços atuais de um produto em diferentes mercados.
+- Criar conta, autenticar-se e organizar listas de compras.
+- Visualizar estimativas de custo, subtotais e itens sem preço.
+- Comparar compras em um mercado ou distribuídas entre mercados, conforme disponibilidade de preços.
+
+### Vendedor
+- Criar mercados vinculados à própria conta.
+- Gerenciar dados e preços dos próprios mercados ativos, conforme as permissões da API.
+- Associar fotos às ofertas.
+
+### Administrador
+- Gerenciar produtos e usuários.
+- Cadastrar, desativar e atribuir mercados a vendedores.
+- Gerenciar preços, medidas, grupos de comparação e conteúdo de vitrine.
+
+A autorização é aplicada no backend; ocultar um botão na interface não substitui a verificação de permissão na API.
+
+## Regras importantes de comparação
+
+- Os preços são associados a produtos por **ID**, e não apenas pelo nome.
+- O preço atual de cada produto em cada mercado é determinado pela data de coleta mais recente; em caso de empate, prevalece o maior ID.
+- Produtos com embalagens diferentes precisam de medidas e grupos compatíveis para comparação por kg, L ou unidade.
+- Uma lista pertence ao usuário autenticado. Produtos repetidos somam suas quantidades.
+- Quando faltam preços, o sistema apresenta o subtotal conhecido e informa os itens sem cotação.
+- A estimativa de compra dividida pode considerar mercados diferentes e não inclui deslocamento ou entrega.
+- A desativação de cadastros preserva os registros históricos.
+
+## Pesquisa de produtos
+
+A API oferece `GET /produtos/buscar?nome=...`. A correção da [issue #4](https://github.com/mikaelvs785-star/QuantoTa/issues/4) para pesquisar ignorando acentos (por exemplo, `cafe` encontrar `Café`) está proposta no [PR #11](https://github.com/mikaelvs785-star/QuantoTa/pull/11), em branch separada. **Ela não é descrita como já integrada à `main`.**
+
+## Como executar localmente
+
+### Pré-requisitos
+
+- **Java 17**;
+- **Node.js** compatível com as dependências do frontend (para executar os testes Node, versão **22.13 ou superior**);
+- **npm**;
+- acesso a um **PostgreSQL** de desenvolvimento;
+- Git (recomendado).
+
+### Frontend
+
+Na raiz do repositório:
 
 ```powershell
 npm --prefix frontend ci
 npm --prefix frontend run dev
 ```
 
-Em outro terminal, configure a senha e uma chave JWT privada. Se o seu servidor já configura essas variáveis, preserve os valores existentes. Gere uma chave apenas para uma nova configuração; trocá-la invalida sessões anteriores.
+O frontend é servido normalmente em **http://localhost:5173**.
+
+### Backend (Windows / PowerShell)
+
+Em outro terminal, configure uma conexão de desenvolvimento. Os valores abaixo são **exemplos**; substitua-os pelos dados do seu banco local ou de testes:
 
 ```powershell
+$env:SPRING_DATASOURCE_URL = "jdbc:postgresql://localhost:5432/quantota"
+$env:SPRING_DATASOURCE_USERNAME = "postgres"
 $senhaBanco = Read-Host "Senha do PostgreSQL" -AsSecureString
 $env:SPRING_DATASOURCE_PASSWORD = [System.Net.NetworkCredential]::new("", $senhaBanco).Password
-# Para um banco diferente, configure também SPRING_DATASOURCE_URL e SPRING_DATASOURCE_USERNAME.
+
 $bytes = New-Object byte[] 32
-[System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+$rng.GetBytes($bytes)
+$rng.Dispose()
 $env:JWT_SECRET = [Convert]::ToBase64String($bytes)
+
 cd backend
 .\gradlew.bat bootRun
 ```
 
-Em Linux/macOS, execute `bash gradlew bootRun` dentro de `backend`, com as mesmas variáveis de ambiente configuradas.
+A API é servida normalmente em **http://localhost:8080**. Em Linux/macOS, use `./gradlew bootRun` no diretório `backend`.
 
-- Frontend: `http://localhost:5173`
-- API: `http://localhost:8080`
-- `VITE_API_URL` pode alterar a URL da API. Variáveis com esse prefixo são públicas; não coloque segredos nelas.
+> A API requer um banco acessível para iniciar. Os testes automatizados do backend utilizam H2 isolado e podem ser executados sem conexão com o Supabase.
 
-A API exige `SPRING_DATASOURCE_PASSWORD` e `JWT_SECRET`. Os valores não estão no código. O Compose usa `SUPABASE_DB_PASSWORD` e `JWT_SECRET`, que precisam estar no ambiente ou em um `.env` local não versionado.
-
-Uma senha de banco e uma chave JWT padrão existiam no histórico do projeto. A remoção no código atual não apaga esse histórico: substitua a senha exposta no provedor e use uma chave JWT privada. Nenhuma credencial remota foi alterada automaticamente.
-
-O vínculo usa a coluna nullable `mercados.vendedor_id`. Com `ddl-auto=update`, ela é criada ao iniciar a API; instalações com `validate` devem aplicar `ALTER TABLE mercados ADD COLUMN IF NOT EXISTS vendedor_id BIGINT;` antes da atualização. Os registros existentes permanecem sem vínculo até a atribuição pelo admin.
-
-O schema em `database/schema.sql` é um exemplo PostgreSQL. Para desenvolvimento, a API continua com `ddl-auto=update`; os testes usam H2 isolado e `create-drop`. Não execute os scripts de exemplo sobre um banco em produção sem revisar as alterações.
-
-## Vitrine e comparação de compras
-
-A experiência de cliente usa as rotas `/`, `/explorar`, `/comparar`, `/lista` e `/conta`. Login é necessário para salvar listas; a consulta de produtos e preços é pública. O administrador publica coleções em `/vitrine` e configura medidas e grupos equivalentes no catálogo. O vendedor envia a foto da oferta em `/precos`, vinculada ao par produto + mercado. Atualizar o preço preserva essa foto e não altera ofertas de outros mercados.
-
-A embalagem mantém seu preço em destaque. Valores por kg/L/un só aparecem com medida estruturada válida. Embalagens diferentes exigem o mesmo grupo, marca e dimensão. A lista compara os mesmos produtos e quantidades: somente mercados com todos os preços concorrem ao menor total; os demais mostram subtotal e itens sem preço. A compra dividida informa mercados envolvidos e diferença de valores, sem incluir entrega ou deslocamento.
-
-Fotos JPG/PNG de até 3 MB são verificadas e reencodificadas no servidor; os arquivos persistem no PostgreSQL (`imagens.conteudo`), sem depender do disco temporário da hospedagem. As URLs são públicas e imutáveis. Cada substituição gera uma nova imagem; imagens antigas são conservadas nesta versão. Não há credencial adicional para upload.
-
-Para bases existentes com `ddl-auto=validate`, revise e aplique `database/migrations-retail.sql` antes da atualização. Com `update`, o Hibernate cria as estruturas aditivas. Produtos antigos continuam comparáveis por embalagem; o administrador deve preencher suas medidas para habilitar kg/L/un. Não são criados preços, imagens de produtos ou coleções fictícias em produção.
-
-## Validação
+### Testes e verificações
 
 ```powershell
 npm --prefix frontend run build
 npm --prefix frontend run lint
 npm --prefix frontend test
 cd backend
-.\gradlew.bat test
+.\gradlew.bat clean test
 ```
 
-Os testes de frontend exigem Node 22.13 ou superior. Os doze testes de integração Java iniciam a API real em porta aleatória com H2 e verificam cadastro, permissões, isolamento de listas, persistência, validações, preços atuais e contas desativadas, além de edição por vendedor, bloqueio entre vendedores, atribuição pelo administrador, preços por mercado, bloqueio de transferências indevidas e tentativas de escalada de perfil. Oito testes de frontend cobrem identidade dos produtos, registros históricos, preços inválidos, cálculo em centavos e consistência da sessão, incluindo expiração e limpeza da identidade.
+Os testes do backend cobrem fluxos de API e regras de acesso; os testes de frontend cobrem regras de comparação e sessão. Execute os comandos na branch que pretende validar antes de realizar merge.
 
-A revisão visual também exercitou a aplicação com uma API local e dados de teste. As capturas atuais em `docs/screenshots/telas-unificadas` usam dados locais de teste, não dados de produção. As capturas anteriores ficam como registro das etapas de revisão.
+## Rotas principais
 
-## Estrutura
+| Rota | Uso |
+| --- | --- |
+| `/` | Página inicial |
+| `/comparar` | Comparação de preços |
+| `/catalogo` | Produtos e mercados |
+| `/precos` | Consulta e gestão de ofertas conforme perfil |
+| `/login` | Autenticação |
+| `/lista` | Lista de compras do usuário |
+| `/conta` | Conta do usuário |
+| `/usuarios` | Administração de usuários |
+| `/vitrine` | Administração de conteúdo de vitrine |
 
-- `frontend/src/pages`: telas compartilhadas, sem diretórios por perfil.
-- `frontend/src/services`: contratos com a API.
-- `frontend/src/hooks/usePermissions.ts`: ações disponíveis retornadas pela API.
-- `backend/src/main/java/br/com/quantota/service/PermissaoService.java`: decisões de acesso e vínculo de mercados.
-- `backend/src/main/java/br/com/quantota/service/ListaCompraService.java`: estimativas de listas e isolamento entre contas.
-- `backend/src/main/java/br/com/quantota`: controladores, serviços, entidades e repositórios.
-- `backend/src/test`: testes da API.
-- `docs/requisitos.md`: escopo e regras do MVP.
-- `docs/repaginacao.md`: alterações e validações da revisão.
+A API disponibiliza, entre outros recursos, endpoints de produtos, mercados, preços, autenticação, permissões e listas.
 
-Desenvolvido por Felipe Lima, Francisco Mikael e Pietro de Almeida.
+## Organização do repositório
+
+```text
+QuantoTa/
+├── backend/
+│   ├── src/main/java/br/com/quantota/
+│   │   ├── config/
+│   │   ├── controller/
+│   │   ├── model/
+│   │   ├── repository/
+│   │   └── service/
+│   ├── src/test/
+│   └── build.gradle
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── routes/
+│   └── package.json
+├── database/
+├── docs/
+├── docker-compose.yml
+├── vercel.json
+└── README.md
+```
+
+Documentação adicional: `docs/requisitos.md` (regras e escopo) e `docs/repaginacao.md` (revisões de interface e validações).
+
+## Desenvolvimento e contribuições
+
+As alterações são organizadas em branches e pull requests. Consulte as [issues do projeto](https://github.com/mikaelvs785-star/QuantoTa/issues) para defeitos e melhorias registradas. Mudanças ainda em revisão não devem ser confundidas com funcionalidades publicadas na `main`.
+
+---
+
+**Projeto acadêmico SENAC**  
+**Desenvolvido por Felipe Lima, Francisco Mikael e Pietro de Almeida.**
