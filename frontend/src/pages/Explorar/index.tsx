@@ -44,7 +44,7 @@ export default function Explorar() {
   const normalizeSearch = (value: string) =>
     value
       .normalize("NFD")
-      .replace(/[\\u0300-\\u036f]/g, "")
+      .replace(/[\u0300-\u036f]/g, "")
       .toLocaleLowerCase("pt-BR");
   const normalizedQuery = normalizeSearch(q).trim();
 
