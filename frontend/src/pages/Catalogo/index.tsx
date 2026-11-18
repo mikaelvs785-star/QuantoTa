@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/Input";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { DeleteProductDialog } from "@/components/products/DeleteProductDialog";
 import { DeleteMarketDialog } from "@/components/markets/DeleteMarketDialog";
+import { SellerProductImageEditor } from "@/components/products/SellerProductImageEditor";
 import type { Product } from "@/types/product";
 import type { Market } from "@/types/market";
 
@@ -233,7 +234,7 @@ export default function Catalogo() {
                     <article key={product.id} className="flex flex-col gap-4 rounded-2xl border bg-white p-4 dark:bg-slate-900 xl:flex-row xl:items-center xl:justify-between sm:px-5">
                       <div className="flex min-w-0 items-start gap-4">
                         <div className="size-16 shrink-0 overflow-hidden rounded-xl bg-slate-50 dark:bg-slate-800">
-                          {photos.get(product.id) ? <ProductImage id={photos.get(product.id)} alt={product.name} className="h-full w-full" /> : <span className="flex h-full items-center justify-center px-1 text-center text-[10px] text-slate-500">{offers.isPending ? "Carregando…" : offers.isError ? "Foto indisponível" : "Sem foto"}</span>}
+                          {(product.imageId || photos.get(product.id)) ? <ProductImage id={product.imageId ?? photos.get(product.id)} alt={product.name} className="h-full w-full" /> : <span className="flex h-full items-center justify-center px-1 text-center text-[10px] text-slate-500">{offers.isPending ? "Carregando…" : offers.isError ? "Foto indisponível" : "Sem foto"}</span>}
                         </div>
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2"><h2 className="font-bold">{product.name}</h2>
@@ -251,6 +252,7 @@ export default function Catalogo() {
                             Comparar preços
                           </Link>
                         </Button>
+                        {seller && <SellerProductImageEditor productId={product.id} productName={product.name} imageId={product.imageId ?? photos.get(product.id)} />}
                         {seller && ownMarketId && <Button variant="outline" size="lg" className="text-red-600" disabled={removeOffer.isPending} onClick={() => setRemoval({ product, marketId: ownMarketId, market: markets.data?.content.find(m => m.id === ownMarketId)?.name ?? "seu mercado" })}>Remover do mercado</Button>}
                         {grants?.gerenciarProdutos && (
                           <>
