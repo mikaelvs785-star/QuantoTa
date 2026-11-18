@@ -43,7 +43,7 @@ export function ProductCard({
         className="block bg-[#f1eadf] p-2 dark:bg-slate-800"
       >
         <ProductImage
-          id={offer?.imageId}
+          id={product.imageId ?? offer?.imageId}
           alt={product.name}
           className="aspect-[4/3] w-full rounded-[16px] transition duration-200 group-hover:scale-[1.015]"
         />
