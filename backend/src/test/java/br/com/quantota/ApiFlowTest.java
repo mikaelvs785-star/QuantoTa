@@ -270,6 +270,27 @@ public class ApiFlowTest {
         request("PUT","/vitrine/"+collection.get("id").asLong(),"{\"titulo\":\"Café da manhã\",\"ativo\":true}",admin,200);
         assertEquals(1,request("GET","/vitrine",null,null,200).size());
     }
+
+    @Test @Order(13) void onlyOwningSellerCanChangeGlobalProductImage() throws Exception {
+        long product = measuredProduct("Produto com imagem global", "500", "G", "imagem-global");
+        long ownMarket = request("POST", "/mercados", "{\"nome\":\"Mercado imagem do vendedor\"}", seller, 200).get("id").asLong();
+        long otherMarket = request("POST", "/mercados", "{\"nome\":\"Mercado imagem de outro vendedor\"}", otherSeller, 200).get("id").asLong();
+        request("POST", "/precos", priceFor(product, ownMarket, "6"), seller, 200);
+        request("POST", "/precos", priceFor(product, otherMarket, "7"), otherSeller, 200);
+
+        String sellerImage = upload(seller, 200);
+        String otherImage = upload(otherSeller, 200);
+        request("PUT", "/produtos/" + product + "/imagem", "{\"imagemId\":\"" + sellerImage + "\"}", seller, 200);
+        assertEquals(sellerImage, request("GET", "/produtos/" + product, null, null, 200).get("imagemId").asText());
+
+        request("PUT", "/produtos/" + product + "/imagem", "{\"imagemId\":\"" + otherImage + "\"}", seller, 403);
+        request("PUT", "/produtos/" + product + "/imagem", "{\"imagemId\":\"" + otherImage + "\"}", otherSeller, 403);
+        request("PUT", "/produtos/" + product + "/imagem", "{\"imagemId\":\"" + sellerImage + "\"}", admin, 403);
+        request("PUT", "/produtos/" + product + "/imagem", "{\"imagemId\":\"" + sellerImage + "\"}", alice, 403);
+
+        long unrelated = measuredProduct("Produto sem oferta do vendedor", "1", "KG", "sem-oferta");
+        request("PUT", "/produtos/" + unrelated + "/imagem", "{\"imagemId\":\"" + sellerImage + "\"}", seller, 403);
+    }
     static long measuredProduct(String name,String quantity,String unit,String group) throws Exception {
         return request("POST","/produtos","{\"nome\":\""+name+"\",\"marca\":\"Marca teste\",\"categoria\":\"Mercearia\",\"quantidadeMedida\":"+quantity+",\"tipoMedida\":\""+unit+"\",\"grupoComparacao\":\""+group+"\",\"ativo\":true}",admin,200).get("id").asLong();
     }
