@@ -24,11 +24,11 @@ public class Produto {
     private String categoria;
     private String unidadeMedida;
     private String marca;
-    // Grupo explícito de equivalência: não inferir por nome para comparar embalagens.
     private String grupoComparacao;
     @Column(precision = 12, scale = 3)
     private java.math.BigDecimal quantidadeMedida;
     private String tipoMedida;
+    private java.util.UUID imagemId;
 
     @Transient
     public java.math.BigDecimal getQuantidadeBase() {
