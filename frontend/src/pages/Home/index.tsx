@@ -59,7 +59,7 @@ function HomeOfferCard({
         aria-label={`Comparar ${product.name}`}
       >
         <ProductImage
-          id={offer.imageId}
+          id={product.imageId ?? offer.imageId}
           alt={product.name}
           className="h-full w-full"
         />
