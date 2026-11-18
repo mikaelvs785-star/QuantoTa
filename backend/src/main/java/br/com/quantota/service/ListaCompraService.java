@@ -74,13 +74,13 @@ public class ListaCompraService {
             var ofertas = porProduto.getOrDefault(item.getProduto().getId(),List.of());
             if (ofertas.isEmpty()) {
                 semPreco++;
-                estimativas.add(new ListaCompraResumoDTO.ItemEstimativa(item.getId(), null, null, null, null, null, null, null, null));
+                estimativas.add(new ListaCompraResumoDTO.ItemEstimativa(item.getId(), null, null, null, null, item.getProduto().getImagemId(), null, null, null));
             } else {
                 var oferta = ofertas.get(0);
                 var subtotal = oferta.getValor().multiply(BigDecimal.valueOf(item.getQuantidade()));
                 total = total.add(subtotal); mercadosUsados.add(oferta.getMercado().getId());
                 estimativas.add(new ListaCompraResumoDTO.ItemEstimativa(item.getId(), oferta.getValor(), subtotal,
-                        oferta.getMercado().getId(), oferta.getMercado().getNome(), oferta.getImagemId(), oferta.getPrecoPorMedida(), oferta.getUnidadeBase(), oferta.getDataColeta()));
+                        oferta.getMercado().getId(), oferta.getMercado().getNome(), item.getProduto().getImagemId() != null ? item.getProduto().getImagemId() : oferta.getImagemId(), oferta.getPrecoPorMedida(), oferta.getUnidadeBase(), oferta.getDataColeta()));
             }
         }
         var totais=new java.util.ArrayList<ListaCompraResumoDTO.TotalMercado>();
