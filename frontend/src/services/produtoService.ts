@@ -19,6 +19,7 @@ type BackendProduct = {
   unidadeBase?: string;
   descricao?: string;
   ativo?: boolean;
+  imagemId?: string | null;
 };
 type PageableResponse = { content: BackendProduct[]; totalElements: number };
 
@@ -36,6 +37,7 @@ function toFrontendProduct(product: BackendProduct): Product {
     baseUnit: product.unidadeBase,
     unit: product.unidadeMedida,
     status: product.ativo === false ? "INACTIVE" : "ACTIVE",
+    imageId: product.imagemId,
   };
 }
 
