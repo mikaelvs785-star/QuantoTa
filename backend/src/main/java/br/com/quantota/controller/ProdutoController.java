@@ -5,6 +5,8 @@ import br.com.quantota.service.ProdutoService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.springframework.security.core.Authentication;
 import jakarta.validation.Valid;
 
@@ -40,6 +42,11 @@ public class ProdutoController {
     @PostMapping
     public Produto salvar(@Valid @RequestBody Produto produto) {
         return produtoService.salvar(produto);
+    }
+
+    @PutMapping("/{id}/imagem")
+    public Produto atualizarImagem(@PathVariable Long id, @RequestBody Map<String, UUID> body) {
+        return produtoService.atualizarImagemComoVendedor(id, body.get("imagemId"));
     }
 
     @PutMapping("/{id}")

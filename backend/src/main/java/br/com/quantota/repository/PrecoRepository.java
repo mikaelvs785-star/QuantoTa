@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface PrecoRepository extends JpaRepository<Preco, Long> {
     List<Preco> findByProdutoIdOrderByValorAsc(Long produtoId);
     List<Preco> findByMercadoVendedorId(Long vendedorId);
+    boolean existsByProdutoIdAndMercadoVendedorId(Long produtoId, Long vendedorId);
     long deleteByProdutoIdAndMercadoId(Long produtoId, Long mercadoId);
 
     @Query("""

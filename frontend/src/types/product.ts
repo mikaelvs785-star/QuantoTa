@@ -14,6 +14,7 @@ export interface Product {
   baseQuantity?: number | null;
   baseUnit?: string | null;
   status: ProductStatus;
+  imageId?: string | null;
 }
 
 export interface ProductInput {
