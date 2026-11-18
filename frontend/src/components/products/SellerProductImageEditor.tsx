@@ -26,7 +26,11 @@ export function SellerProductImageEditor({ productId, productName, imageId }: {
     try {
       const form = new FormData();
       form.append("arquivo", file);
-      const uploaded = await api.post<{ id: string }>("/imagens", form);
+      // Let the browser/Axios set multipart/form-data with its boundary.
+      // The shared API client defaults to application/json for JSON requests.
+      const uploaded = await api.post<{ id: string }>("/imagens", form, {
+        headers: { "Content-Type": undefined },
+      });
       await api.put(`/produtos/${productId}/imagem`, { imagemId: uploaded.data.id });
       await Promise.all([
         client.invalidateQueries({ queryKey: ["produtos"] }),
