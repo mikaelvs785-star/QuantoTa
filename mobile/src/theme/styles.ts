@@ -14,7 +14,7 @@ export const styles = StyleSheet.create({
   pill: { color: colors.green, backgroundColor: colors.pale, borderRadius: 20, overflow: "hidden", paddingHorizontal: 10, paddingVertical: 6, fontSize: 9, fontWeight: "800", letterSpacing: 1 },
   eyebrow: { color: colors.green, fontSize: 10, fontWeight: "800", letterSpacing: 1.6 },
   heroTitle: { color: colors.dark, fontSize: 39, lineHeight: 43, fontWeight: "900", letterSpacing: -1.5 },
-  screenTitle: { color: colors.dark, fontSize: 30, fontWeight: "850", letterSpacing: -1 },
+  screenTitle: { color: colors.dark, fontSize: 30, fontWeight: "800", letterSpacing: -1 },
   muted: { color: colors.muted, fontSize: 14, lineHeight: 21 },
   input: { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 15, color: colors.text, fontSize: 15 },
   primaryButton: { backgroundColor: colors.green, padding: 17, borderRadius: 15, alignItems: "center", justifyContent: "center" },
