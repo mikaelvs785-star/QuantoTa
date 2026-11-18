@@ -11,7 +11,7 @@ export default function RegisterScreen() {
   const [busy, setBusy] = useState(false);
 
   async function submit() {
-    if (!nome.trim() || !email.trim() || senha.length < 8) return Alert.alert("Confira os dados", "Informe nome, e-mail e senha com pelo menos 8 caracteres.");
+    if (!nome.trim() || !email.trim() || senha.length < 8) return Alert.alert("Confira os dados", "Informe nome, e-mail e senha com pelo menos 6 caracteres.");
     setBusy(true);
     try {
       await api.post("/auth/register", { nome: nome.trim(), email: email.trim(), senha });
