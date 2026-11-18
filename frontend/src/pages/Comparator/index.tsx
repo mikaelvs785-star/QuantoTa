@@ -89,7 +89,7 @@ export default function ComparadorPage() {
           <div className="grid items-start gap-5 lg:grid-cols-[minmax(320px,460px)_minmax(0,1fr)] xl:gap-7">
             <section className="overflow-hidden rounded-[30px] bg-[#f2eadc] p-3 dark:bg-slate-900 sm:p-4">
               <ProductImage
-                id={offers[0]?.imageId}
+                id={product.imageId ?? offers[0]?.imageId}
                 alt={product.name}
                 className="aspect-[4/3] w-full rounded-[24px] bg-white dark:bg-slate-800"
               />
@@ -109,7 +109,7 @@ export default function ComparadorPage() {
                   </p>
                 )}
                 <p className="mt-5 text-xs leading-5 text-slate-500 dark:text-slate-400">
-                  A foto pertence à oferta do mercado apresentado. Confira marca
+                  A foto é do cadastro global do produto e aparece em todos os mercados. Confira marca
                   e embalagem antes de comprar.
                 </p>
               </div>
@@ -184,7 +184,7 @@ export default function ComparadorPage() {
                           }`}
                         >
                           <ProductImage
-                            id={offer.imageId}
+                            id={product.imageId ?? offer.imageId}
                             alt={`${offer.product} em ${offer.market}`}
                             className="hidden size-24 shrink-0 rounded-[18px] bg-white sm:flex"
                           />
